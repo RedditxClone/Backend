@@ -11,6 +11,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import {
+  ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -37,21 +38,6 @@ export class PostController {
     return this.postService.create(createPostDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.postService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.postService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-  //   return this.postService.update(+id, updatePostDto);
-  // }
-
   @ApiOperation({ description: 'Deletes a post.' })
   @ApiOkResponse({ description: 'The resource was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
@@ -60,15 +46,27 @@ export class PostController {
   remove(@Param('id') id: string) {
     return this.postService.remove(+id);
   }
+
   @ApiOperation({ description: 'Edit the body text of a post.' })
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch('/edit')
+  @Patch(':id/edit')
   //todo
-  edit(@Body() body: any) {
-    return body;
+  update(@Param('id') id: string, @Body() createCommentDto: CreatePostDto) {
+    return this.postService.update(+id, createCommentDto);
   }
+
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        dir: {
+          type: 'boolean',
+        },
+      },
+    },
+  })
   @ApiOperation({
     description: `Follow or unFollow a post.    
        To follow, follow should be True.
@@ -78,21 +76,22 @@ export class PostController {
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/follow')
+  @Post(':id/follow')
   //todo
-  follow(@Body() body: any) {
-    return body;
+  follow(@Param('id') id: string, @Body() follow: boolean) {
+    return follow;
   }
+
   @ApiOperation({
     description: `Hide a post, this removes it from the user's default view of subreddit listings.`,
   })
   @ApiOkResponse({ description: `Successful post hide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/hide')
+  @Patch(':id/hide')
   //todo
-  hide(@Body() body: any) {
-    return body;
+  hide(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({
     description: `UnHide a post, this removes the hide property from a post thus it can reappear again.`,
@@ -100,10 +99,10 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post unhide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unhide')
+  @Patch(':id/unhide')
   //todo
-  unhide(@Body() body: any) {
-    return body;
+  unhide(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({
     description: `Lock a post. Prevents a post from receiving new comments.`,
@@ -111,10 +110,10 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post lock` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/lock')
+  @Patch(':id/lock')
   //todo
-  lock(@Body() body: any) {
-    return body;
+  lock(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({
     description: `UnLock a post. Prevents a post from receiving new comments.`,
@@ -122,28 +121,28 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post Unlock` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unlock')
+  @Patch(':id/unlock')
   //todo
-  unlock(@Body() body: any) {
-    return body;
+  unlock(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({ description: `UnMark a post NSFW.` })
   @ApiOkResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/mark_nsfw')
+  @Post(':id/mark_nsfw')
   //todo
-  markNsfw(@Body() body: any) {
-    return body;
+  markNsfw(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({ description: `Mark a post NSFW.` })
   @ApiOkResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unmark_nsfw')
+  @Post(':id/unmark_nsfw')
   //todo
-  unMarkNsfw(@Body() body: any) {
-    return body;
+  unMarkNsfw(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({
     description: `Brings it to the attention of the subreddit's moderators and marks it as spam.`,
@@ -151,19 +150,19 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post report spam` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/spam')
+  @Post(':id/spam')
   //todo
-  spam(@Body() body: any) {
-    return body;
+  spam(@Param('id') id: string, @Body() message: string) {
+    return message;
   }
   @ApiOperation({ description: `Enable or disable inbox replies for a post.` })
   @ApiOkResponse({ description: `Successful post replies set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/send_replies')
+  @Post(':id/send_replies')
   //todo
-  sendReplies(@Body() body: any) {
-    return body;
+  sendReplies(@Param('id') id, @Body() state: boolean) {
+    return state;
   }
   @ApiOperation({
     description: `Flag the post as spoiler.`,
@@ -171,10 +170,10 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post spoiler` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/spoiler')
+  @Patch(':id/spoiler')
   //todo
-  spoiler(@Body() body: any) {
-    return body;
+  spoiler(@Param('id') id) {
+    return id;
   }
   @ApiOperation({
     description: `Flag the post as not spoiler.`,
@@ -182,10 +181,10 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post unSpoiler` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unspoiler')
+  @Patch(':id/unspoiler')
   //todo
-  unSpoiler(@Body() body: any) {
-    return body;
+  unSpoiler(@Param('id') id) {
+    return id;
   }
   @ApiOperation({
     description: `Cast a vote on a post.`,
@@ -193,9 +192,9 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post vote` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/vote')
+  @Post(':id/vote')
   //todo
-  vote(@Body() body: any) {
+  vote(@Param('id') id, @Body() body: any) {
     return body;
   }
   @ApiOperation({

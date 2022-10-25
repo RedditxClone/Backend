@@ -8,6 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -17,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { TextDto } from './dto/text.dto';
 
 @ApiTags('comment')
 @Controller('comment')
@@ -27,26 +28,10 @@ export class CommentController {
   @ApiOperation({ description: 'Submit a new comment.' })
   @ApiCreatedResponse({ description: 'The resource was created successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiBody({ description: 'Create some resource' })
   @Post()
   create(@Body() createCommentDto: CreateCommentDto) {
     return this.commentService.create(createCommentDto);
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.commentService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.commentService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-  //   return this.commentService.update(+id, updateCommentDto);
-  // }
 
   @ApiOperation({ description: 'Deletes a comment.' })
   @ApiOkResponse({ description: 'The resource was deleted successfully' })
@@ -61,10 +46,10 @@ export class CommentController {
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch('/edit')
+  @Patch('/edit/:id')
   //todo
-  edit(@Body() body: any) {
-    return body;
+  update(@Param('id') id: string, @Body() updateCommentDto: CreateCommentDto) {
+    return this.commentService.update(+id, updateCommentDto);
   }
 
   @ApiOperation({
@@ -73,10 +58,10 @@ export class CommentController {
   @ApiOkResponse({ description: 'Successful comment lock' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/lock')
+  @Patch(':id/lock')
   //todo
-  lock(@Body() body: any) {
-    return body;
+  lock(@Param('id') id: string) {
+    return id;
   }
 
   @ApiOperation({
@@ -85,10 +70,10 @@ export class CommentController {
   @ApiOkResponse({ description: 'Successful comment unlock' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unlock')
+  @Post(':id/unlock')
   //todo
-  unlock(@Body() body: any) {
-    return body;
+  unlock(@Param('id') id: string) {
+    return id;
   }
 
   @ApiOperation({
@@ -98,12 +83,22 @@ export class CommentController {
   @ApiOkResponse({ description: 'Successful comment report spam' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/spam')
+  @Post(':id/spam')
   //todo
-  spam(@Body() body: any) {
-    return body;
+  spam(@Param('id') id: string, @Body() textDto: TextDto) {
+    return textDto;
   }
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        category: {
+          type: 'string',
+        },
+      },
+    },
+  })
   @ApiOperation({
     description:
       "Save comment, Saved things are kept in the user's saved listing for later perusal.",
@@ -111,10 +106,10 @@ export class CommentController {
   @ApiCreatedResponse({ description: 'Successful comment save' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/save')
+  @Post(':id/save')
   //todo
-  save(@Body() body: any) {
-    return body;
+  save(@Param('id') id: string, @Body() category: string) {
+    return category;
   }
   @ApiOperation({
     description:
@@ -123,33 +118,56 @@ export class CommentController {
   @ApiCreatedResponse({ description: 'Successful comment unsave' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unsave')
+  @Delete(':id/unsave')
   //todo
-  unSave(@Body() body: any) {
-    return body;
+  unSave(@Param('id') id: string) {
+    return id;
   }
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        state: {
+          type: 'boolean',
+        },
+      },
+    },
+  })
   @ApiOperation({
-    description: 'Enable or disable inbox replies for a comment.',
+    description:
+      'Enable or disable inbox replies for a comment, true to enable.',
   })
   @ApiOkResponse({ description: 'Successful comment set inbox replies' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/send_replies')
+  @Post('/send_replies/:id')
   //todo
-  sendReplies(@Body() body: any) {
-    return body;
+  sendReplies(@Param('id') id, @Body() state: boolean) {
+    return state;
   }
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        dir: {
+          type: 'integer',
+        },
+      },
+    },
+  })
   @ApiOperation({
-    description: 'Cast a vote on a comment.',
+    description: `Cast a vote on a comment. 
+    dir indicates the direction of the vote. Voting 1 is an upvote,
+     -1 is a downvote, and 0 is equivalent to "un-voting" by clicking again on a highlighted arrow.`,
   })
   @ApiOkResponse({ description: 'Successful comment vote' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/vote')
+  @Post('/vote/:id')
   //todo
-  vote(@Body() body: any) {
-    return body;
+  vote(@Param('id') id, @Body() dir: number) {
+    return id;
   }
 }
