@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -46,7 +38,7 @@ export class CommentController {
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch('/edit/:id')
+  @Patch(':id/edit')
   //todo
   update(@Param('id') id: string, @Body() updateCommentDto: CreateCommentDto) {
     return this.commentService.update(+id, updateCommentDto);
@@ -141,7 +133,7 @@ export class CommentController {
   @ApiOkResponse({ description: 'Successful comment set inbox replies' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/send_replies/:id')
+  @Post(':id/send_replies/')
   //todo
   sendReplies(@Param('id') id, @Body() state: boolean) {
     return state;
@@ -165,7 +157,7 @@ export class CommentController {
   @ApiOkResponse({ description: 'Successful comment vote' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/vote/:id')
+  @Post(':id/vote')
   //todo
   vote(@Param('id') id, @Body() dir: number) {
     return id;

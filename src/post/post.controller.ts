@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -135,6 +134,7 @@ export class PostController {
   markNsfw(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({ description: `Mark a post NSFW.` })
   @ApiOkResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
@@ -144,6 +144,17 @@ export class PostController {
   unMarkNsfw(@Param('id') id: string) {
     return id;
   }
+
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+        },
+      },
+    },
+  })
   @ApiOperation({
     description: `Brings it to the attention of the subreddit's moderators and marks it as spam.`,
   })
@@ -155,6 +166,17 @@ export class PostController {
   spam(@Param('id') id: string, @Body() message: string) {
     return message;
   }
+
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        state: {
+          type: 'boolean',
+        },
+      },
+    },
+  })
   @ApiOperation({ description: `Enable or disable inbox replies for a post.` })
   @ApiOkResponse({ description: `Successful post replies set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
@@ -186,6 +208,17 @@ export class PostController {
   unSpoiler(@Param('id') id) {
     return id;
   }
+
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        dir: {
+          type: 'integer',
+        },
+      },
+    },
+  })
   @ApiOperation({
     description: `Cast a vote on a post.`,
   })
@@ -194,19 +227,29 @@ export class PostController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/vote')
   //todo
-  vote(@Param('id') id, @Body() body: any) {
-    return body;
+  vote(@Param('id') id, @Body() dir: number) {
+    return dir;
   }
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        category: {
+          type: 'string',
+        },
+      },
+    },
+  })
   @ApiOperation({
     description: `Save post, Saved things are kept in the user's saved listing for later perusal.`,
   })
   @ApiOkResponse({ description: `Successful post save` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/save')
+  @Post(':id/save')
   //todo
-  save(@Body() body: any) {
-    return body;
+  save(@Param('id') id: string, @Body() category: string) {
+    return category;
   }
   @ApiOperation({
     description: `UnSave post, Saved things are kept in the user's saved listing for later perusal.`,
@@ -214,11 +257,21 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post unsave` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/unsave')
+  @Post(':id/unsave')
   //todo
-  unSave(@Body() body: any) {
-    return body;
+  unSave(@Param('id') id: string) {
+    return id;
   }
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        sort: {
+          type: 'string',
+        },
+      },
+    },
+  })
   @ApiOperation({
     description: `Set a suggested sort for a link.
      Suggested sorts are useful to display comments in a certain preferred way for posts.`,
@@ -226,9 +279,9 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post suggested sort set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post('/set_suggested_sort')
+  @Post(':id/set_suggested_sort')
   //todo
-  setSuggestedSort(@Body() body: any) {
-    return body;
+  setSuggestedSort(@Body() sort: string) {
+    return sort;
   }
 }
