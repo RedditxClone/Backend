@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { ControllerService } from './module/controller/controller.service';
 @Module({
   imports: [
     // for using .env variables
@@ -11,6 +12,6 @@ import { UserModule } from './user/user.module';
     UserModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [ControllerService],
 })
 export class AppModule {}
