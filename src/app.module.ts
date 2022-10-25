@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CommentModule } from './comment/comment.module';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
+import { SubredditModule } from './subreddit/subreddit.module';
 @Module({
   imports: [
     // for using .env variables
@@ -13,6 +14,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     PostModule,
     CommentModule,
+    SubredditModule,
   ],
   controllers: [],
   providers: [],
