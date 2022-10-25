@@ -5,6 +5,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Prefix all endpoinds with api/
+  app.setGlobalPrefix('api');
+
   const config = new DocumentBuilder()
     .setTitle('Redditx')
     .setDescription('The Redditx API description')
