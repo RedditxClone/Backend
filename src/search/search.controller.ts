@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOkResponse } from '@nestjs/swagger';
 import { GeneralSearchDto } from './dto/general-search.dto';
 import { SubredditSearchDto } from './dto/subreddit-search.dto';
@@ -10,10 +10,18 @@ export class SearchController {
   @ApiOkResponse({ description: 'search has been returned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('')
-  generalSearch(@Query() dto: GeneralSearchDto) {}
+  generalSearch(@Query() dto: GeneralSearchDto) {
+    return {
+      searchResult: [],
+    };
+  }
 
   @ApiOkResponse({ description: 'search has been returned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('/subreddit/:subreddit')
-  subredditSearch(@Query() dto: SubredditSearchDto) {}
+  subredditSearch(@Query() dto: SubredditSearchDto) {
+    return {
+      searchResult: [],
+    };
+  }
 }
