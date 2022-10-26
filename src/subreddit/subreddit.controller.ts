@@ -12,12 +12,15 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
@@ -164,4 +167,80 @@ export class SubredditController {
     // TODO: implement service
     return;
   }
+
+  @ApiOperation({ description: "Get the flairs of a user in a subreddit" })
+  @ApiOkResponse({ description: "The flairs returned successfully" })
+  @ApiForbiddenResponse({ description: "Only moderators can perform this action" })
+  @ApiBadRequestResponse({ description: "The user id is not valid" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/:subreddit/user/:user_id/flair")
+  getUserFlairs(@Param('subreddit') subreddit: string, @Param('user_id') user_id: string) {
+    return;
+  }
+  
+  @ApiOperation({ description: "create a flair for a user in a subreddit" })
+  @ApiCreatedResponse({ description: "The flairs created successfully" })
+  @ApiForbiddenResponse({ description: "Only moderators can perform this action" })
+  @ApiBadRequestResponse({ description: "The user id is not valid" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Post("/:subreddit/user/:user_id/flair")
+  createUserFlair(@Param('subreddit') subreddit: string, @Param('user_id') user_id: string) {
+    return;
+  }
+  
+  @ApiOperation({ description: "Remove specified flairs from a user in a subreddit" })
+  @ApiOkResponse({ description: "The flairs deleted successfully" })
+  @ApiForbiddenResponse({ description: "Only admin can perform this action" })
+  @ApiBadRequestResponse({ description: "The user id is not valid" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Delete("/:subreddit/user/:user_id/flair")
+  deleteUserFlair(@Param('subreddit') subreddit: string, @Param('user_id') user_id: string) {
+    return;
+  }
+
+  @ApiOperation({ description: "Get the flairs of a post in a subreddit" })
+  @ApiOkResponse({ description: "The flairs returned successfully" })
+  @ApiForbiddenResponse({ description: "Only admin can perform this action" })
+  @ApiBadRequestResponse({ description: "The post id is not valid" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/:subreddit/post/:post_id/flair")
+  getPostFlairs(@Param('subreddit') subreddit: string, @Param('post_id') post_id: string) {
+    return;
+  }
+  
+  @ApiOperation({ description: "create a flair for a post in a subreddit" })
+  @ApiCreatedResponse({ description: "The flairs created successfully" })
+  @ApiForbiddenResponse({ description: "Only admin can perform this action" })
+  @ApiBadRequestResponse({ description: "The post id is not valid" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Post("/:subreddit/post/:post_id/flair")
+  createPostFlair(@Param('subreddit') subreddit: string, @Param('post_id') post_id: string) {
+    return;
+  }
+  
+  @ApiOperation({ description: "Remove specified flairs from a post in a subreddit" })
+  @ApiOkResponse({ description: "The flairs deleted successfully" })
+  @ApiForbiddenResponse({ description: "Only admin can perform this action" })
+  @ApiBadRequestResponse({ description: "The post id is not valid" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Delete("/:subreddit/post/:post_id/flair")
+  deletePostFlair(@Param('subreddit') subreddit: string, @Param('post_id') post_id: string) {
+    return;
+  }
+  
+  @ApiOperation({ description: "Get the flairs of the current user in a subreddit" })
+  @ApiOkResponse({ description: "The flairs returned successfully" })
+  @ApiBadRequestResponse({ description: "The user is not part of that community" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/:subreddit/user/me/flair")
+  getMyFlairsInSubreddit(@Param('subreddit') subreddit: string) {
+    return;
+  }
+
+  // TODO
+  // - DELETE /api/subreddit/:subreddit/me/flair*
+  // - POST /api/subreddit/:subreddit/me/flair*
+  // - GET /api/subreddit/:subreddit/flair*
+  // - POST /api/subreddit/:subreddit/flair*
+  // - UPDATE /api/subreddit/:subreddit/flair*
 }

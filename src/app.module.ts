@@ -15,7 +15,7 @@ import { AuthModule } from './auth/auth.module';
     // for using .env variables
     ConfigModule.forRoot(),
     // connect to database using connection string
-    MongooseModule.forRoot(process.env.DB_CONNECTION_STRING),
+    // MongooseModule.forRoot(process.env.DB_CONNECTION_STRING),
     UserModule,
     PostModule,
     CommentModule,

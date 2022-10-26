@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ApiCreatedResponse, ApiForbiddenResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
@@ -12,7 +12,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ description: 'Login user to his account' })
-  @ApiCreatedResponse({ description: 'Autherized Successfully' })
+  @ApiOkResponse({ description: 'Autherized Successfully' })
   @ApiUnauthorizedResponse({ description: 'Wrong email or password' })
   @Post("login")
   login(@Body() loginDto: LoginDto) {
@@ -28,14 +28,14 @@ export class AuthController {
   }
 
   @ApiOperation({ description: 'Recover the password of an account' })
-  @ApiCreatedResponse({ description: 'The email send to your account' })
+  @ApiOkResponse({ description: 'The email send to your account' })
   @Post("forget_password")
   forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
     return this.authService.forgetPassword(forgetPasswordDto)    
   }
 
   @ApiOperation({ description: 'Change the password of an account' })
-  @ApiCreatedResponse({ description: 'The password changed successfully' })
+  @ApiOkResponse({ description: 'The password changed successfully' })
   @ApiUnauthorizedResponse( {description: 'Unautherized'} )
   @ApiForbiddenResponse( {description: 'Wrong password'} )
   @Post("change_password")

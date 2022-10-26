@@ -1,5 +1,5 @@
 import { Controller, Delete, Get, Post } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBadRequestResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBadRequestResponse, ApiForbiddenResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UserService } from './user.service';
 
 @ApiTags("User")
@@ -47,8 +47,8 @@ export class UserController {
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
   @Delete("/:user_id/friend")
-  deleteFriend() {
-    return this.userService.deleteFriend()
+  unFriend() {
+    return this.userService.unFriend()
   }
 
   @ApiOperation({ description: "User block another user" })
@@ -58,5 +58,15 @@ export class UserController {
   @Get("/:user_id/block")
   block() {
     return this.userService.block()
+  }
+
+  @ApiOperation({ description: "Moderator spam a user" })
+  @ApiAcceptedResponse({ description: "User spamed successfully" })
+  @ApiBadRequestResponse({ description: "invalid user id" })
+  @ApiForbiddenResponse({ description: "Only moderators are allowed to perform that action" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/:user_id/spam")
+  spamPost() {
+    return;
   }
 }

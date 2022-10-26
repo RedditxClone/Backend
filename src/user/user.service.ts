@@ -23,7 +23,7 @@ export class UserService {
     return 'delete a friend request'
   }
 
-  deleteFriend() {
+  unFriend() {
     return 'delete a friend'
   }
 }

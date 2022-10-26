@@ -1,9 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GeneralSearchDto } from './dto/general-search.dto';
 import { SubredditSearchDto } from './dto/subreddit-search.dto';
 import { SearchService } from './search.service';
 
+@ApiTags("Search")
 @Controller('search')
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}

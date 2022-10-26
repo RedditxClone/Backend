@@ -1,7 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { ApiForbiddenResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags("Notifications")
 @Controller('notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
