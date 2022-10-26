@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 export type UserDocument = User & Document;
 @Schema()
@@ -21,4 +23,16 @@ export class User {
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
   authType: string;
 }
-export const UserSchema = SchemaFactory.createForClass(User);
+
+export const UserSchema = (() => {
+  const schema = SchemaFactory.createForClass(User);
+  schema.post(/save|^find/, (doc: UserDocument, next: () => void) => {
+    doc.hashPassword = undefined;
+    next();
+  });
+  schema.methods.correctPassword = async (
+    userPass: string,
+    hashedPass: string,
+  ) => await bcrypt.compare(userPass, hashedPass);
+  return schema;
+})();

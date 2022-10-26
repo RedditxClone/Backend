@@ -15,6 +15,9 @@ export const rootMongooseTestModule = (options: MongooseModuleOptions = {}) =>
     },
   });
 
+export const cleanInMongodConnection = async () => {
+  if (mongod) await mongod.cleanup();
+};
 export const closeInMongodConnection = async () => {
   if (mongod) await mongod.stop();
 };

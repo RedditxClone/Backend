@@ -2,29 +2,41 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
-import { User } from './user.schema';
+import { User, UserDocument } from './user.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
-  createUser = async (dto: CreateUserDto): Promise<User> => {
+  createUser = async (dto: CreateUserDto): Promise<UserDocument> => {
     try {
-      const user: User = await this.userModel.create({
+      const hashPassword = await bcrypt.hash(
+        dto.password,
+        await bcrypt.genSalt(10),
+      );
+      const user: UserDocument = await this.userModel.create({
         ...dto,
-        hashPassword: dto.password,
+        hashPassword,
       });
       return user;
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   };
-  getUserById = async (id: Types.ObjectId): Promise<User> => {
+  getUserById = async (id: Types.ObjectId): Promise<UserDocument> => {
     try {
-      const user: User = await this.userModel.findById(id);
+      const user: UserDocument = await this.userModel.findById(id);
+      if (!user)
+        throw new BadRequestException(`there is no user with id ${id}`);
       return user;
     } catch (err) {
-      console.log(err);
-      throw new BadRequestException('something went wrong');
+      throw new BadRequestException(err.message);
     }
+  };
+  getUserByEmail = async (
+    email: string,
+    password: string,
+  ): Promise<UserDocument> => {
+    return null;
   };
 }

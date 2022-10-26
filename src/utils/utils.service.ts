@@ -17,3 +17,10 @@ export class ParseObjectIdPipe implements PipeTransform<any, Types.ObjectId> {
     }
   }
 }
+
+export const excludeFields = (obj: any, fields: string[]) => {
+  const myObj: any = { ...obj };
+  fields.forEach((field) => delete myObj[field]);
+  console.log(myObj);
+  return myObj;
+};
