@@ -1,16 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { PostService } from './post.service';
-import { CreatePostDto } from './dto/create-post.dto';
 import {
-  ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -19,6 +9,17 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import {
+  CreatePostDto,
+  DefaultSortPostDto,
+  FollowPostDto,
+  ReturnPostDto,
+  SavePostDto,
+  SendRepliesPostDto,
+  SpamPostDto,
+  UpdatePostDto,
+  VotePostDto,
+} from './dto';
 
 @ApiTags('Post')
 @Controller('post')
@@ -26,7 +27,10 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
-  @ApiCreatedResponse({ description: 'The resource was created successfully' })
+  @ApiCreatedResponse({
+    description: 'The resource was created successfully',
+    type: ReturnPostDto,
+  })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiUnprocessableEntityResponse({
     description:
@@ -47,38 +51,31 @@ export class PostController {
   }
 
   @ApiOperation({ description: 'Edit the body text of a post.' })
-  @ApiOkResponse({ description: 'The resource was updated successfully' })
+  @ApiOkResponse({
+    description: 'The resource was updated successfully',
+    type: ReturnPostDto,
+  })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Patch(':id/edit')
   //todo
-  update(@Param('id') id: string, @Body() createCommentDto: CreatePostDto) {
-    return this.postService.update(+id, createCommentDto);
+  update(@Body() updatePostDto: UpdatePostDto, @Param('id') id: string) {
+    return this.postService.update(+id, updatePostDto);
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        dir: {
-          type: 'boolean',
-        },
-      },
-    },
-  })
   @ApiOperation({
     description: `Follow or unFollow a post.    
        To follow, follow should be True.
        To unFollow, follow should be False. 
        The user must have access to the subreddit to be able to follow a post within it.`,
   })
-  @ApiOkResponse({ description: 'The resource was updated successfully' })
+  @ApiCreatedResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/follow')
   //todo
-  follow(@Param('id') id: string, @Body() follow: boolean) {
-    return follow;
+  follow(@Param('id') id: string, @Body() followPostDto: FollowPostDto) {
+    return followPostDto;
   }
 
   @ApiOperation({
@@ -126,7 +123,7 @@ export class PostController {
     return id;
   }
   @ApiOperation({ description: `UnMark a post NSFW.` })
-  @ApiOkResponse({ description: `Successful post mark` })
+  @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/mark_nsfw')
@@ -136,7 +133,7 @@ export class PostController {
   }
 
   @ApiOperation({ description: `Mark a post NSFW.` })
-  @ApiOkResponse({ description: `Successful post mark` })
+  @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/unmark_nsfw')
@@ -145,46 +142,26 @@ export class PostController {
     return id;
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        message: {
-          type: 'string',
-        },
-      },
-    },
-  })
   @ApiOperation({
     description: `Brings it to the attention of the subreddit's moderators and marks it as spam.`,
   })
-  @ApiOkResponse({ description: `Successful post report spam` })
+  @ApiCreatedResponse({ description: `Successful post report spam` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/spam')
   //todo
-  spam(@Param('id') id: string, @Body() message: string) {
-    return message;
+  spam(@Param('id') id: string, @Body() spamPostDto: SpamPostDto) {
+    return spamPostDto;
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        state: {
-          type: 'boolean',
-        },
-      },
-    },
-  })
   @ApiOperation({ description: `Enable or disable inbox replies for a post.` })
-  @ApiOkResponse({ description: `Successful post replies set` })
+  @ApiCreatedResponse({ description: `Successful post replies set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/send_replies')
   //todo
-  sendReplies(@Param('id') id, @Body() state: boolean) {
-    return state;
+  sendReplies(@Param('id') id, @Body() sendRepliesPostDto: SendRepliesPostDto) {
+    return sendRepliesPostDto;
   }
   @ApiOperation({
     description: `Flag the post as spoiler.`,
@@ -209,52 +186,36 @@ export class PostController {
     return id;
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        dir: {
-          type: 'integer',
-        },
-      },
-    },
-  })
   @ApiOperation({
     description: `Cast a vote on a post.`,
   })
-  @ApiOkResponse({ description: `Successful post vote` })
+  @ApiCreatedResponse({
+    description: `Successful post vote, returns the new vote direction`,
+    type: VotePostDto,
+  })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/vote')
   //todo
-  vote(@Param('id') id, @Body() dir: number) {
-    return dir;
+  vote(@Param('id') id, @Body() votePostDto: VotePostDto) {
+    return votePostDto;
   }
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        category: {
-          type: 'string',
-        },
-      },
-    },
-  })
+
   @ApiOperation({
     description: `Save post, Saved things are kept in the user's saved listing for later perusal.`,
   })
-  @ApiOkResponse({ description: `Successful post save` })
+  @ApiCreatedResponse({ description: `Successful post save` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/save')
   //todo
-  save(@Param('id') id: string, @Body() category: string) {
-    return category;
+  save(@Param('id') id: string, @Body() savePostDto: SavePostDto) {
+    return savePostDto;
   }
   @ApiOperation({
     description: `UnSave post, Saved things are kept in the user's saved listing for later perusal.`,
   })
-  @ApiOkResponse({ description: `Successful post unsave` })
+  @ApiCreatedResponse({ description: `Successful post unsave` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/unsave')
@@ -262,26 +223,16 @@ export class PostController {
   unSave(@Param('id') id: string) {
     return id;
   }
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        sort: {
-          type: 'string',
-        },
-      },
-    },
-  })
   @ApiOperation({
     description: `Set a suggested sort for a link.
      Suggested sorts are useful to display comments in a certain preferred way for posts.`,
   })
-  @ApiOkResponse({ description: `Successful post suggested sort set` })
+  @ApiCreatedResponse({ description: `Successful post suggested sort set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/set_suggested_sort')
   //todo
-  setSuggestedSort(@Body() sort: string) {
-    return sort;
+  setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
+    return defaultSortPostDto;
   }
 }

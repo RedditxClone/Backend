@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
-
 export class CreatePostDto {
-  @ApiProperty()
   subredditId: string;
-  @ApiProperty()
+  title: string;
   text: string;
+  nsfw: boolean;
+  spoiler: boolean;
+  flairs: string[];
 }
