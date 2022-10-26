@@ -5,6 +5,7 @@ import { CommentModule } from './comment/comment.module';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { SubredditModule } from './subreddit/subreddit.module';
+import { MessageModule } from './message/message.module';
 @Module({
   imports: [
     // for using .env variables
@@ -15,6 +16,7 @@ import { SubredditModule } from './subreddit/subreddit.module';
     PostModule,
     CommentModule,
     SubredditModule,
+    MessageModule,
   ],
   controllers: [],
   providers: [],
