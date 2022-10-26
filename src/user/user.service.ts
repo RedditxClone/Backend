@@ -1,26 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+
+  block() {
+    return 'block a user'
   }
 
-  findAll() {
-    return `This action returns all user`;
+  getFriends() {
+    return 'get user list of friends'
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  acceptFriendRequest() {
+    return 'accept user friend request'
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  sendFriendRequest() {
+    return 'send a friend request'
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  deleteFriendRequest() {
+    return 'delete a friend request'
+  }
+
+  deleteFriend() {
+    return 'delete a friend'
   }
 }

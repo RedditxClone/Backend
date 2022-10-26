@@ -29,7 +29,7 @@ export class AuthController {
 
   @ApiOperation({ description: 'Recover the password of an account' })
   @ApiCreatedResponse({ description: 'The email send to your account' })
-  @Post("forgetPassword")
+  @Post("forget_password")
   forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
     return this.authService.forgetPassword(forgetPasswordDto)    
   }
@@ -38,7 +38,7 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'The password changed successfully' })
   @ApiUnauthorizedResponse( {description: 'Unautherized'} )
   @ApiForbiddenResponse( {description: 'Wrong password'} )
-  @Post("changePassword")
+  @Post("change_password")
   changePassword(@Body() changePasswordDto: ChangePasswordDto) {
     return this.authService.changePassword(changePasswordDto)
   }  

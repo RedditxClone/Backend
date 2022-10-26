@@ -1,34 +1,62 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Delete, Get, Post } from '@nestjs/common';
+import { ApiAcceptedResponse, ApiBadRequestResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
+@ApiTags("User")
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  
+  @ApiOperation({ description: "Get user friends" })
+  @ApiAcceptedResponse({ description: "The account friends is returned successfully" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("friend")
+  getFriends() {
+    return this.userService.getFriends()
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @ApiOperation({ description: "User Accept another user friend request" })
+  @ApiAcceptedResponse({ description: "The friend request accepted successfully" })
+  @ApiBadRequestResponse({ description: "invalid user id" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Post("/:user_id/frined/accept")
+  acceptFriendRequest() {
+    return this.userService.acceptFriendRequest()
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @ApiOperation({ description: "User send a friend request to another user" })
+  @ApiAcceptedResponse({ description: "The friend request sent successfully" })
+  @ApiBadRequestResponse({ description: "invalid user id" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Post("/:user_id/friend/request")
+  sendFriendRequest() {
+    return this.userService.sendFriendRequest()
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @ApiOperation({ description: "delete the friendship request sent from another user" })
+  @ApiAcceptedResponse({ description: "The friend request is deleted successfully" })
+  @ApiBadRequestResponse({ description: "invalid user id" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Delete("/:user_id/friend/request")
+  deleteFriendRequest() {
+    return this.userService.deleteFriendRequest()
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @ApiOperation({ description: "remove a user from the friends of the account" })
+  @ApiAcceptedResponse({ description: "The friend is deleted successfully" })
+  @ApiBadRequestResponse({ description: "invalid user id" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Delete("/:user_id/friend")
+  deleteFriend() {
+    return this.userService.deleteFriend()
+  }
+
+  @ApiOperation({ description: "User block another user" })
+  @ApiAcceptedResponse({ description: "User blocked successfully" })
+  @ApiBadRequestResponse({ description: "invalid user id" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/:user_id/block")
+  block() {
+    return this.userService.block()
   }
 }
