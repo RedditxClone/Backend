@@ -1,5 +1,5 @@
-import { Controller, Delete, Get, Post } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBadRequestResponse, ApiForbiddenResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UserService } from './user.service';
 
 @ApiTags("User")
@@ -8,7 +8,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
   
   @ApiOperation({ description: "Get user friends" })
-  @ApiAcceptedResponse({ description: "The account friends is returned successfully" })
+  @ApiOkResponse({ description: "The account friends is returned successfully" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
   @Get("friend")
   getFriends() {
@@ -16,7 +16,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: "User Accept another user friend request" })
-  @ApiAcceptedResponse({ description: "The friend request accepted successfully" })
+  @ApiOkResponse({ description: "The friend request accepted successfully" })
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
   @Post("/:user_id/frined/accept")
@@ -25,7 +25,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: "User send a friend request to another user" })
-  @ApiAcceptedResponse({ description: "The friend request sent successfully" })
+  @ApiOkResponse({ description: "The friend request sent successfully" })
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
   @Post("/:user_id/friend/request")
@@ -34,7 +34,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: "delete the friendship request sent from another user" })
-  @ApiAcceptedResponse({ description: "The friend request is deleted successfully" })
+  @ApiOkResponse({ description: "The friend request is deleted successfully" })
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
   @Delete("/:user_id/friend/request")
@@ -43,7 +43,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: "remove a user from the friends of the account" })
-  @ApiAcceptedResponse({ description: "The friend is deleted successfully" })
+  @ApiOkResponse({ description: "The friend is deleted successfully" })
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
   @Delete("/:user_id/friend")
@@ -52,21 +52,60 @@ export class UserController {
   }
 
   @ApiOperation({ description: "User block another user" })
-  @ApiAcceptedResponse({ description: "User blocked successfully" })
+  @ApiOkResponse({ description: "User blocked successfully" })
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
-  @Get("/:user_id/block")
+  @Post("/:user_id/block")
   block() {
     return this.userService.block()
   }
 
-  @ApiOperation({ description: "Moderator spam a user" })
-  @ApiAcceptedResponse({ description: "User spamed successfully" })
+  @ApiOperation({ description: "mark user as a spam" })
+  @ApiOkResponse({ description: "User spamed successfully" })
   @ApiBadRequestResponse({ description: "invalid user id" })
   @ApiForbiddenResponse({ description: "Only moderators are allowed to perform that action" })
   @ApiUnauthorizedResponse({ description: "Unautherized" })
-  @Get("/:user_id/spam")
-  spamPost() {
+  @Post("/:user_id/spam")
+  spamUser(@Param("user_id") user_id: String) {
     return;
   }
+
+  @ApiOperation({ description: "Get user data if logged in" })
+  @ApiOkResponse({ description: "The user is logged in and the data returned successfully" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/me")
+  getUser() {
+    return 'If user cookie is valid return user data';
+  }
+
+  @ApiOperation({ description: "Get user preferences" })
+  @ApiOkResponse({ description: "The preferences returned successfully" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Get("/me/prefs")
+  getUserPrefs() {
+    return 'Get the logged user preferences (Settings)';
+  }
+
+  @ApiOperation({ description: "Update user preferences" })
+  @ApiOkResponse({ description: "The preferences updated successfully" })
+  @ApiUnauthorizedResponse({ description: "Unautherized" })
+  @Patch("/me/prefs")
+  updateUserPrefs() {
+    return 'Updata the logged user preferences (Settings)';
+  }
+
+  @ApiOperation({ description: "Get information about the user" })
+  @ApiOkResponse({ description: "The user info returned successfully" })
+  @ApiBadRequestResponse({ description: "The user_id is not valid" })
+  @Get("/:user_id/about")
+  getUserInfo(@Param("user_id") user_id: String) {
+    return 'If user cookie is valid return user data';
+  }
+  
+  // TODO: Should be discused with the team
+  // → /user/username/overview
+  // → /user/username/submitted
+  // → /user/username/comments
+  // → /user/username/upvoted
+  // → /user/username/downvoted
 }

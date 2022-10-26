@@ -237,6 +237,34 @@ export class SubredditController {
     return;
   }
 
+  // GET /api/subreddit/:subreddit/{hot,new,top,random}
+  @ApiOperation({ description: "Get the hottest subreddits" })
+  @ApiOkResponse({ description: "The hottest subreddits returned successfully" })
+  @Get("/:subreddit/hot")
+  getHotSubreddits(@Param('subreddit') subreddit: string) {
+      return;
+  }
+
+  @ApiOperation({ description: "Get the newest subreddits" })
+  @ApiOkResponse({ description: "The newest subreddits returned successfully" })
+  @Get("/:subreddit/new")
+  getNewSubreddits(@Param('subreddit') subreddit: string) {
+      return;
+  }
+
+  @ApiOperation({ description: "Get the top subreddits" })
+  @ApiOkResponse({ description: "The top subreddits returned successfully" })
+  @Get("/:subreddit/top")
+  getTopSubreddits(@Param('subreddit') subreddit: string) {
+      return;
+  }
+
+  @ApiOperation({ description: "Get subreddits randomally" })
+  @ApiOkResponse({ description: "The random subreddits returned successfully" })
+  @Get("/:subreddit/random")
+  getRandomSubreddits(@Param('subreddit') subreddit: string) {
+      return;
+  }
   // TODO
   // - DELETE /api/subreddit/:subreddit/me/flair*
   // - POST /api/subreddit/:subreddit/me/flair*

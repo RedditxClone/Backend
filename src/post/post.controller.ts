@@ -7,6 +7,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import {
@@ -235,6 +236,4 @@ export class PostController {
   setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
     return defaultSortPostDto;
   }
-
-  
 }
