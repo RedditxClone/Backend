@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TextDto {
+export class SendRepliesCommentDto {
   @ApiProperty()
-  text: string;
+  state: boolean;
 }
