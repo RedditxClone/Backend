@@ -6,6 +6,8 @@ import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { SubredditModule } from './subreddit/subreddit.module';
 import { MessageModule } from './message/message.module';
+import { NotificationModule } from './notification/notification.module';
+import { SearchModule } from './search/search.module';
 @Module({
   imports: [
     // for using .env variables
@@ -17,6 +19,8 @@ import { MessageModule } from './message/message.module';
     CommentModule,
     SubredditModule,
     MessageModule,
+    NotificationModule,
+    SearchModule,
   ],
   controllers: [],
   providers: [],
