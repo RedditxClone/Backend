@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Get,
+} from '@nestjs/common';
 import { PostService } from './post.service';
 import {
   ApiCreatedResponse,
@@ -13,6 +21,7 @@ import {
   CreatePostDto,
   DefaultSortPostDto,
   FollowPostDto,
+  InsightsPostDto,
   ReturnPostDto,
   SendRepliesPostDto,
   SpamPostDto,
@@ -233,5 +242,21 @@ export class PostController {
   //todo
   setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
     return defaultSortPostDto;
+  }
+  @ApiOperation({
+    description: `Get the total number of post views.`,
+  })
+  @ApiOkResponse({
+    description: 'The resource was returned successfully',
+    type: InsightsPostDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  //todo
+  @Get(':id/insights_counts')
+  viewInsights(@Param('id') id: string) {
+    const insightsPostDto: InsightsPostDto = new InsightsPostDto();
+    insightsPostDto.insightsCount = 0;
+    return insightsPostDto;
   }
 }

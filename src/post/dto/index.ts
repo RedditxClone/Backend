@@ -6,3 +6,4 @@ export { DefaultSortPostDto } from './default-sort-post-dto';
 export { FollowPostDto } from './follow-post-dto';
 export { SpamPostDto } from './spam-post-dto';
 export { SendRepliesPostDto } from './send-replies-post-dto';
+export { InsightsPostDto } from './insights-post-dto';
