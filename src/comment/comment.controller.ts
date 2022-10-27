@@ -10,7 +10,6 @@ import {
 import { CommentService } from './comment.service';
 import {
   CreateCommentDto,
-  SaveCommentDto,
   SendRepliesCommentDto,
   SpamCommentDto,
   UpdateCommentDto,
@@ -101,8 +100,8 @@ export class CommentController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/save')
   //todo
-  save(@Param('id') id: string, @Body() saveCommentDto: SaveCommentDto) {
-    return saveCommentDto;
+  save(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({
     description:

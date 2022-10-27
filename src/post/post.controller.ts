@@ -7,7 +7,6 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import {
@@ -15,7 +14,6 @@ import {
   DefaultSortPostDto,
   FollowPostDto,
   ReturnPostDto,
-  SavePostDto,
   SendRepliesPostDto,
   SpamPostDto,
   UpdatePostDto,
@@ -210,8 +208,8 @@ export class PostController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':id/save')
   //todo
-  save(@Param('id') id: string, @Body() savePostDto: SavePostDto) {
-    return savePostDto;
+  save(@Param('id') id: string) {
+    return id;
   }
   @ApiOperation({
     description: `UnSave post, Saved things are kept in the user's saved listing for later perusal.`,
