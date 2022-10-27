@@ -9,6 +9,7 @@ import { MessageModule } from './message/message.module';
 import { NotificationModule } from './notification/notification.module';
 import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { AuthModule } from './auth/auth.module';
     MessageModule,
     NotificationModule,
     SearchModule,
-    AuthModule
+    AuthModule,
+    CategoryModule
   ],
   controllers: [],
   providers: [],
