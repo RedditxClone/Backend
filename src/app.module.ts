@@ -10,6 +10,9 @@ import { NotificationModule } from './notification/notification.module';
 import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EmailController } from './email.controller';
+import { EmailService } from './utils/mail.service';
 
 @Module({
   imports: [
@@ -25,9 +28,18 @@ import { CategoryModule } from './category/category.module';
     NotificationModule,
     SearchModule,
     AuthModule,
-    CategoryModule
+    CategoryModule,
+    MailerModule.forRoot({
+      transport: {
+        service: 'hotmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      },
+    }),
   ],
-  controllers: [],
-  providers: [],
+  controllers: [EmailController],
+  providers: [EmailService],
 })
 export class AppModule {}
