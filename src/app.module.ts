@@ -13,6 +13,7 @@ import { CategoryModule } from './category/category.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailController } from './email.controller';
 import { EmailService } from './utils/mail.service';
+import { ControllerService } from './module/controller/controller.service';
 
 @Module({
   imports: [
@@ -40,6 +41,6 @@ import { EmailService } from './utils/mail.service';
     }),
   ],
   controllers: [EmailController],
-  providers: [EmailService],
+  providers: [EmailService, ControllerService],
 })
 export class AppModule {}
