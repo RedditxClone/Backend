@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Global, HttpStatus, Injectable } from '@nestjs/common';
+import { Global, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 @Global()
 @Injectable()
@@ -18,17 +18,17 @@ export class EmailService {
    */
   async sendEmail(toMail: string, subject: string, body: string) {
     try {
-      const response = await this.mailService.sendMail({
+      await this.mailService.sendMail({
         to: toMail,
         from: process.env.EMAIL_USER,
         subject: subject,
         text: body,
       });
-      console.log(response);
-      return HttpStatus.OK;
-    } catch (error) {
-      console.log(error);
-      return HttpStatus.UNAUTHORIZED;
+    } catch (err) {
+      throw new HttpException(
+        err.message || 'Failed to send mail',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 }
