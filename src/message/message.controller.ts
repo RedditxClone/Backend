@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { MessageService } from './message.service';
-import { CreateMessageDto } from './dto/create-message.dto';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -10,7 +9,7 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { GetMessagesDto } from './dto/get-message.dto';
+import { CreateMessageDto, GetMessagesDto } from './dto';
 
 @ApiTags('Messages')
 @Controller('message')

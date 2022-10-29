@@ -7,7 +7,7 @@ export class SignupDto {
   })
   email: string;
   @ApiProperty({
-    description: 'The passward of the new account',
+    description: 'The password of the new account',
     required: true,
   })
   password: string;
