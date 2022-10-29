@@ -59,7 +59,7 @@ export class AuthController {
   })
   @Post('forget_username')
   forgetUsername(@Body() forgetUsernameDto: ForgetUsernameDto) {
-    return forgetUsernameDto;
+    return this.authService.forgetUsername(forgetUsernameDto);
   }
 
   @ApiOperation({ description: 'Change the password of an account' })
