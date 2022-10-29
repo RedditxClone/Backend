@@ -12,7 +12,7 @@ import {
 } from '@nestjs/swagger';
 import { GetMessagesDto } from './dto/get-message.dto';
 
-@ApiTags("Messages")
+@ApiTags('Messages')
 @Controller('message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}

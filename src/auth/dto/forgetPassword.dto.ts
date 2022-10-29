@@ -1,6 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ForgetPasswordDto {
-    @ApiProperty()
-    email: string
+  @ApiProperty({
+    description: 'The email of the user to reset the password',
+    required: true,
+  })
+  email: string;
 }
