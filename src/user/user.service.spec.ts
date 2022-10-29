@@ -26,7 +26,7 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  let id;
+  let id: Types.ObjectId;
   describe('createUser', () => {
     test('should create user successfully', async () => {
       const dto: CreateUserDto = {
