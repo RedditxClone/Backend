@@ -1,6 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger';
+import { GetNotificationDto } from './dto/notification.dto';
 
 @ApiTags('Notifications')
 @Controller('notification')
@@ -9,15 +16,19 @@ export class NotificationController {
 
   @ApiOkResponse({
     description: 'all notifications has been returned successfully',
+    type: [GetNotificationDto],
   })
+  @ApiOperation({ description: 'get all notifcations for current user' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get()
   findAll() {
     return this.notificationService.findAll();
   }
 
+  @ApiOperation({ description: 'get all unread notifications' })
   @ApiOkResponse({
     description: 'all unread notifications has been returned successfully',
+    type: [GetNotificationDto],
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('/unread')
@@ -25,8 +36,10 @@ export class NotificationController {
     return this.notificationService.findAll();
   }
 
+  @ApiOperation({ description: 'get all mentions for current user' })
   @ApiOkResponse({
     description: 'all mentions has been returned successfully',
+    type: [GetNotificationDto],
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('/mention')
@@ -36,8 +49,10 @@ export class NotificationController {
     };
   }
 
+  @ApiOperation({ description: 'get all unread mentions for current user' })
   @ApiOkResponse({
     description: 'all unread mentions has been returned successfully',
+    type: [GetNotificationDto],
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('/mention/unread')
