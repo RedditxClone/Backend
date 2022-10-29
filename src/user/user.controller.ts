@@ -81,7 +81,7 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Post('/:user_id/spam')
-  spamUser(@Param('user_id') user_id: String) {
+  spamUser(@Param('user_id') user_id: string) {
     return;
   }
 
