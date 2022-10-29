@@ -8,7 +8,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
-import { CreateMessageDto } from './dto/create-message.dto';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -21,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { GetMessagesDto } from './dto/get-message.dto';
 import { MessageReturnDto } from './dto/messageReturnDto';
+import { CreateMessageDto } from './dto';
 
 @ApiTags('Messages')
 @Controller('message')

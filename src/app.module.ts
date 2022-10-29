@@ -25,7 +25,7 @@ import { CategoryModule } from './category/category.module';
     NotificationModule,
     SearchModule,
     AuthModule,
-    CategoryModule
+    CategoryModule,
   ],
   controllers: [],
   providers: [],
