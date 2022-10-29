@@ -30,7 +30,7 @@ describe('EmailService', () => {
     test('should throw error', async () => {
       expect(async () => {
         await service.sendEmail('NotThrow', 'a', 'a');
-      }).not.toThrow();
+      }).rejects.not.toThrow();
     });
   });
 });
