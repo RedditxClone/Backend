@@ -8,7 +8,7 @@ pipeline {
             steps {
                 sh 'npm --version'
 				sh 'nest info'
-		    		sh 'npm install'
+		    		sh 'sudo npm install'
 				sh 'nest start'
             }
 		}
