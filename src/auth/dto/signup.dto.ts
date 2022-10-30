@@ -1,10 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignupDto {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The new email of the user to be created',
+    required: true,
+  })
   email: string;
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The password of the new account',
+    required: true,
+  })
   password: string;
-  @ApiProperty()
-  name: string;
+  @ApiProperty({
+    description: 'The name of the new account',
+    required: true,
+  })
+  userName: string;
 }

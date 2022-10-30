@@ -9,6 +9,13 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '../utils/utils.service';
+import { getFriendsDto } from './dto/get-friends.dto';
+import { getUserInfoDto } from './dto/get-user-info.dto';
+import { PrefsDto } from './dto/prefs.dto';
+import { UserAccountDto } from './dto/user-account.dto';
+import { UserCommentsDto } from './dto/user-comments.dto';
+import { UserOverviewDto } from './dto/user-overview.dto';
+import { UserPostsDto } from './dto/user-posts.dto';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -19,6 +26,7 @@ export class UserController {
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
     description: 'The account friends is returned successfully',
+    type: getFriendsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('friend')
@@ -90,15 +98,19 @@ export class UserController {
   @ApiOperation({ description: 'Get user data if logged in' })
   @ApiOkResponse({
     description: 'The user is logged in and the data returned successfully',
+    type: UserAccountDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   getUser() {
-    return 'If user cookie is valid return user data';
+    return;
   }
 
   @ApiOperation({ description: 'Get user preferences' })
-  @ApiOkResponse({ description: 'The preferences returned successfully' })
+  @ApiOkResponse({
+    description: 'The preferences returned successfully',
+    type: PrefsDto,
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me/prefs')
   getUserPrefs() {
@@ -114,11 +126,36 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'Get information about the user' })
-  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiOkResponse({
+    description: 'The user info returned successfully',
+    type: getUserInfoDto,
+  })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/about')
   getUserInfo(@Param('user_id') user_id: string) {
-    return 'If user cookie is valid return user data';
+    return;
+  }
+
+  @ApiOperation({ description: 'Get information about the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserOverviewDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id/overview')
+  getUserOverview(@Param('user_id') user_id: string) {
+    return;
+  }
+
+  @ApiOperation({ description: 'Get information about the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserPostsDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id/submitted')
+  getUserPosts(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'get user info by user id' })
@@ -129,5 +166,37 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
     return await this.userService.getUserById(user_id);
+    
+  @ApiOperation({ description: 'Get information about the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserCommentsDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id/comments')
+  getUserComments(@Param('user_id') user_id: string) {
+    return;
+  }
+
+  @ApiOperation({ description: 'Get information about the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserPostsDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id/upvoted')
+  getUserUpvoted(@Param('user_id') user_id: string) {
+    return;
+  }
+
+  @ApiOperation({ description: 'Get information about the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserPostsDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id/upvoted')
+  getUserDownvoted(@Param('user_id') user_id: string) {
+    return;
   }
 }
