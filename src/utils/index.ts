@@ -1,1 +1,2 @@
-export * from './mail.service';
+export * from './mail/mail.module';
+export * from './mail/mail.service';

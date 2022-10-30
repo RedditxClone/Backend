@@ -1,7 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Global, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
-@Global()
 @Injectable()
 /**
  * A utility class to send emails.
