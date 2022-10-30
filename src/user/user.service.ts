@@ -62,7 +62,10 @@ export class UserService {
     if (!user) throw new BadRequestException(`no user with email ${email}`);
     return user;
   };
-  async validPassword(userPassword, hashedPassword) {
+  async validPassword(
+    userPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return await bcrypt.compare(userPassword, hashedPassword);
   }
 }

@@ -11,8 +11,9 @@ import { UserService } from './user.service';
 
 describe('UserService', () => {
   let service: UserService;
+  let module: TestingModule;
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
@@ -79,5 +80,6 @@ describe('UserService', () => {
 
   afterAll(async () => {
     await closeInMongodConnection();
+    module.close();
   });
 });
