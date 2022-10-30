@@ -7,6 +7,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -81,7 +83,7 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Post('/:user_id/spam')
-  spamUser(@Param('user_id') user_id: String) {
+  spamUser(@Param('user_id') user_id: string) {
     return;
   }
 
@@ -119,10 +121,13 @@ export class UserController {
     return 'If user cookie is valid return user data';
   }
 
-  // TODO: Should be discused with the team
-  // → /user/username/overview
-  // → /user/username/submitted
-  // → /user/username/comments
-  // → /user/username/upvoted
-  // → /user/username/downvoted
+  @ApiOperation({ description: 'get user info by user id' })
+  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id')
+  async getUserById(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return await this.userService.getUserById(user_id);
+  }
 }
