@@ -166,7 +166,8 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
     return await this.userService.getUserById(user_id);
-    
+  }
+
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
     description: 'The data returned successfully',

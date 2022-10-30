@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res , Patch } from '@nestjs/common';
+import { Controller, Post, Body, Res, Patch } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -11,9 +11,9 @@ import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { LoginDto } from './dto/login.dto';
-import { SignupDto } from './dto/signup.dto';
 import { CreateUserDto } from '../user/dto';
 import { Response } from 'express';
+import { ForgetUsernameDto, SigninDto } from './dto';
 
 @ApiTags('auth')
 @Controller('auth')
