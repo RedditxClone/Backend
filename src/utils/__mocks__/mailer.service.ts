@@ -1,9 +1,9 @@
 export const MailerServiceMock = {
   sendMail: (sendMailOptions: any) => {
-    return new Promise(() => {
+    return new Promise((resolve, reject) => {
       if (sendMailOptions.to === 'throw') {
-        throw new Error('Error while sending');
-      }
+        reject('Error while sending');
+      } else resolve('OK');
     });
   },
 };

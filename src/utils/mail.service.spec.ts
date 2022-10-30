@@ -22,15 +22,15 @@ describe('EmailService', () => {
     expect(service).toBeDefined();
   });
   describe('sendMail', () => {
-    test('should send email normally', async () => {
-      expect(async () => {
-        await service.sendEmail('throw', 'a', 'a');
-      }).rejects.toThrow(HttpException);
-    });
     test('should throw error', async () => {
-      expect(async () => {
-        await service.sendEmail('NotThrow', 'a', 'a');
-      }).rejects.not.toThrow();
+      await expect(service.sendEmail('throw', 'a', 'a')).rejects.toThrow(
+        HttpException,
+      );
+    });
+    test('should send email normally', async () => {
+      await expect(service.sendEmail('NotThrow', 'a', 'a')).resolves.toMatch(
+        /.*OK.*/,
+      );
     });
   });
 });

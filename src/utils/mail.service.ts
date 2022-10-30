@@ -16,9 +16,9 @@ export class EmailService {
    * @param body The email body.
    * @returns Status code OK if sent successfully otherwise UNAUTHORIZED
    */
-  async sendEmail(toMail: string, subject: string, body: string) {
+  sendEmail = async (toMail: string, subject: string, body: string) => {
     try {
-      await this.mailService.sendMail({
+      return await this.mailService.sendMail({
         to: toMail,
         from: process.env.EMAIL_USER,
         subject: subject,
@@ -30,5 +30,5 @@ export class EmailService {
         HttpStatus.UNAUTHORIZED,
       );
     }
-  }
+  };
 }
