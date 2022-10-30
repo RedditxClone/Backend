@@ -1,4 +1,4 @@
-import { EmailService } from './mail.service';
+import { EmailService } from './mail/mail.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailerService } from '@nestjs-modules/mailer';
 import { MailerServiceMock } from './__mocks__/mailer.service';
