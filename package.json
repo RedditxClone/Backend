@@ -14,7 +14,7 @@
     "start:prod": "node dist/main",
     "precommit": "lint-staged && npm run test:uncommited",
     "prepare": "husky install",
-    "prepush": "npm run test && eslint:check && prettier:check",
+    "prepush": "npm run prettier:check && npm run eslint:check && npm run test",
     "eslint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "eslint:fix": "npm run eslint:check -- --fix",
     "prettier:check": "prettier --check ./**/*.{js,json,*rc}",
