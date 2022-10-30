@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
-import { NotificationService } from './notification.service';
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
+
 import { GetNotificationDto } from './dto/notification.dto';
+import { NotificationService } from './notification.service';
 
 @ApiTags('Notifications')
 @Controller('notification')
@@ -57,8 +57,8 @@ export class NotificationController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('/mention/unread')
   findUnreadMentions() {
-    return {
-      mentions: [],
-    };
+    // return {
+    //   mentions: [],
+    // };
   }
 }

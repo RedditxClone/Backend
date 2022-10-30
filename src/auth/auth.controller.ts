@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch } from '@nestjs/common';
+import { Body, Controller, Patch, Post } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -7,14 +7,15 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+
 import { AuthService } from './auth.service';
 import {
   ChangePasswordDto,
   ForgetPasswordDto,
-  LoginDto,
-  SignupDto,
-  SigninDto,
   ForgetUsernameDto,
+  LoginDto,
+  SigninDto,
+  SignupDto,
 } from './dto';
 
 @ApiTags('auth')

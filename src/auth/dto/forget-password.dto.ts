@@ -6,6 +6,7 @@ export class ForgetPasswordDto {
     required: true,
   })
   email: string;
+
   @ApiProperty({
     description: 'The Username of the user to reset the password',
     required: true,

@@ -1,4 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { SubredditController } from './subreddit.controller';
 import { SubredditService } from './subreddit.service';
 

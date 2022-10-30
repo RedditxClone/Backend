@@ -7,8 +7,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { getFriendsDto } from './dto/get-friends.dto';
-import { getUserInfoDto } from './dto/get-user-info.dto';
+
+import { GetFriendsDto } from './dto/get-friends.dto';
+import { GetUserInfoDto } from './dto/get-user-info.dto';
 import { PrefsDto } from './dto/prefs.dto';
 import { UserAccountDto } from './dto/user-account.dto';
 import { UserCommentsDto } from './dto/user-comments.dto';
@@ -24,7 +25,7 @@ export class UserController {
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
     description: 'The account friends is returned successfully',
-    type: getFriendsDto,
+    type: GetFriendsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('friend')
@@ -89,8 +90,8 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Post('/:user_id/spam')
-  spamUser(@Param('user_id') user_id: string) {
-    return;
+  spamUser(@Param('user_id') _user_id: string) {
+    // todo
   }
 
   @ApiOperation({ description: 'Get user data if logged in' })
@@ -101,7 +102,7 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   getUser() {
-    return;
+    // todo
   }
 
   @ApiOperation({ description: 'Get user preferences' })
@@ -126,12 +127,12 @@ export class UserController {
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
     description: 'The user info returned successfully',
-    type: getUserInfoDto,
+    type: GetUserInfoDto,
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/about')
-  getUserInfo(@Param('user_id') user_id: string) {
-    return;
+  getUserInfo(@Param('user_id') _user_id: string) {
+    // todo
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -141,8 +142,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/overview')
-  getUserOverview(@Param('user_id') user_id: string) {
-    return;
+  getUserOverview(@Param('user_id') _user_id: string) {
+    // todo
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -152,8 +153,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/submitted')
-  getUserPosts(@Param('user_id') user_id: string) {
-    return;
+  getUserPosts(@Param('user_id') _user_id: string) {
+    // todo
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -163,8 +164,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/comments')
-  getUserComments(@Param('user_id') user_id: string) {
-    return;
+  getUserComments(@Param('user_id') _user_id: string) {
+    // todo
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -174,8 +175,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/upvoted')
-  getUserUpvoted(@Param('user_id') user_id: string) {
-    return;
+  getUserUpvoted(@Param('user_id') _user_id: string) {
+    // todo
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -185,7 +186,7 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/upvoted')
-  getUserDownvoted(@Param('user_id') user_id: string) {
-    return;
+  getUserDownvoted(@Param('user_id') _user_id: string) {
+    // todo
   }
 }

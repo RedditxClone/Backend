@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { CommentModule } from './comment/comment.module';
-import { PostModule } from './post/post.module';
-import { UserModule } from './user/user.module';
-import { SubredditModule } from './subreddit/subreddit.module';
-import { MessageModule } from './message/message.module';
-import { NotificationModule } from './notification/notification.module';
-import { SearchModule } from './search/search.module';
+
+// import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
+import { CommentModule } from './comment/comment.module';
+import { MessageModule } from './message/message.module';
+import { NotificationModule } from './notification/notification.module';
+import { PostModule } from './post/post.module';
+import { SearchModule } from './search/search.module';
+import { SubredditModule } from './subreddit/subreddit.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

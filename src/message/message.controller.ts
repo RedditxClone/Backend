@@ -1,13 +1,12 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
   Query,
 } from '@nestjs/common';
-import { MessageService } from './message.service';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -18,9 +17,11 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { GetMessagesDto } from './dto/get-message.dto';
-import { MessageReturnDto } from './dto/messageReturnDto';
+
 import { CreateMessageDto } from './dto';
+import { GetMessagesDto } from './dto/get-message.dto';
+import { MessageReturnDto } from './dto/message-return.dto';
+import { MessageService } from './message.service';
 
 @ApiTags('Messages')
 @Controller('message')
@@ -34,7 +35,7 @@ export class MessageController {
   @Post('/:user_id')
   create(
     @Body() createMessageDto: CreateMessageDto,
-    @Param('user_id') user_id: string,
+    @Param('user_id') _user_id: string,
   ) {
     return this.messageService.create(createMessageDto);
   }
@@ -44,7 +45,7 @@ export class MessageController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiOperation({ description: 'spam a message' })
   @Post('/:message_id/spam')
-  spamMessage(@Param('message_id') message_id: string) {
+  spamMessage(@Param('message_id') _message_id: string) {
     return { status: 'success' };
   }
 
@@ -56,7 +57,7 @@ export class MessageController {
   @ApiNotFoundResponse({ description: 'user_id not found not found' })
   @ApiOperation({ description: 'get all message of a user of user_id' })
   @Get('/user/:user_id')
-  findAllForUser(@Param('user_id') user_id: string) {
+  findAllForUser(@Param('user_id') _user_id: string) {
     return this.messageService.findAll();
   }
 
@@ -68,7 +69,7 @@ export class MessageController {
   @ApiNotFoundResponse({ description: 'user_id not found' })
   @ApiOperation({ description: 'get all messages sent by user with user_id' })
   @Get('/user/:user_id/sent')
-  findSentByUser(@Param('user_id') user_id: string) {
+  findSentByUser(@Param('user_id') _user_id: string) {
     return {
       status: 'success',
       messages: [],
@@ -85,11 +86,11 @@ export class MessageController {
     description: 'get all messages received by user with user_id',
   })
   @Get('/user/:user_id/received')
-  findReceivedByUser(@Param('user_id') user_id: string) {
-    return {
-      status: 'success',
-      messages: [],
-    };
+  findReceivedByUser(@Param('user_id') _user_id: string) {
+    //   return {
+    //     status: 'success',
+    //     messages: [],
+    //   };
   }
 
   @ApiOkResponse({
@@ -102,7 +103,7 @@ export class MessageController {
   })
   @ApiNotFoundResponse({ description: 'user_id not found not found' })
   @Get('/me')
-  findAllForMe(@Query() dto: GetMessagesDto) {
+  findAllForMe(@Query() _dto: GetMessagesDto) {
     return this.messageService.findAll();
   }
 
@@ -116,11 +117,11 @@ export class MessageController {
   @ApiOperation({
     description: 'get all messages sent by current user',
   })
-  findAllSentByMe(@Query() dto: GetMessagesDto) {
-    return {
-      status: 'success',
-      messages: [],
-    };
+  findAllSentByMe(@Query() _dto: GetMessagesDto) {
+    // return {
+    //   status: 'success',
+    //   messages: [],
+    // };
   }
 
   @ApiOkResponse({
@@ -133,11 +134,11 @@ export class MessageController {
     description: 'get all messages received by current user',
   })
   @Get('/me/received')
-  findReceivedByMe(@Query() dto: GetMessagesDto) {
-    return {
-      status: 'success',
-      messages: [],
-    };
+  findReceivedByMe(@Query() _dto: GetMessagesDto) {
+    // return {
+    //   status: 'success',
+    //   messages: [],
+    // };
   }
 
   @ApiCreatedResponse({
@@ -147,7 +148,7 @@ export class MessageController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiOperation({ description: 'mark specific message as read' })
   @Post('/:message_id/mark_as_read')
-  makeMessagesAsRead(@Param('message_id') message_id: string) {
+  makeMessagesAsRead(@Param('message_id') _message_id: string) {
     return { status: 'success' };
   }
 
@@ -160,7 +161,7 @@ export class MessageController {
   @ApiOperation({ description: 'get specific message with message_id' })
   @Get('/:message_id')
   findOne(@Param('message_id') id: string) {
-    return this.messageService.findOne(+id);
+    return this.messageService.findOne(Number(id));
   }
 
   @ApiOkResponse({ description: 'The message has been deleted successfully' })
@@ -172,6 +173,6 @@ export class MessageController {
   @ApiOperation({ description: 'delete specific message with message_id' })
   @Delete('/:message_id')
   remove(@Param('message_id') id: string) {
-    return this.messageService.remove(+id);
+    return this.messageService.remove(Number(id));
   }
 }

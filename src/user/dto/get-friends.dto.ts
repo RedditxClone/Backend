@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FriendDto } from './friend.dto';
 
-export class getFriendsDto {
+import type { FriendDto } from './friend.dto';
+
+export class GetFriendsDto {
   @ApiProperty({ description: 'Array of friends' })
   friends: FriendDto[];
 }

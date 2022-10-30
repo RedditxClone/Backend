@@ -1,21 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { ChangePasswordDto } from './dto/changePassword.dto';
-import { ForgetPasswordDto } from './dto/forgetPassword.dto';
-import { LoginDto } from './dto/login.dto';
-import { SignupDto } from './dto/signup.dto';
+
+import type { ChangePasswordDto } from './dto/change-password.dto';
+import type { ForgetPasswordDto } from './dto/forget-password.dto';
+import type { LoginDto } from './dto/login.dto';
+import type { SignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
-  login(loginDto: LoginDto) {
+  login(_loginDto: LoginDto) {
     return 'this action login the user to his account';
   }
-  signup(signupDto: SignupDto) {
+
+  signup(_signupDto: SignupDto) {
     return 'this action create a new user account';
   }
-  forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
+
+  forgetPassword(_forgetPasswordDto: ForgetPasswordDto) {
     return 'this action apply forget password steps';
   }
-  changePassword(changePasswordDto: ChangePasswordDto) {
+
+  changePassword(_changePasswordDto: ChangePasswordDto) {
     return 'this action change the password of the current user';
   }
 }

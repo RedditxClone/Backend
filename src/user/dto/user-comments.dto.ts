@@ -27,18 +27,24 @@ class UserComments {
 
   @ApiProperty({ description: 'The id of owner of the post' })
   postId: string;
+
   @ApiProperty({ description: 'The id of the comment' })
   commentId: Date;
+
   @ApiProperty({ description: 'The date of the comment' })
   commentDate: Date;
+
   @ApiProperty({ description: 'The comment content' })
   commentContent: string;
+
   @ApiProperty({ description: 'The name of owner of the post' })
   postOwnerUserName: string;
+
   @ApiProperty({
     description: 'Title of post content',
   })
   postTitle: string;
+
   @ApiProperty({
     description: '(comment number of upvotes) - (comment number of downvotes)',
   })

@@ -1,13 +1,12 @@
 import {
-  Controller,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
   Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { PostService } from './post.service';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -17,6 +16,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+
 import {
   CreatePostDto,
   DefaultSortPostDto,
@@ -28,6 +28,7 @@ import {
   UpdatePostDto,
   VotePostDto,
 } from './dto';
+import { PostService } from './post.service';
 
 @ApiTags('Post')
 @Controller('post')
@@ -55,7 +56,7 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+    return this.postService.remove(Number(id));
   }
 
   @ApiOperation({ description: 'Edit the body text of a post.' })
@@ -68,7 +69,7 @@ export class PostController {
   @Patch(':id/edit')
   //todo
   update(@Body() updatePostDto: UpdatePostDto, @Param('id') id: string) {
-    return this.postService.update(+id, updatePostDto);
+    return this.postService.update(Number(id), updatePostDto);
   }
 
   @ApiOperation({
@@ -97,6 +98,7 @@ export class PostController {
   hide(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `UnHide a post, this removes the hide property from a post thus it can reappear again.`,
   })
@@ -108,6 +110,7 @@ export class PostController {
   unhide(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `Lock a post. Prevents a post from receiving new comments.`,
   })
@@ -119,6 +122,7 @@ export class PostController {
   lock(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `UnLock a post. Prevents a post from receiving new comments.`,
   })
@@ -130,6 +134,7 @@ export class PostController {
   unlock(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({ description: `UnMark a post NSFW.` })
   @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
@@ -171,6 +176,7 @@ export class PostController {
   sendReplies(@Param('id') id, @Body() sendRepliesPostDto: SendRepliesPostDto) {
     return sendRepliesPostDto;
   }
+
   @ApiOperation({
     description: `Flag the post as spoiler.`,
   })
@@ -182,6 +188,7 @@ export class PostController {
   spoiler(@Param('id') id) {
     return id;
   }
+
   @ApiOperation({
     description: `Flag the post as not spoiler.`,
   })
@@ -220,6 +227,7 @@ export class PostController {
   save(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `UnSave post, Saved things are kept in the user's saved listing for later perusal.`,
   })
@@ -231,6 +239,7 @@ export class PostController {
   unSave(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `Set a suggested sort for a link.
      Suggested sorts are useful to display comments in a certain preferred way for posts.`,
@@ -243,6 +252,7 @@ export class PostController {
   setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
     return defaultSortPostDto;
   }
+
   @ApiOperation({
     description: `Get the total number of post views.`,
   })
@@ -254,9 +264,10 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   //todo
   @Get(':id/insights_counts')
-  viewInsights(@Param('id') id: string) {
+  viewInsights(@Param('id') _id: string) {
     const insightsPostDto: InsightsPostDto = new InsightsPostDto();
     insightsPostDto.insightsCount = 0;
+
     return insightsPostDto;
   }
 }

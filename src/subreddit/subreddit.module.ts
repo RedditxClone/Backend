@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { SubredditService } from './subreddit.service';
+
 import { SubredditController } from './subreddit.controller';
+import { SubredditService } from './subreddit.service';
 
 @Module({
   controllers: [SubredditController],
-  providers: [SubredditService]
+  providers: [SubredditService],
 })
 export class SubredditModule {}
