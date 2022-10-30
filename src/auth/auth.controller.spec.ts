@@ -31,7 +31,7 @@ describe('AuthController', () => {
     });
   });
   describe('signup', () => {
-    it('should signup successfully', async () => {
+    it('should signup successfully ', async () => {
       const res: Response = createResponse();
       const dto: CreateUserDto = {
         email: 'email@example.com',
