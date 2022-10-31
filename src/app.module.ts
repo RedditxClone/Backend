@@ -11,7 +11,6 @@ import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { EmailService } from './utils';
 import { ControllerService } from './module/controller/controller.service';
 import { EmailModule } from './utils/mail/mail.module';
 

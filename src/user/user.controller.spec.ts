@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import { CreateUserDto } from './dto';
 import { UserController } from './user.controller';
-import { User } from './user.schema';
+import { User, UserDocument } from './user.schema';
 import { UserService } from './user.service';
 import { stubUser } from './test/stubs/user.stub';
 
@@ -10,6 +10,12 @@ jest.mock('./user.service');
 describe('UserControllerSpec', () => {
   let userController: UserController;
   let userService: UserService;
+  const user1: CreateUserDto = {
+    age: 10,
+    email: 'email@example.com',
+    password: '123456677',
+    username: 'username1',
+  };
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [UserController],
@@ -22,37 +28,10 @@ describe('UserControllerSpec', () => {
   test('it should be defined', () => {
     expect(userController).toBeDefined();
   });
-  describe('getUserSpec', () => {
-    let user: User;
-    let id: Types.ObjectId;
-    beforeEach(async () => {
-      // this is a valid mongo id
-      id = new Types.ObjectId('6356d53a9d44def1dfe49555');
-      user = await userController.getUser(id);
-    });
-    test('it must be called', () => {
-      expect(userService.getUserById).toBeCalledWith(id);
-    });
-    test('it should return a user', () => {
-      expect(user).toEqual(stubUser());
-    });
-  });
-  describe('createUserSpec', () => {
-    let user: User;
-    let dto: CreateUserDto;
-    beforeEach(async () => {
-      dto = {
-        email: stubUser().email,
-        age: stubUser().age,
-        password: stubUser().hashPassword,
-        username: stubUser().username,
-      };
-      user = await userController.createUser(dto);
-    });
-    test('it must be called', () => {
-      expect(userService.createUser).toBeCalledWith(dto);
-    });
-    test('it should return a user', () => {
+  describe('getUserByIdSpec', () => {
+    test('it should return a user', async () => {
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      const user: UserDocument = await userController.getUserById(id);
       expect(user).toEqual(stubUser());
     });
   });
