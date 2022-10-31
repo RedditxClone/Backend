@@ -11,6 +11,7 @@ import {
 import { AuthService } from './auth.service';
 import { createResponse } from 'node-mocks-http';
 import { ConfigModule } from '@nestjs/config';
+import { EmailService, EmailServiceMock } from '../utils';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -27,8 +28,11 @@ describe('AuthService', () => {
           signOptions: { expiresIn: '15d' },
         }),
       ],
-      providers: [AuthService, UserService],
-    }).compile();
+      providers: [AuthService, UserService, EmailService],
+    })
+      .overrideProvider(EmailService)
+      .useValue(EmailServiceMock)
+      .compile();
     authService = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
   });

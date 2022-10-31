@@ -1,9 +1,7 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   UnauthorizedException,
-  HttpException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -17,7 +15,7 @@ import {
   LoginDto,
   SignupDto,
 } from './dto';
-import { EmailService } from 'src/utils';
+import { EmailService } from '../utils';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { CreateUserDto } from '../user/dto';

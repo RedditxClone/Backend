@@ -12,7 +12,8 @@ import { UserSchema } from '../user/user.schema';
 import { AuthController } from './auth.controller';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/user/dto';
+import { CreateUserDto } from '../user/dto';
+import { EmailService, EmailServiceMock } from '../utils';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;
@@ -35,8 +36,11 @@ describe('authController (e2e)', () => {
         }),
       ],
       controllers: [AuthController],
-      providers: [UserService, AuthService],
-    }).compile();
+      providers: [UserService, AuthService, EmailService],
+    })
+      .overrideProvider(EmailService)
+      .useValue(EmailServiceMock)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     server = app.getHttpServer();
