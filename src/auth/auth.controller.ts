@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Res, Patch } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -8,14 +8,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import {
-  ChangePasswordDto,
-  ForgetPasswordDto,
-  LoginDto,
-  SignupDto,
-  SigninDto,
-  ForgetUsernameDto,
-} from './dto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
+import { ForgetPasswordDto } from './dto/forgetPassword.dto';
+import { LoginDto } from './dto/login.dto';
+import { CreateUserDto } from '../user/dto';
+import { Response } from 'express';
+import { ForgetUsernameDto, SigninDto } from './dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -29,8 +27,8 @@ export class AuthController {
   })
   @ApiUnauthorizedResponse({ description: 'Wrong email or password' })
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() dto: LoginDto, @Res() res: Response) {
+    return await this.authService.login(dto, res);
   }
 
   @ApiOperation({ description: 'Create a new user account' })
@@ -40,10 +38,9 @@ export class AuthController {
   })
   @ApiForbiddenResponse({ description: 'The email is used' })
   @Post('signup')
-  signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto);
+  async signup(@Body() dto: CreateUserDto, @Res() res: Response) {
+    return await this.authService.signup(dto, res);
   }
-
   @ApiOperation({ description: 'Recover the password of an account' })
   @ApiCreatedResponse({
     description: 'An email will be sent if the user exists in the database',

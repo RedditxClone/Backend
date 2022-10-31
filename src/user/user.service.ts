@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Global, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 
+@Global()
 @Injectable()
 export class UserService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
@@ -56,10 +57,15 @@ export class UserService {
       throw new BadRequestException(err.message);
     }
   };
-  getUserByEmail = async (
-    email: string,
-    password: string,
-  ): Promise<UserDocument> => {
-    return null;
+  getUserByEmail = async (email: string): Promise<UserDocument> => {
+    const user: UserDocument = await this.userModel.findOne({ email });
+    if (!user) throw new BadRequestException(`no user with email ${email}`);
+    return user;
   };
+  async validPassword(
+    userPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(userPassword, hashedPassword);
+  }
 }
