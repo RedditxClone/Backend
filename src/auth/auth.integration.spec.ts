@@ -39,8 +39,8 @@ describe('authController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    server = app.getHttpServer();
     await app.init();
+    server = app.getHttpServer();
   });
   describe('/POST /auth/signup', () => {
     it('must sign up successfully', async () => {
@@ -96,5 +96,6 @@ describe('authController (e2e)', () => {
   afterAll(async () => {
     await closeInMongodConnection();
     await app.close();
+    server.close();
   });
 });
