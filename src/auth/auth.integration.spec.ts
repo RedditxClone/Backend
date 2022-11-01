@@ -97,6 +97,31 @@ describe('authController (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  describe('/POST /auth/forget-username', () => {
+    it('must send successfully', async () => {
+      await request(server)
+        .post('/auth/forget-username')
+        .send(dto)
+        .expect(HttpStatus.CREATED)
+        .then((res) => {
+          expect(res.body).toEqual(
+            expect.objectContaining({ status: 'success' }),
+          );
+        });
+    });
+    it("mustn't send successfully", async () => {
+      await request(server)
+        .post('/auth/forget-username')
+        .send({ email: 'throw' })
+        .expect(HttpStatus.UNAUTHORIZED)
+        .then((res) => {
+          expect(res.body).toEqual(
+            expect.objectContaining({ status: "couldn't send message" }),
+          );
+        });
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await app.close();

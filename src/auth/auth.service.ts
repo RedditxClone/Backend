@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -84,28 +85,30 @@ export class AuthService {
    *
    * @param forgetUsernameDto encapsulates the forget username data
    */
-  forgetUsername = async (forgetUsernameDto: ForgetUsernameDto) => {
+  forgetUsername = async (
+    forgetUsernameDto: ForgetUsernameDto,
+    res: Response,
+  ) => {
     try {
       const users: UserDocument[] = await this.userModel.find({
         email: forgetUsernameDto.email,
       });
-      if (!users)
-        throw new BadRequestException(
-          `there is no user with email ${forgetUsernameDto.email}`,
-        );
       let usernames = 'Your Usernames are\n';
       users.forEach((user) => {
         usernames += user.username;
         usernames += '\n';
       });
-      this.mailService.sendEmail(
+      await this.mailService.sendEmail(
         forgetUsernameDto.email,
         `So you wanna know your Reddit username, huh?
       `,
         usernames,
       );
+      res.status(HttpStatus.CREATED).json({ status: 'success' });
     } catch (err) {
-      throw new BadRequestException(err.message);
+      res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ status: "couldn't send message" });
     }
   };
 }
