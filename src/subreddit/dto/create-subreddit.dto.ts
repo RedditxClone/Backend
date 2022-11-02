@@ -1,35 +1,44 @@
-export class CreateSubredditDto {
-  acceptFollowers: boolean;
-  allowImages: boolean;
-  allowPostCrosspost: boolean;
-  allowTop: boolean;
-  allowVideos: boolean;
-  collapseDeletedComments: boolean;
-  commentContributionSettings: string;
-  commentScoreHideMins: number;
-  description: string;
-  disableContributorRequests: boolean;
-  headerTitle: string;
-  keyColor: string;
-  linkType: string;
-  name: string;
-  originalContentTagEnabled: boolean;
-  over18: boolean;
-  publicDescription: string;
-  restrictCommenting: boolean;
-  restrictPosting: boolean;
-  shouldArchivePosts: boolean;
-  showMedia: boolean;
-  showMediaPreview: boolean;
-  spamComments: boolean;
-  spamPosts: boolean;
-  spoilersEnabled: boolean;
-  submitLinkLabel: string;
-  submitText: string;
-  submitLabel: string;
-  suggestedCommentSort: string;
+class Rules {
   title: string;
+  appliedTo: string;
+  reportReason?: string;
+  description?: string;
+}
+class RemovalReasons {
+  title: string;
+  description: string;
+}
+
+export class CreateSubredditDto {
+  name: string;
   type: string;
+  usersPermissions: number;
+  acceptPostingRequests: boolean;
+  allowPostCrosspost: boolean;
+  collapseDeletedComments: boolean;
+  commentScoreHideMins: number;
+  archivePosts: boolean;
+  allowMultipleImages: boolean;
+  spoilersEnabled: boolean;
+  suggestedCommentSort: string;
+  acceptFollowers: boolean;
+  over18: boolean;
+  description: string;
+  allowImages: boolean;
+  allowVideos: boolean;
+  acceptingRequestsToJoin: boolean;
+  communityTopics: string[];
+  requirePostFlair: boolean;
+  postTextBodyRule: number;
+  restrictPostTitleLength: boolean;
+  banPostBodyWords: boolean;
+  postBodyBannedWords: string[];
+  banPostTitleWords: boolean;
+  postTitleBannedWords: string[];
+  requireWordsInPostTitle: boolean;
+  postGuidelines: string;
+  rules: Rules[];
+  removalReasons: RemovalReasons[];
   welcomeMessageEnabled: boolean;
   welcomeMessageText: string;
 }
