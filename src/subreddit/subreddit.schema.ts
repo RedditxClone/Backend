@@ -130,7 +130,7 @@ export class Subreddit {
   welcomeMessageText: string;
 
   @Prop({ default: [] })
-  postFlaris: Flair[];
+  postFlairs: Flair[];
   @Prop({ default: [] })
-  userFlaris: Flair[];
+  userFlairs: Flair[];
 }
