@@ -1,20 +1,38 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { Types } from 'mongoose';
+import { CreateUserDto } from './dto';
 import { UserController } from './user.controller';
+import { User, UserDocument } from './user.schema';
 import { UserService } from './user.service';
+import { stubUser } from './test/stubs/user.stub';
 
-describe('UserController', () => {
-  let controller: UserController;
-
+jest.mock('./user.service');
+describe('UserControllerSpec', () => {
+  let userController: UserController;
+  let userService: UserService;
+  const user1: CreateUserDto = {
+    age: 10,
+    email: 'email@example.com',
+    password: '123456677',
+    username: 'username1',
+  };
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       controllers: [UserController],
       providers: [UserService],
     }).compile();
-
-    controller = module.get<UserController>(UserController);
+    userController = moduleRef.get<UserController>(UserController);
+    userService = moduleRef.get<UserService>(UserService);
+    jest.clearAllMocks();
   });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  test('it should be defined', () => {
+    expect(userController).toBeDefined();
+  });
+  describe('getUserByIdSpec', () => {
+    test('it should return a user', async () => {
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      const user: UserDocument = await userController.getUserById(id);
+      expect(user).toEqual(stubUser());
+    });
   });
 });
