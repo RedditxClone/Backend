@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
@@ -22,8 +23,10 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { Model } from 'mongoose';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import { Subreddit } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
 @ApiTags('subreddit')
@@ -37,7 +40,12 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post()
   create(@Body() createSubredditDto: CreateSubredditDto) {
-    // TODO: implement service
+    return this.subredditService.create(createSubredditDto);
+  }
+
+  @Get()
+  getAny() {
+    return 'hello';
   }
 
   @UseInterceptors(FileInterceptor('file'))

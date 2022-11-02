@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class Subreddit {
@@ -111,3 +111,5 @@ export class Subreddit {
   @Prop()
   welcomeMessageText: string;
 }
+
+export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

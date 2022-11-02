@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import { Subreddit } from './subreddit.schema';
 
 @Injectable()
 export class SubredditService {
+  constructor(
+    @InjectModel('subreddit') private readonly subredditModel: Model<Subreddit>,
+  ) {}
+
   create(createSubredditDto: CreateSubredditDto) {
-    return 'This action adds a new subreddit';
+    this.subredditModel.insertMany(createSubredditDto);
   }
 
   findAll() {
