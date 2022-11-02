@@ -43,11 +43,6 @@ export class SubredditController {
     return this.subredditService.create(createSubredditDto);
   }
 
-  @Get()
-  getAny() {
-    return 'hello';
-  }
-
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ description: 'Add or edit a subreddit icon.' })
   @ApiCreatedResponse({ description: 'The resource was created successfully' })
