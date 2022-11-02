@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
+import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { Subreddit } from './subreddit.schema';
 
@@ -12,15 +13,23 @@ export class SubredditService {
   ) {}
 
   create(createSubredditDto: CreateSubredditDto) {
-    this.subredditModel.insertMany(createSubredditDto);
+    return this.subredditModel.insertMany(createSubredditDto);
   }
 
   findAll() {
-    return `This action returns all subreddit`;
+    return this.subredditModel.find();
+  }
+
+  async createFlair(subreddit: string, flairDto: FlairDto, type: boolean) {
+    const flairsType = type ? 'postFlairs' : 'userFlairs';
+    const flairs = await this.subredditModel
+      .findById(subreddit);
+    return flairs;
+    // return this.subredditModel.findByIdAndUpdate(subreddit, { postFlairs });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} subreddit`;
+    return this.subredditModel.findById(id);
   }
 
   update(id: number, updateSubredditDto: UpdateSubredditDto) {

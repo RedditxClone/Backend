@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateSubredditDto } from './create-subreddit.dto';
+import { subredditDto } from './subreddit.dto';
 
-export class UpdateSubredditDto extends PartialType(CreateSubredditDto) {}
+export class UpdateSubredditDto extends PartialType(subredditDto) {}

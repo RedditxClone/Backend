@@ -1,5 +1,4 @@
-export class Flair {
-  type: number;
+export class FlairDto {
   text: string;
   backgroundColor: string;
   textColor: boolean;
