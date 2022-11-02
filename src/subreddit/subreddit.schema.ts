@@ -1,5 +1,23 @@
 import { Prop, Schema } from '@nestjs/mongoose';
+import { ObjectId } from 'mongoose';
 
+class Flair {
+  id: ObjectId;
+  @Prop({ required: true })
+  text: string;
+  @Prop()
+  backgroundColor: string;
+  @Prop({ required: true })
+  textColor: boolean;
+  @Prop({ required: true })
+  modOnly: boolean;
+  @Prop({ required: true })
+  allowUserEdits: boolean;
+  @Prop({ default: 0 })
+  flairAllow: number;
+  @Prop({ default: 10 })
+  emojiNumbers: number;
+}
 @Schema()
 export class Subreddit {
   @Prop({
@@ -110,4 +128,9 @@ export class Subreddit {
 
   @Prop()
   welcomeMessageText: string;
+
+  @Prop({ default: [] })
+  postFlaris: Flair[];
+  @Prop({ default: [] })
+  userFlaris: Flair[];
 }
