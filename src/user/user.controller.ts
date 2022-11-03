@@ -7,9 +7,19 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+<<<<<<< HEAD
 
 import { GetFriendsDto } from './dto/get-friends.dto';
 import { GetUserInfoDto } from './dto/get-user-info.dto';
+||||||| ceebe63
+import { getFriendsDto } from './dto/get-friends.dto';
+import { getUserInfoDto } from './dto/get-user-info.dto';
+=======
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from '../utils/utils.service';
+import { getFriendsDto } from './dto/get-friends.dto';
+import { getUserInfoDto } from './dto/get-user-info.dto';
+>>>>>>> development
 import { PrefsDto } from './dto/prefs.dto';
 import { UserAccountDto } from './dto/user-account.dto';
 import { UserCommentsDto } from './dto/user-comments.dto';
@@ -155,6 +165,16 @@ export class UserController {
   @Get('/:user_id/submitted')
   getUserPosts(@Param('user_id') _user_id: string) {
     // todo
+  }
+
+  @ApiOperation({ description: 'get user info by user id' })
+  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id')
+  async getUserById(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return await this.userService.getUserById(user_id);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
