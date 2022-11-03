@@ -19,7 +19,13 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
-  private async isUserExist(
+  /**
+   * check if the user exist and if the password is valid
+   * @param user user that you will check about
+   * @param password
+   * @returns if the user is valid
+   */
+  private async isValidUser(
     user: UserDocument,
     password: string,
   ): Promise<boolean> {
@@ -36,17 +42,27 @@ export class AuthService {
       },
     );
   }
+  /**
+   * send authorization token to user as cookie
+   * @param user user to whom you will send a token
+   * @param res express response object
+   */
   private async sendToken(user: UserDocument, res: Response): Promise<void> {
     const token: string = await this.createToken(user._id);
     res.cookie('authorization', `Bearer ${token}`);
     res.json({ status: 'success', user });
   }
+  /**
+   * login and get access token
+   * @param dto see LoginDto
+   * @param res @ express response
+   */
   login = async (dto: LoginDto, res: Response) => {
     try {
       const user: UserDocument = await this.userService.getUserByEmail(
         dto.email,
       );
-      const userExist: boolean = await this.isUserExist(user, dto.password);
+      const userExist: boolean = await this.isValidUser(user, dto.password);
       if (!userExist)
         throw new UnauthorizedException('wrong email or password');
       await this.sendToken(user, res);
@@ -54,6 +70,11 @@ export class AuthService {
       throwGeneralException(err);
     }
   };
+  /**
+   * register a new user
+   * @param dto see CreateUserDto
+   * @param res express response
+   */
   signup = async (dto: CreateUserDto, res: Response) => {
     try {
       const user: UserDocument = await this.userService.createUser(dto);
