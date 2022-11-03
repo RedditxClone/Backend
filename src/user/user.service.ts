@@ -11,11 +11,15 @@ import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { AvailableUsernameDto } from './dto';
 import { Response } from 'express';
+import { FollowService } from '../follow/follow.service';
 
 @Global()
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly followService: FollowService,
+  ) {}
   block() {
     return 'block a user';
   }
@@ -39,6 +43,11 @@ export class UserService {
   unFriend() {
     return 'delete a friend';
   }
+  /**
+   *
+   * @param dto look at CreateUserDto
+   * @returns return user created
+   */
   createUser = async (dto: CreateUserDto): Promise<UserDocument> => {
     try {
       const hashPassword = await bcrypt.hash(
@@ -54,6 +63,11 @@ export class UserService {
       throw new BadRequestException(err.message);
     }
   };
+  /**
+   *
+   * @param id id of the user
+   * @returns the user
+   */
   getUserById = async (id: Types.ObjectId): Promise<UserDocument> => {
     try {
       const user: UserDocument = await this.userModel.findById(id);
@@ -91,4 +105,30 @@ export class UserService {
       res.status(HttpStatus.CREATED).json({ status: true });
     } else res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
   };
+  /**
+   * follow a user
+   * @param follower id of the follower user
+   * @param followed id of the followed user
+   * @returns {status : 'success'}
+   */
+  async follow(follower: Types.ObjectId, followed: Types.ObjectId) {
+    const followedExist: boolean =
+      (await this.userModel.count({
+        _id: followed,
+      })) > 0;
+    if (!followedExist)
+      throw new BadRequestException(
+        `there is no user with id : ${followed.toString()}`,
+      );
+    return this.followService.follow({ follower, followed });
+  }
+  /**
+   * unfollow a user
+   * @param follower id of the follower
+   * @param followed id of the followed
+   * @returns {status : 'success'}
+   */
+  async unfollow(follower: Types.ObjectId, followed: Types.ObjectId) {
+    return this.followService.unfollow({ follower, followed });
+  }
 }

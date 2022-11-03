@@ -11,6 +11,7 @@ import {
 import { AuthService } from './auth.service';
 import { createResponse } from 'node-mocks-http';
 import { ConfigModule } from '@nestjs/config';
+import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
 import { HttpStatus } from '@nestjs/common';
 
@@ -28,6 +29,7 @@ describe('AuthService', () => {
           secret: process.env.JWT_SECRET,
           signOptions: { expiresIn: '15d' },
         }),
+        FollowModule,
       ],
       providers: [AuthService, UserService, EmailService],
     })

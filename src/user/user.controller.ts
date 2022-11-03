@@ -7,6 +7,8 @@ import {
   Patch,
   Post,
   Res,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -18,6 +20,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
@@ -226,5 +229,23 @@ export class UserController {
     @Res() res: Response,
   ) {
     await this.userService.checkAvailableUsername(availableUsernameDto, res);
+  }
+  @ApiOperation({ description: 'follow specific user' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/follow')
+  async followUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ) {
+    console.log(request.headers);
+    return await this.userService.follow(request.user._id, user_id);
+  }
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/unfollow')
+  async unfollowUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ) {
+    return await this.userService.unfollow(request.user._id, user_id);
   }
 }

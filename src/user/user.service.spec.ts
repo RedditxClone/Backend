@@ -11,6 +11,11 @@ import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
 import { createResponse } from 'node-mocks-http';
 import { HttpStatus } from '@nestjs/common';
+import { FollowModule } from '../follow/follow.module';
+import { UserStrategy } from '../auth/stratigies/user.strategy';
+import { ConfigModule } from '@nestjs/config';
+
+jest.mock('../follow/follow.service.ts');
 
 describe('UserService', () => {
   let service: UserService;
@@ -18,10 +23,12 @@ describe('UserService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot(),
+        FollowModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
       ],
-      providers: [UserService],
+      providers: [UserService, UserStrategy],
     }).compile();
     service = module.get<UserService>(UserService);
   });
@@ -149,6 +156,25 @@ describe('UserService', () => {
       );
     });
   });
+  describe('follow', () => {
+    it('should follow successfully', async () => {
+      const res: any = await service.follow(id, id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    const wrong_id: Types.ObjectId = new Types.ObjectId('wrong_id____');
+    it('should pass wrong id error', async () => {
+      await expect(async () => {
+        await service.follow(id, wrong_id);
+      }).rejects.toThrow(`there is no user with id : ${wrong_id.toString()}`);
+    });
+  });
+  describe('unfollow', () => {
+    it('should unfollow successfully', async () => {
+      const res: any = await service.unfollow(id, id);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

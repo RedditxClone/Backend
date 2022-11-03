@@ -13,6 +13,7 @@ import { AuthController } from './auth.controller';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto';
+import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
 
 describe('authController (e2e)', () => {
@@ -34,6 +35,7 @@ describe('authController (e2e)', () => {
           secret: process.env.JWT_SECRET,
           signOptions: { expiresIn: '15d' },
         }),
+        FollowModule,
       ],
       controllers: [AuthController],
       providers: [UserService, AuthService, EmailService],
@@ -48,27 +50,21 @@ describe('authController (e2e)', () => {
   });
   describe('/POST /auth/signup', () => {
     it('must sign up successfully', async () => {
-      await request(server)
+      const res = await request(server)
         .post('/auth/signup')
         .send(dto)
-        .expect(HttpStatus.CREATED)
-        .then((res) => {
-          expect(res.body).toEqual(
-            expect.objectContaining({ status: 'success' }),
-          );
-          expect(res.body.user).toEqual(
-            expect.objectContaining({
-              username: dto.username,
-              email: dto.email,
-              age: dto.age,
-            }),
-          );
-        });
+        .expect(HttpStatus.CREATED);
+      expect(res.body).toEqual(expect.objectContaining({ status: 'success' }));
+      expect(res.body.user).toEqual(
+        expect.objectContaining({
+          username: dto.username,
+          email: dto.email,
+          age: dto.age,
+        }),
+      );
     });
     it('must fail', async () => {
       await request(server).post('/auth/signup').expect(HttpStatus.BAD_REQUEST);
-
-      // await request(server).post('/auth/signup').expect()
     });
   });
   describe('/POST /auth/login', () => {
@@ -123,8 +119,8 @@ describe('authController (e2e)', () => {
     });
   });
   afterAll(async () => {
+    server.close();
     await closeInMongodConnection();
     await app.close();
-    server.close();
   });
 });
