@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { CreateUserDto } from './user/dto';
+import { UserService } from './user/user.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -32,5 +34,14 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.listen(3000);
+  const service = app.get(UserService);
+  const createSuperUserDto: CreateUserDto = {
+    username: process.env.SU_USERNAME,
+    email: process.env.SU_EMAIL,
+    password: process.env.SU_PASS,
+    age: 30,
+  };
+  const usr = await service.createUser(createSuperUserDto);
+  console.log(usr);
 }
 bootstrap();
