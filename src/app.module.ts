@@ -11,9 +11,8 @@ import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { EmailController } from './email.controller';
-import { EmailService } from './utils/mail.service';
 import { ControllerService } from './module/controller/controller.service';
+import { EmailModule } from './utils/mail/mail.module';
 
 @Module({
   imports: [
@@ -39,8 +38,9 @@ import { ControllerService } from './module/controller/controller.service';
         },
       },
     }),
+    EmailModule,
   ],
-  controllers: [EmailController],
-  providers: [EmailService, ControllerService],
+  controllers: [],
+  providers: [ControllerService],
 })
 export class AppModule {}
