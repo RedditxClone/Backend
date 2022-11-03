@@ -1,14 +1,23 @@
 import {
-  HttpException,
+  BadRequestException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from 'src/user/user.schema';
 import { UserService } from '../user/user.service';
-import { ChangePasswordDto } from './dto/changePassword.dto';
-import { ForgetPasswordDto } from './dto/forgetPassword.dto';
-import { LoginDto } from './dto';
+
+import {
+  ForgetUsernameDto,
+  ChangePasswordDto,
+  ForgetPasswordDto,
+  LoginDto,
+  SignupDto,
+} from './dto';
+import { EmailService } from '../utils';
 import { JwtService } from '@nestjs/jwt';
-import { UserDocument } from '../user/user.schema';
 import { Response } from 'express';
 import { CreateUserDto } from '../user/dto';
 import { throwGeneralException } from '../utils/throwException';
@@ -16,6 +25,8 @@ import { throwGeneralException } from '../utils/throwException';
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly mailService: EmailService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
@@ -68,4 +79,36 @@ export class AuthService {
   changePassword(changePasswordDto: ChangePasswordDto) {
     return 'this action change the password of the current user';
   }
+  /**
+   * A function to search the db for usernames attached to requested email
+   * then send it to the user.
+   *
+   * @param forgetUsernameDto encapsulates the forget username data
+   */
+  forgetUsername = async (
+    forgetUsernameDto: ForgetUsernameDto,
+    res: Response,
+  ) => {
+    try {
+      const users: UserDocument[] = await this.userModel.find({
+        email: forgetUsernameDto.email,
+      });
+      let usernames = 'Your Usernames are\n';
+      users.forEach((user) => {
+        usernames += user.username;
+        usernames += '\n';
+      });
+      await this.mailService.sendEmail(
+        forgetUsernameDto.email,
+        `So you wanna know your Reddit username, huh?
+      `,
+        usernames,
+      );
+      res.status(HttpStatus.CREATED).json({ status: 'success' });
+    } catch (err) {
+      res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ status: "couldn't send message" });
+    }
+  };
 }
