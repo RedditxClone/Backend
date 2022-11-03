@@ -14,11 +14,13 @@ import { ConfigModule } from '@nestjs/config';
 import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
 import { HttpStatus } from '@nestjs/common';
+import { Types } from 'mongoose';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userService: UserService;
   let module: TestingModule;
+  let id: Types.ObjectId;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -38,6 +40,7 @@ describe('AuthService', () => {
       .compile();
     authService = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
+    id = (await userService.createUser(user2))._id;
   });
 
   it('should be defined', () => {
@@ -50,6 +53,13 @@ describe('AuthService', () => {
     email: 'example@example.com',
     password: '12345678',
     username: 'test',
+  };
+
+  const user2: CreateUserDto = {
+    age: 12,
+    email: 'example2@example.com',
+    password: '12345678',
+    username: 'test2',
   };
   describe('signup', () => {
     it('should signup successfully', async () => {
@@ -127,7 +137,38 @@ describe('AuthService', () => {
       );
     });
   });
-
+  describe('changePassword', () => {
+    it('should change successfully', async () => {
+      const res = createResponse();
+      await authService.changePassword(
+        id,
+        {
+          oldPassword: '12345678',
+          newPassword: '123456789',
+        },
+        res,
+      );
+      expect(res._getStatusCode()).toEqual(HttpStatus.OK);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: true }),
+      );
+    });
+    it('should fail changing', async () => {
+      const res = createResponse();
+      await authService.changePassword(
+        id,
+        {
+          oldPassword: '12345678',
+          newPassword: '123456789',
+        },
+        res,
+      );
+      expect(res._getStatusCode()).toEqual(HttpStatus.FORBIDDEN);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: false }),
+      );
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();
