@@ -1,10 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { CreateUserDto } from './dto';
+import { AvailableUsernameDto, CreateUserDto } from './dto';
 import { UserController } from './user.controller';
 import { User, UserDocument } from './user.schema';
 import { UserService } from './user.service';
 import { stubUser } from './test/stubs/user.stub';
+import { createResponse } from 'node-mocks-http';
 
 jest.mock('./user.service');
 describe('UserControllerSpec', () => {
@@ -33,6 +34,17 @@ describe('UserControllerSpec', () => {
       const id: Types.ObjectId = new Types.ObjectId(1);
       const user: UserDocument = await userController.getUserById(id);
       expect(user).toEqual(stubUser());
+    });
+  });
+  describe('getUserByIdSpec', () => {
+    it('should run without problems', async () => {
+      const availableUsernameDto: AvailableUsernameDto = { username: 'test' };
+      const res = createResponse();
+      const val = await userController.checkAvailableUsername(
+        availableUsernameDto,
+        res,
+      );
+      expect(val).toBeUndefined();
     });
   });
 });

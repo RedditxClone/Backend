@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Global,
-  HttpCode,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
@@ -11,6 +10,7 @@ import { CreateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { AvailableUsernameDto } from './dto';
+import { Response } from 'express';
 
 @Global()
 @Injectable()
@@ -75,16 +75,20 @@ export class UserService {
   ): Promise<boolean> {
     return await bcrypt.compare(userPassword, hashedPassword);
   }
+  /**
+   * A function to check if username is taken before or not
+   * @param availableUsernameDto encapsulates the data of the request username
+   * @param res the response that will be sent to the requester
+   */
   checkAvailableUsername = async (
     availableUsernameDto: AvailableUsernameDto,
     res: Response,
   ) => {
     const user: UserDocument = await this.userModel.findOne({
-      availableUsernameDto,
+      ...availableUsernameDto,
     });
     if (!user) {
-      // res.status(HttpStatus.CREATED).send();
-    }
-    return user;
+      res.status(HttpStatus.CREATED).json({ status: true });
+    } else res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
   };
 }

@@ -19,15 +19,18 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '../utils/utils.service';
-import { AvailableUsernameDto } from './dto/available-username.dto';
-import { getFriendsDto } from './dto/get-friends.dto';
-import { getUserInfoDto } from './dto/get-user-info.dto';
-import { PrefsDto } from './dto/prefs.dto';
-import { UserAccountDto } from './dto/user-account.dto';
-import { UserCommentsDto } from './dto/user-comments.dto';
-import { UserOverviewDto } from './dto/user-overview.dto';
-import { UserPostsDto } from './dto/user-posts.dto';
+import {
+  AvailableUsernameDto,
+  getFriendsDto,
+  getUserInfoDto,
+  PrefsDto,
+  UserAccountDto,
+  UserCommentsDto,
+  UserOverviewDto,
+  UserPostsDto,
+} from './dto';
 import { UserService } from './user.service';
+import { Response } from 'express';
 
 @ApiTags('User')
 @Controller('user')
@@ -218,10 +221,10 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Username Taken' })
   @Post('/check-available-username')
-  checkAvailableUsername(
+  async checkAvailableUsername(
     @Body() availableUsernameDto: AvailableUsernameDto,
     @Res() res: Response,
   ) {
-    return this.userService.checkAvailableUsername(availableUsernameDto, res);
+    await this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
 }
