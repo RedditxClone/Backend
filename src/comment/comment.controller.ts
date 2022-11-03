@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -7,7 +7,6 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { CommentService } from './comment.service';
 import {
   CreateCommentDto,
@@ -39,7 +38,7 @@ export class CommentController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.commentService.remove(Number(id));
+    return this.commentService.remove(+id);
   }
 
   @ApiOperation({ description: 'Edit the body text of a comment.' })
@@ -52,7 +51,7 @@ export class CommentController {
   @Patch(':id/edit')
   //todo
   update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(Number(id), updateCommentDto);
+    return this.commentService.update(+id, updateCommentDto);
   }
 
   @ApiOperation({
@@ -104,7 +103,6 @@ export class CommentController {
   save(@Param('id') id: string) {
     return id;
   }
-
   @ApiOperation({
     description:
       "UnSave a link or comment, this removes the thing from the user's saved listings as well.",

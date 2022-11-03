@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-
-import type { CreateCategoryDto } from './dto/create-category.dto';
-import type { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
-  create(_createCategoryDto: CreateCategoryDto) {
+  create(createCategoryDto: CreateCategoryDto) {
     return 'This action adds a new category';
   }
 
@@ -17,7 +16,7 @@ export class CategoryService {
     return `This action returns a #${id} category`;
   }
 
-  update(id: number, _updateCategoryDto: UpdateCategoryDto) {
+  update(id: number, updateCategoryDto: UpdateCategoryDto) {
     return `This action updates a #${id} category`;
   }
 

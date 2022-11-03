@@ -1,10 +1,12 @@
-<<<<<<< HEAD
-import { Body, Controller, Patch, Post } from '@nestjs/common';
-||||||| ceebe63
-import { Controller, Post, Body, Patch } from '@nestjs/common';
-=======
-import { Controller, Post, Body, Res, Patch } from '@nestjs/common';
->>>>>>> development
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Patch,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -13,34 +15,14 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-
 import { AuthService } from './auth.service';
-<<<<<<< HEAD
-import {
-  ChangePasswordDto,
-  ForgetPasswordDto,
-  ForgetUsernameDto,
-  LoginDto,
-  SigninDto,
-  SignupDto,
-} from './dto';
-||||||| ceebe63
-import {
-  ChangePasswordDto,
-  ForgetPasswordDto,
-  LoginDto,
-  SignupDto,
-  SigninDto,
-  ForgetUsernameDto,
-} from './dto';
-=======
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto';
 import { Response } from 'express';
 import { ForgetUsernameDto, SigninDto } from './dto';
->>>>>>> development
+import { JWTUserGuard } from './guards/user.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -96,8 +78,13 @@ export class AuthController {
   @ApiOkResponse({ description: 'The password changed successfully' })
   @ApiUnauthorizedResponse({ description: 'UnAuthorized' })
   @ApiForbiddenResponse({ description: 'Wrong password' })
-  @Patch('change_password')
-  changePassword(@Body() changePasswordDto: ChangePasswordDto) {
-    return this.authService.changePassword(changePasswordDto);
+  @Patch('change-password')
+  @UseGuards(JWTUserGuard)
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    await this.authService.changePassword(req.user._id, changePasswordDto, res);
   }
 }

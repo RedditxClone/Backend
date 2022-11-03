@@ -1,4 +1,13 @@
-import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -7,19 +16,11 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-<<<<<<< HEAD
-
-import { GetFriendsDto } from './dto/get-friends.dto';
-import { GetUserInfoDto } from './dto/get-user-info.dto';
-||||||| ceebe63
-import { getFriendsDto } from './dto/get-friends.dto';
-import { getUserInfoDto } from './dto/get-user-info.dto';
-=======
 import { Types } from 'mongoose';
+import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { getFriendsDto } from './dto/get-friends.dto';
 import { getUserInfoDto } from './dto/get-user-info.dto';
->>>>>>> development
 import { PrefsDto } from './dto/prefs.dto';
 import { UserAccountDto } from './dto/user-account.dto';
 import { UserCommentsDto } from './dto/user-comments.dto';
@@ -35,7 +36,7 @@ export class UserController {
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
     description: 'The account friends is returned successfully',
-    type: GetFriendsDto,
+    type: getFriendsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('friend')
@@ -100,8 +101,8 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Post('/:user_id/spam')
-  spamUser(@Param('user_id') _user_id: string) {
-    // todo
+  spamUser(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'Get user data if logged in' })
@@ -112,7 +113,7 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   getUser() {
-    // todo
+    return;
   }
 
   @ApiOperation({ description: 'Get user preferences' })
@@ -137,12 +138,12 @@ export class UserController {
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
     description: 'The user info returned successfully',
-    type: GetUserInfoDto,
+    type: getUserInfoDto,
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/about')
-  getUserInfo(@Param('user_id') _user_id: string) {
-    // todo
+  getUserInfo(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -152,8 +153,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/overview')
-  getUserOverview(@Param('user_id') _user_id: string) {
-    // todo
+  getUserOverview(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -163,8 +164,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/submitted')
-  getUserPosts(@Param('user_id') _user_id: string) {
-    // todo
+  getUserPosts(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'get user info by user id' })
@@ -184,8 +185,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/comments')
-  getUserComments(@Param('user_id') _user_id: string) {
-    // todo
+  getUserComments(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -195,8 +196,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/upvoted')
-  getUserUpvoted(@Param('user_id') _user_id: string) {
-    // todo
+  getUserUpvoted(@Param('user_id') user_id: string) {
+    return;
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -206,7 +207,26 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/upvoted')
-  getUserDownvoted(@Param('user_id') _user_id: string) {
-    // todo
+  getUserDownvoted(@Param('user_id') user_id: string) {
+    return;
+  }
+
+  @ApiOperation({ description: 'follow specific user' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/follow')
+  async followUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ) {
+    console.log(request.headers);
+    return await this.userService.follow(request.user._id, user_id);
+  }
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/unfollow')
+  async unfollowUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ) {
+    return await this.userService.unfollow(request.user._id, user_id);
   }
 }

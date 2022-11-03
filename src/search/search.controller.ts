@@ -5,7 +5,6 @@ import {
   ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { GeneralSearchDto } from './dto/general-search.dto';
 import { GetSearchDto } from './dto/get-search-dto';
 import { SubredditSearchDto } from './dto/subreddit-search.dto';
@@ -15,7 +14,6 @@ import { SearchService } from './search.service';
 @Controller('search')
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
-
   @ApiProperty({ description: 'get all search results' })
   @ApiOkResponse({
     description: 'search has been returned successfully',
@@ -23,7 +21,7 @@ export class SearchController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('')
-  generalSearch(@Query() _dto: GeneralSearchDto) {
+  generalSearch(@Query() dto: GeneralSearchDto) {
     return {
       searchResult: [],
     };
@@ -36,9 +34,9 @@ export class SearchController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Get('/subreddit/:subreddit')
-  subredditSearch(@Query() _dto: SubredditSearchDto) {
-    // return {
-    //   searchResult: [],
-    // };
+  subredditSearch(@Query() dto: SubredditSearchDto) {
+    return {
+      searchResult: [],
+    };
   }
 }

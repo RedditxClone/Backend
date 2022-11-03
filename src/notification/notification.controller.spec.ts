@@ -1,6 +1,4 @@
-import type { TestingModule } from '@nestjs/testing';
-import { Test } from '@nestjs/testing';
-
+import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
 

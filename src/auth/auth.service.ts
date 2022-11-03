@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-import { Injectable } from '@nestjs/common';
-
-import type { ChangePasswordDto } from './dto/change-password.dto';
-import type { ForgetPasswordDto } from './dto/forget-password.dto';
-import type { LoginDto } from './dto/login.dto';
-import type { SignupDto } from './dto/signup.dto';
-||||||| ceebe63
-import { Injectable } from '@nestjs/common';
-import { ChangePasswordDto } from './dto/changePassword.dto';
-import { ForgetPasswordDto } from './dto/forgetPassword.dto';
-import { LoginDto } from './dto/login.dto';
-import { SignupDto } from './dto/signup.dto';
-=======
 import {
   BadRequestException,
   HttpStatus,
@@ -19,10 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from 'src/user/user.schema';
 import { UserService } from '../user/user.service';
-
+import * as bcrypt from 'bcrypt';
 import {
   ForgetUsernameDto,
   ChangePasswordDto,
@@ -35,24 +21,22 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { CreateUserDto } from '../user/dto';
 import { throwGeneralException } from '../utils/throwException';
->>>>>>> development
 
 @Injectable()
 export class AuthService {
-<<<<<<< HEAD
-  login(_loginDto: LoginDto) {
-    return 'this action login the user to his account';
-||||||| ceebe63
-  login(loginDto: LoginDto) {
-    return 'this action login the user to his account';
-=======
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly mailService: EmailService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
-  private async isUserExist(
+  /**
+   * check if the user exist and if the password is valid
+   * @param user user that you will check about
+   * @param password
+   * @returns if the user is valid
+   */
+  private async isValidUser(
     user: UserDocument,
     password: string,
   ): Promise<boolean> {
@@ -60,16 +44,7 @@ export class AuthService {
       user &&
       (await this.userService.validPassword(password, user.hashPassword))
     );
->>>>>>> development
   }
-<<<<<<< HEAD
-
-  signup(_signupDto: SignupDto) {
-    return 'this action create a new user account';
-||||||| ceebe63
-  signup(signupDto: SignupDto) {
-    return 'this action create a new user account';
-=======
   private async createToken(id: string): Promise<string> {
     return await this.jwtService.signAsync(
       { id },
@@ -77,25 +52,28 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       },
     );
->>>>>>> development
   }
-<<<<<<< HEAD
-
-  forgetPassword(_forgetPasswordDto: ForgetPasswordDto) {
-||||||| ceebe63
-  forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
-=======
+  /**
+   * send authorization token to user as cookie
+   * @param user user to whom you will send a token
+   * @param res express response object
+   */
   private async sendToken(user: UserDocument, res: Response): Promise<void> {
     const token: string = await this.createToken(user._id);
     res.cookie('authorization', `Bearer ${token}`);
     res.json({ status: 'success', user });
   }
+  /**
+   * login and get access token
+   * @param dto see LoginDto
+   * @param res @ express response
+   */
   login = async (dto: LoginDto, res: Response) => {
     try {
       const user: UserDocument = await this.userService.getUserByEmail(
         dto.email,
       );
-      const userExist: boolean = await this.isUserExist(user, dto.password);
+      const userExist: boolean = await this.isValidUser(user, dto.password);
       if (!userExist)
         throw new UnauthorizedException('wrong email or password');
       await this.sendToken(user, res);
@@ -103,6 +81,11 @@ export class AuthService {
       throwGeneralException(err);
     }
   };
+  /**
+   * register a new user
+   * @param dto see CreateUserDto
+   * @param res express response
+   */
   signup = async (dto: CreateUserDto, res: Response) => {
     try {
       const user: UserDocument = await this.userService.createUser(dto);
@@ -112,13 +95,42 @@ export class AuthService {
     }
   };
   forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
->>>>>>> development
     return 'this action apply forget password steps';
   }
-
-  changePassword(_changePasswordDto: ChangePasswordDto) {
-    return 'this action change the password of the current user';
-  }
+  /**
+   * A function to change user password.
+   *
+   * @param id the user id
+   * @param changePasswordDto the new and old password
+   * @param res the response to the request
+   * @returns a response 401 if password invalid 200 if changed
+   */
+  changePassword = async (
+    id: Types.ObjectId,
+    changePasswordDto: ChangePasswordDto,
+    res: Response,
+  ) => {
+    try {
+      const user: UserDocument = await this.userService.getUserById(id);
+      const userExist: boolean = await this.isValidUser(
+        user,
+        changePasswordDto.oldPassword,
+      );
+      if (userExist) {
+        const hashPassword = await bcrypt.hash(
+          changePasswordDto.newPassword,
+          await bcrypt.genSalt(10),
+        );
+        await this.userModel.updateOne(
+          { _id: id },
+          { hashPassword: hashPassword },
+        ),
+          res.status(HttpStatus.OK).json({ status: true });
+      } else res.status(HttpStatus.FORBIDDEN).json({ status: false });
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  };
   /**
    * A function to search the db for usernames attached to requested email
    * then send it to the user.

@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-
-import type { CreateSubredditDto } from './dto/create-subreddit.dto';
-import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import { CreateSubredditDto } from './dto/create-subreddit.dto';
+import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 
 @Injectable()
 export class SubredditService {
-  create(_createSubredditDto: CreateSubredditDto) {
+  create(createSubredditDto: CreateSubredditDto) {
     return 'This action adds a new subreddit';
   }
 
@@ -17,7 +16,7 @@ export class SubredditService {
     return `This action returns a #${id} subreddit`;
   }
 
-  update(id: number, _updateSubredditDto: UpdateSubredditDto) {
+  update(id: number, updateSubredditDto: UpdateSubredditDto) {
     return `This action updates a #${id} subreddit`;
   }
 

@@ -1,19 +1,11 @@
-<<<<<<< HEAD
-import type { TestingModule } from '@nestjs/testing';
-import { Test } from '@nestjs/testing';
-
-||||||| ceebe63
 import { Test, TestingModule } from '@nestjs/testing';
-=======
-import { Test, TestingModule } from '@nestjs/testing';
-import { Response } from 'express';
-import { createResponse } from 'node-mocks-http';
-import { CreateUserDto } from 'src/user/dto';
+import { Response, Request } from 'express';
+import { createRequest, createResponse } from 'node-mocks-http';
+import { CreateUserDto } from '../user/dto';
 import { stubUser } from '../user/test/stubs/user.stub';
->>>>>>> development
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ForgetUsernameDto, LoginDto } from './dto';
+import { ForgetUsernameDto, LoginDto, ChangePasswordDto } from './dto';
 
 jest.mock('./auth.service');
 describe('AuthController', () => {
@@ -63,6 +55,20 @@ describe('AuthController', () => {
         email: 'email@example.com',
       };
       const val = await controller.forgetUsername(dto, res);
+      expect(val).toBeUndefined();
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should send successfully', async () => {
+      const req: Request = createRequest();
+      const res: Response = createResponse();
+      const dto: ChangePasswordDto = {
+        oldPassword: '123456789',
+        newPassword: '12345678',
+      };
+      req.user = { _id: 213 };
+      const val = await controller.changePassword(dto, res, req);
       expect(val).toBeUndefined();
     });
   });
