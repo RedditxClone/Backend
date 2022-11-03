@@ -11,6 +11,8 @@ import {
 import { AuthService } from './auth.service';
 import { createResponse } from 'node-mocks-http';
 import { ConfigModule } from '@nestjs/config';
+import { EmailService, EmailServiceMock } from '../utils';
+import { HttpStatus } from '@nestjs/common';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -27,8 +29,11 @@ describe('AuthService', () => {
           signOptions: { expiresIn: '15d' },
         }),
       ],
-      providers: [AuthService, UserService],
-    }).compile();
+      providers: [AuthService, UserService, EmailService],
+    })
+      .overrideProvider(EmailService)
+      .useValue(EmailServiceMock)
+      .compile();
     authService = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
   });
@@ -91,6 +96,36 @@ describe('AuthService', () => {
       }).rejects.toThrow('wrong email or password');
     });
   });
+
+  describe('forget username', () => {
+    it('should send mail successfully', async () => {
+      const res = createResponse();
+      await authService.forgetUsername(
+        {
+          email: user1.email,
+        },
+        res,
+      );
+      expect(res._getStatusCode()).toEqual(HttpStatus.CREATED);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: 'success' }),
+      );
+    });
+    it('should fail sending mail', async () => {
+      const res = createResponse();
+      await authService.forgetUsername(
+        {
+          email: 'throw',
+        },
+        res,
+      );
+      expect(res._getStatusCode()).toEqual(HttpStatus.UNAUTHORIZED);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: "couldn't send message" }),
+      );
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

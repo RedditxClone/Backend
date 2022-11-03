@@ -54,9 +54,15 @@ export class AuthController {
   @ApiCreatedResponse({
     description: 'An email will be sent if the user exists in the database',
   })
-  @Post('forget_username')
-  forgetUsername(@Body() forgetUsernameDto: ForgetUsernameDto) {
-    return forgetUsernameDto;
+  @ApiUnauthorizedResponse({
+    description: "An email couldn't be sent",
+  })
+  @Post('forget-username')
+  async forgetUsername(
+    @Body() forgetUsernameDto: ForgetUsernameDto,
+    @Res() res: Response,
+  ) {
+    await this.authService.forgetUsername(forgetUsernameDto, res);
   }
 
   @ApiOperation({ description: 'Change the password of an account' })
