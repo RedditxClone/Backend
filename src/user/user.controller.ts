@@ -84,15 +84,6 @@ export class UserController {
     return this.userService.unFriend();
   }
 
-  @ApiOperation({ description: 'User block another user' })
-  @ApiOkResponse({ description: 'User blocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
-  @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  @Post('/:user_id/block')
-  block() {
-    return this.userService.block();
-  }
-
   @ApiOperation({ description: 'mark user as a spam' })
   @ApiOkResponse({ description: 'User spamed successfully' })
   @ApiBadRequestResponse({ description: 'invalid user id' })
@@ -228,5 +219,31 @@ export class UserController {
     @Req() request,
   ) {
     return await this.userService.unfollow(request.user._id, user_id);
+  }
+
+  @ApiOperation({ description: 'User block another user' })
+  @ApiOkResponse({ description: 'User blocked successfully' })
+  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/block')
+  async blockUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ): Promise<any> {
+    return await this.userService.block(request.user._id, user_id);
+  }
+
+  @ApiOperation({ description: 'User unblock another user' })
+  @ApiOkResponse({ description: 'User unblocked successfully' })
+  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/unblock')
+  async unblockUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ): Promise<any> {
+    return await this.userService.unblock(request.user._id, user_id);
   }
 }

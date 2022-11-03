@@ -12,9 +12,10 @@ import * as bcrypt from 'bcrypt';
 import { FollowModule } from '../follow/follow.module';
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { BlockModule } from '../block/block.module';
 
 jest.mock('../follow/follow.service.ts');
-
+jest.mock('../block/block.service.ts');
 describe('UserService', () => {
   let service: UserService;
   let module: TestingModule;
@@ -23,6 +24,7 @@ describe('UserService', () => {
       imports: [
         ConfigModule.forRoot(),
         FollowModule,
+        BlockModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
       ],
@@ -154,7 +156,24 @@ describe('UserService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
-
+  describe('block', () => {
+    it('should block successfully', async () => {
+      const res: any = await service.block(id, id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    const wrong_id: Types.ObjectId = new Types.ObjectId('wrong_id____');
+    it('should pass wrong id error', async () => {
+      await expect(async () => {
+        await service.block(id, wrong_id);
+      }).rejects.toThrow(`there is no user with id : ${wrong_id.toString()}`);
+    });
+  });
+  describe('unblock', () => {
+    it('should unblock successfully', async () => {
+      const res: any = await service.unblock(id, id);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

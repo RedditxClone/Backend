@@ -38,12 +38,30 @@ describe('UserControllerSpec', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
-  describe('unfollow', () => {
+  describe('unblock', () => {
     test('it should unfollow successfully', async () => {
       const req = createRequest();
       const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
       req.user = { id };
       const res: any = await userController.unfollowUser(id, req);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('block', () => {
+    test('it should block successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      req.user = { id };
+      const res: any = await userController.blockUser(id, req);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('unblock', () => {
+    test('it should unblock successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      req.user = { id };
+      const res: any = await userController.unblockUser(id, req);
       expect(res).toEqual({ status: 'success' });
     });
   });
