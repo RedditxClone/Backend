@@ -4,6 +4,6 @@ import { SubredditController } from './subreddit.controller';
 
 @Module({
   controllers: [SubredditController],
-  providers: [SubredditService]
+  providers: [SubredditService],
 })
 export class SubredditModule {}
