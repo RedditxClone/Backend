@@ -10,6 +10,11 @@ export class FollowService {
   constructor(
     @InjectModel('Follow') private readonly followModel: Model<Follow>,
   ) {}
+  /**
+   *  follow user
+   * @param dto see Follow DTO
+   * @returns {status : 'success'}
+   */
   async follow(dto: FollowDto) {
     try {
       console.log(dto);
@@ -23,6 +28,11 @@ export class FollowService {
       throwGeneralException(err);
     }
   }
+  /**
+   * unfollow user
+   * @param dto see FollowDto
+   * @returns {status : 'success'}
+   */
   async unfollow(dto: FollowDto) {
     try {
       const { acknowledged, deletedCount } = await this.followModel.deleteOne(

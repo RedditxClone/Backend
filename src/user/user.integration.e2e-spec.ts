@@ -19,8 +19,10 @@ import { JWTUserGuard } from '../auth/guards/user.guard';
 import { Types } from 'mongoose';
 import { UserController } from './user.controller';
 import { UserStrategy } from '../auth/stratigies/user.strategy';
+import { EmailService } from '../utils';
 
-describe('authController (e2e)', () => {
+jest.mock('../utils/mail/mail.service.ts');
+describe('userController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   const dto: CreateUserDto = {
@@ -61,7 +63,7 @@ describe('authController (e2e)', () => {
         }),
       ],
       controllers: [AuthController, UserController],
-      providers: [UserService, AuthService, UserStrategy],
+      providers: [UserService, AuthService, UserStrategy, EmailService],
     }).compile();
     app = moduleFixture.createNestApplication();
     await app.init();
