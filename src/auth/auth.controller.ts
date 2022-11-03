@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Res, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Patch,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -14,6 +22,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto';
 import { Response } from 'express';
 import { ForgetUsernameDto, SigninDto } from './dto';
+import { JWTUserGuard } from './guards/user.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -69,8 +78,13 @@ export class AuthController {
   @ApiOkResponse({ description: 'The password changed successfully' })
   @ApiUnauthorizedResponse({ description: 'UnAuthorized' })
   @ApiForbiddenResponse({ description: 'Wrong password' })
-  @Patch('change_password')
-  changePassword(@Body() changePasswordDto: ChangePasswordDto) {
-    return this.authService.changePassword(changePasswordDto);
+  @Patch('change-password')
+  @UseGuards(JWTUserGuard)
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    await this.authService.changePassword(req.user._id, changePasswordDto, res);
   }
 }

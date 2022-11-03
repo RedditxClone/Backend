@@ -4,4 +4,5 @@ export const AuthService = jest.fn().mockReturnValue({
   login: jest.fn().mockReturnValue(stubUser()),
   signup: jest.fn().mockReturnValue(stubUser()),
   forgetUsername: jest.fn().mockReturnValue(null),
+  changePassword: jest.fn().mockReturnValue(null),
 });

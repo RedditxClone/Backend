@@ -15,6 +15,8 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto';
 import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
+import { Types } from 'mongoose';
+import { UserStrategy } from './stratigies/user.strategy';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;
@@ -24,6 +26,28 @@ describe('authController (e2e)', () => {
     email: 'email@example.com',
     password: '12345678',
     username: 'username',
+  };
+  const dto1: CreateUserDto = {
+    age: 12,
+    email: 'email1@example.com',
+    password: '12345678',
+    username: 'username1',
+  };
+  let token1: string;
+  let token2: string;
+  let id1: Types.ObjectId;
+  let id2: Types.ObjectId;
+  const createDummyUsers = async () => {
+    const authRes1 = await request(server).post('/auth/signup').send(dto1);
+    id1 = authRes1.body.user._id;
+    const cookie1 = authRes1.headers['set-cookie'];
+    const authRes2 = await request(server)
+      .post('/auth/signup')
+      .send({ ...dto, email: `a${dto.email}`, username: `a${dto.username}` });
+    id2 = authRes2.body.user._id;
+    const cookie2 = authRes2.get('Set-Cookie');
+    token1 = cookie1[0].split('; ')[0].split('=')[1].replace('%20', ' ');
+    token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
   };
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -38,7 +62,7 @@ describe('authController (e2e)', () => {
         FollowModule,
       ],
       controllers: [AuthController],
-      providers: [UserService, AuthService, EmailService],
+      providers: [UserService, AuthService, UserStrategy, EmailService],
     })
       .overrideProvider(EmailService)
       .useValue(EmailServiceMock)
@@ -47,6 +71,7 @@ describe('authController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     server = app.getHttpServer();
+    await createDummyUsers();
   });
   describe('/POST /auth/signup', () => {
     it('must sign up successfully', async () => {
@@ -115,6 +140,28 @@ describe('authController (e2e)', () => {
           expect(res.body).toEqual(
             expect.objectContaining({ status: "couldn't send message" }),
           );
+        });
+    });
+  });
+  describe('/PATCH /auth/change-password', () => {
+    it('must send successfully', async () => {
+      await request(server)
+        .patch('/auth/change-password')
+        .send({ oldPassword: '12345678', newPassword: '123456789' })
+        .set('authorization', token1)
+        .expect(HttpStatus.OK)
+        .then((res) => {
+          expect(res.body).toEqual(expect.objectContaining({ status: true }));
+        });
+    });
+    it("mustn't send successfully", async () => {
+      await request(server)
+        .patch('/auth/change-password')
+        .send({ oldPassword: '12345678', newPassword: '123456789' })
+        .set('authorization', token1)
+        .expect(HttpStatus.FORBIDDEN)
+        .then((res) => {
+          expect(res.body).toEqual(expect.objectContaining({ status: false }));
         });
     });
   });
