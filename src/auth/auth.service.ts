@@ -128,9 +128,8 @@ export class AuthService {
           res.status(HttpStatus.OK).json({ status: true });
       } else res.status(HttpStatus.FORBIDDEN).json({ status: false });
     } catch (err) {
-      res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
+      throwGeneralException(err);
     }
-    return 'this action change the password of the current user';
   };
   /**
    * A function to search the db for usernames attached to requested email
