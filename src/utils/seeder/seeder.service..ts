@@ -6,7 +6,8 @@ import { UserService } from 'src/user/user.service';
 export class SeederService {
   constructor(private readonly userService: UserService) {}
   async seed() {
-    this.seedUsers();
+    const usr = await this.seedUsers();
+    console.log(usr);
   }
 
   private async seedUsers() {
@@ -16,6 +17,6 @@ export class SeederService {
       password: process.env.SU_PASS,
       age: 30,
     };
-    await this.userService.createUser(createSuperUserDto);
+    return this.userService.createUser(createSuperUserDto);
   }
 }

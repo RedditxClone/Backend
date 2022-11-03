@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from 'src/user/user.module';
-import { rootMongooseTestModule } from '../mongooseInMemory';
 import { SeederService } from './seeder.service.';
 
 /**
@@ -11,11 +11,8 @@ import { SeederService } from './seeder.service.';
  */
 @Module({
   imports: [
-    // for using .env variables
     ConfigModule.forRoot(),
-    rootMongooseTestModule(),
-    // connect to database using connection string
-    // MongooseModule.forRoot(process.env.DB_CONNECTION_STRING),
+    MongooseModule.forRoot(process.env.DB_CONNECTION_STRING),
     UserModule,
   ],
   controllers: [],
