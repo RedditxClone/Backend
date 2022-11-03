@@ -5,10 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from 'src/user/user.schema';
 import { UserService } from '../user/user.service';
-
+import * as bcrypt from 'bcrypt';
 import {
   ForgetUsernameDto,
   ChangePasswordDto,
@@ -97,9 +97,41 @@ export class AuthService {
   forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
     return 'this action apply forget password steps';
   }
-  changePassword(changePasswordDto: ChangePasswordDto) {
+  /**
+   * A function to change user password.
+   *
+   * @param id the user id
+   * @param changePasswordDto the new and old password
+   * @param res the response to the request
+   * @returns a response 401 if password invalid 200 if changed
+   */
+  changePassword = async (
+    id: Types.ObjectId,
+    changePasswordDto: ChangePasswordDto,
+    res: Response,
+  ) => {
+    try {
+      const user: UserDocument = await this.userService.getUserById(id);
+      const userExist: boolean = await this.isValidUser(
+        user,
+        changePasswordDto.oldPassword,
+      );
+      if (userExist) {
+        const hashPassword = await bcrypt.hash(
+          changePasswordDto.newPassword,
+          await bcrypt.genSalt(10),
+        );
+        await this.userModel.updateOne(
+          { _id: id },
+          { hashPassword: hashPassword },
+        ),
+          res.status(HttpStatus.OK).json({ status: true });
+      } else res.status(HttpStatus.FORBIDDEN).json({ status: false });
+    } catch (err) {
+      res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
+    }
     return 'this action change the password of the current user';
-  }
+  };
   /**
    * A function to search the db for usernames attached to requested email
    * then send it to the user.
