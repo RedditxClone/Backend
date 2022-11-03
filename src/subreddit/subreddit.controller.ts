@@ -10,7 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, MulterModule } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -43,13 +43,13 @@ export class SubredditController {
     return this.subredditService.create(createSubredditDto);
   }
 
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('icon'))
   @ApiOperation({ description: 'Add or edit a subreddit icon.' })
   @ApiCreatedResponse({ description: 'The resource was created successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':subreddit/icon')
   uploadIcon(@Param('subreddit') subreddit: string, @UploadedFile() file) {
-    // TODO: implement service
+    // TODO: implement service 
     return;
   }
 
@@ -174,11 +174,8 @@ export class SubredditController {
   @ApiBadRequestResponse({ description: 'The user id is not valid' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Get('/:subreddit/flair/user')
-  getUserFlairs(
-    @Param('subreddit') subreddit: string,
-    @Body() flairDto: FlairDto,
-  ) {
-    return this.subredditService.createFlair(subreddit, flairDto, true);
+  getUserFlairs(@Param('subreddit') subreddit: string) {
+    return this.subredditService.getFlairs(subreddit, true);
   }
 
   @ApiOperation({ description: 'create a flair for a user in a subreddit' })
@@ -186,12 +183,12 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Only moderators are allowed' })
   @ApiBadRequestResponse({ description: 'The user id is not valid' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Post('/:subreddit/user/:user_id/flair')
-  createUserFlair(
+  @Post('/:subreddit/user/flair')
+  createUserFlairs(
     @Param('subreddit') subreddit: string,
-    @Param('user_id') user_id: string,
+    @Body() flairDto: FlairDto,
   ) {
-    return;
+    return this.subredditService.createUserFlair(subreddit, flairDto);
   }
 
   @ApiOperation({ description: 'Remove flairs from user in a subreddit' })
@@ -212,12 +209,9 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
   @ApiBadRequestResponse({ description: 'The post id is not valid' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Get('/:subreddit/post/:post_id/flair')
-  getPostFlairs(
-    @Param('subreddit') subreddit: string,
-    @Param('post_id') post_id: string,
-  ) {
-    return;
+  @Get('/:subreddit/post/flair')
+  getPostFlairs(@Param('subreddit') subreddit: string) {
+    return this.subredditService.getFlairs(subreddit, true);
   }
 
   @ApiOperation({ description: 'create a post flair in a subreddit' })
@@ -225,9 +219,12 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
   @ApiBadRequestResponse({ description: 'The post id is not valid' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Post('/:subreddit/flair/post')
-  createPostFlair(@Param('subreddit') subreddit: string, flairDto: FlairDto) {
-    return this.subredditService.createFlair(subreddit, flairDto, true);
+  @Post('/:subreddit/post/flair')
+  createPostFlair(
+    @Param('subreddit') subreddit: string,
+    @Body() flairDto: FlairDto,
+  ) {
+    return this.subredditService.createPostFlair(subreddit, flairDto);
   }
 
   @ApiOperation({ description: 'Remove flairs from post in a subreddit' })

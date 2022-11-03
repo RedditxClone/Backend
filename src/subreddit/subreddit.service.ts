@@ -20,12 +20,22 @@ export class SubredditService {
     return this.subredditModel.find();
   }
 
-  async createFlair(subreddit: string, flairDto: FlairDto, type: boolean) {
-    const flairsType = type ? 'postFlairs' : 'userFlairs';
-    const flairs = await this.subredditModel
-      .findById(subreddit);
-    return flairs;
-    // return this.subredditModel.findByIdAndUpdate(subreddit, { postFlairs });
+  async createPostFlair(subreddit: string, flairDto: FlairDto) {
+    return await this.subredditModel.findByIdAndUpdate(subreddit, {
+      $push: { postFlairs: flairDto },
+    });
+  }
+
+  async createUserFlair(subreddit: string, flairDto: FlairDto) {
+    return await this.subredditModel.findByIdAndUpdate(subreddit, {
+      $push: { userFlairs: flairDto },
+    });
+  }
+
+  async getFlairs(subreddit: string, type: boolean) {
+    return await this.subredditModel
+      .findById(subreddit)
+      .select(type ? 'postFlairs' : 'userFlairs');
   }
 
   findOne(id: number) {
