@@ -14,6 +14,7 @@ import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto';
 import { FollowModule } from '../follow/follow.module';
+import { EmailService, EmailServiceMock } from '../utils';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;
@@ -37,8 +38,11 @@ describe('authController (e2e)', () => {
         FollowModule,
       ],
       controllers: [AuthController],
-      providers: [UserService, AuthService],
-    }).compile();
+      providers: [UserService, AuthService, EmailService],
+    })
+      .overrideProvider(EmailService)
+      .useValue(EmailServiceMock)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -63,32 +67,57 @@ describe('authController (e2e)', () => {
       await request(server).post('/auth/signup').expect(HttpStatus.BAD_REQUEST);
     });
   });
-  // describe('/POST /auth/login', () => {
-  //   it('must login successfully', async () => {
-  //     await request(server)
-  //       .post('/auth/login')
-  //       .send(dto)
-  //       .expect(HttpStatus.CREATED)
-  //       .then((res) => {
-  //         expect(res.body).toEqual(
-  //           expect.objectContaining({ status: 'success' }),
-  //         );
-  //         expect(res.body.user).toEqual(
-  //           expect.objectContaining({
-  //             username: dto.username,
-  //             age: dto.age,
-  //             email: dto.email,
-  //           }),
-  //         );
-  //       });
-  //   });
-  //   it("mustn't login successfully", async () => {
-  //     await request(server)
-  //       .post('/auth/login')
-  //       .send({ email: dto.email, password: 'wrong_password' })
-  //       .expect(HttpStatus.UNAUTHORIZED);
-  //   });
-  // });
+  describe('/POST /auth/login', () => {
+    it('must login successfully', async () => {
+      await request(server)
+        .post('/auth/login')
+        .send(dto)
+        .expect(HttpStatus.CREATED)
+        .then((res) => {
+          expect(res.body).toEqual(
+            expect.objectContaining({ status: 'success' }),
+          );
+          expect(res.body.user).toEqual(
+            expect.objectContaining({
+              username: dto.username,
+              age: dto.age,
+              email: dto.email,
+            }),
+          );
+        });
+    });
+    it("mustn't login successfully", async () => {
+      await request(server)
+        .post('/auth/login')
+        .send({ email: dto.email, password: 'wrong_password' })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
+
+  describe('/POST /auth/forget-username', () => {
+    it('must send successfully', async () => {
+      await request(server)
+        .post('/auth/forget-username')
+        .send(dto)
+        .expect(HttpStatus.CREATED)
+        .then((res) => {
+          expect(res.body).toEqual(
+            expect.objectContaining({ status: 'success' }),
+          );
+        });
+    });
+    it("mustn't send successfully", async () => {
+      await request(server)
+        .post('/auth/forget-username')
+        .send({ email: 'throw' })
+        .expect(HttpStatus.UNAUTHORIZED)
+        .then((res) => {
+          expect(res.body).toEqual(
+            expect.objectContaining({ status: "couldn't send message" }),
+          );
+        });
+    });
+  });
   afterAll(async () => {
     server.close();
     await closeInMongodConnection();
