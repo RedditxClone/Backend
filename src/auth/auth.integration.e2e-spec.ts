@@ -27,12 +27,18 @@ describe('authController (e2e)', () => {
     password: '12345678',
     username: 'username',
   };
+  const dto1: CreateUserDto = {
+    age: 12,
+    email: 'email1@example.com',
+    password: '12345678',
+    username: 'username1',
+  };
   let token1: string;
   let token2: string;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
   const createDummyUsers = async () => {
-    const authRes1 = await request(server).post('/auth/signup').send(dto);
+    const authRes1 = await request(server).post('/auth/signup').send(dto1);
     id1 = authRes1.body.user._id;
     const cookie1 = authRes1.headers['set-cookie'];
     const authRes2 = await request(server)
