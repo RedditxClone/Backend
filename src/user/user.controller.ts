@@ -1,6 +1,16 @@
-import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Res,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
@@ -9,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '../utils/utils.service';
+import { AvailableUsernameDto } from './dto/available-username.dto';
 import { getFriendsDto } from './dto/get-friends.dto';
 import { getUserInfoDto } from './dto/get-user-info.dto';
 import { PrefsDto } from './dto/prefs.dto';
@@ -199,5 +210,18 @@ export class UserController {
   @Get('/:user_id/upvoted')
   getUserDownvoted(@Param('user_id') user_id: string) {
     return;
+  }
+
+  @ApiOperation({ description: 'Check if username is available' })
+  @ApiCreatedResponse({
+    description: 'Username Available',
+  })
+  @ApiUnauthorizedResponse({ description: 'Username Taken' })
+  @Post('/check-available-username')
+  checkAvailableUsername(
+    @Body() availableUsernameDto: AvailableUsernameDto,
+    @Res() res: Response,
+  ) {
+    return this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
 }

@@ -1,9 +1,16 @@
-import { BadRequestException, Global, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Global,
+  HttpCode,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
+import { AvailableUsernameDto } from './dto';
 
 @Global()
 @Injectable()
@@ -68,4 +75,16 @@ export class UserService {
   ): Promise<boolean> {
     return await bcrypt.compare(userPassword, hashedPassword);
   }
+  checkAvailableUsername = async (
+    availableUsernameDto: AvailableUsernameDto,
+    res: Response,
+  ) => {
+    const user: UserDocument = await this.userModel.findOne({
+      availableUsernameDto,
+    });
+    if (!user) {
+      // res.status(HttpStatus.CREATED).send();
+    }
+    return user;
+  };
 }
