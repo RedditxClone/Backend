@@ -1,4 +1,13 @@
-import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -8,6 +17,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { getFriendsDto } from './dto/get-friends.dto';
 import { getUserInfoDto } from './dto/get-user-info.dto';
@@ -199,5 +209,24 @@ export class UserController {
   @Get('/:user_id/upvoted')
   getUserDownvoted(@Param('user_id') user_id: string) {
     return;
+  }
+
+  @ApiOperation({ description: 'follow specific user' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/follow')
+  async followUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ) {
+    console.log(request.headers);
+    return await this.userService.follow(request.user._id, user_id);
+  }
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/unfollow')
+  async unfollowUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ) {
+    return await this.userService.unfollow(request.user._id, user_id);
   }
 }

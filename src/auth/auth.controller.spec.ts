@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { createResponse } from 'node-mocks-http';
-import { CreateUserDto } from 'src/user/dto';
+import { CreateUserDto } from '../user/dto';
 import { stubUser } from '../user/test/stubs/user.stub';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto';
+import { ForgetUsernameDto, LoginDto } from './dto';
 
 jest.mock('./auth.service');
 describe('AuthController', () => {
@@ -46,5 +46,16 @@ describe('AuthController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('forget username', () => {
+    it('should send successfully', async () => {
+      const res: Response = createResponse();
+      const dto: ForgetUsernameDto = {
+        email: 'email@example.com',
+      };
+      const val = await controller.forgetUsername(dto, res);
+      expect(val).toBeUndefined();
+    });
   });
 });
