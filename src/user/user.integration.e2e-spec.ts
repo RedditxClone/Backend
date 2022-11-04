@@ -101,6 +101,34 @@ describe('userController (e2e)', () => {
     await createDummyUsers();
     await createAdminWithToken();
   });
+  describe('GET /user/:user_id', () => {
+    it('must get the user successfully', async () => {
+      const res = await request(server)
+        .get(`/user/${id1.toString()}`)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          _id: id1,
+          username: dto.username,
+          email: dto.email,
+          age: dto.age,
+        }),
+      );
+    });
+    it('must throw an error because a non valid mongo id', async () => {
+      const res = await request(server)
+        .get(`/user/wrong_id`)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.body.message).toEqual('wrong_id is not a valid MongoId');
+    });
+    it('must throw an error because there is no user with id', async () => {
+      const wrong_id = new Types.ObjectId('wrong_id____');
+      const res = await request(server)
+        .get(`/user/${wrong_id}`)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.body.message).toEqual(`there is no user with id ${wrong_id}`);
+    });
+  });
   describe('/POST /user/:user_id/follow', () => {
     it('must follow user successfully', async () => {
       const res = await request(server)

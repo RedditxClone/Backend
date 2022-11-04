@@ -62,7 +62,7 @@ export class UserService {
     }
   };
   /**
-   *
+   * get a user with specific id
    * @param id id of the user
    * @returns the user
    */
