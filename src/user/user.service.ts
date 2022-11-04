@@ -162,4 +162,50 @@ export class UserService {
   ): Promise<any> {
     return this.blockService.unblock({ blocker, blocked });
   }
+
+  /**
+   * make the regular user moderator
+   * @param user_id id of the user to be moderator
+   * @returns returns a user with edited authType
+   */
+  async allowUserToBeModerator(user_id: Types.ObjectId): Promise<UserDocument> {
+    try {
+      const user = await this.userModel.findById(user_id);
+      if (!user)
+        throw new BadRequestException(`there is no user with id ${user_id}`);
+      if (user.authType === 'admin')
+        throw new BadRequestException(
+          `you are not allowed to change the role of the admin through this endpoint`,
+        );
+      user.authType = 'moderator';
+      await user.save();
+      delete user.hashPassword;
+      return user;
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  }
+  /**
+   * make a regular user admin
+   * @param user_id id of the user to be an admin
+   * @returns returns the user with new type
+   */
+  async makeAdmin(user_id: Types.ObjectId): Promise<UserDocument> {
+    try {
+      const user = await this.userModel
+        .findByIdAndUpdate(
+          user_id,
+          {
+            authType: 'admin',
+          },
+          { new: true },
+        )
+        .select('-hashPassword');
+      if (!user)
+        throw new BadRequestException(`there is no user with id ${user_id}`);
+      return user;
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  }
 }

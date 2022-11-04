@@ -21,11 +21,13 @@ import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { EmailService } from '../utils';
 import { BlockSchema } from '../block/block.schema';
 import { BlockModule } from '../block/block.module';
+import { AdminStrategy } from '../auth/stratigies/admin.startegy';
 
 jest.mock('../utils/mail/mail.service.ts');
 describe('userController (e2e)', () => {
   let app: INestApplication;
   let server: any;
+  let userService: UserService;
   const dto: CreateUserDto = {
     age: 12,
     email: 'email@example.com',
@@ -36,6 +38,12 @@ describe('userController (e2e)', () => {
   let token2: string;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
+  let adminId: Types.ObjectId;
+  let adminToken: string;
+
+  const getToken = (cookie: string): string =>
+    cookie[0].split('; ')[0].split('=')[1].replace('%20', ' ');
+
   const createDummyUsers = async () => {
     const authRes1 = await request(server).post('/auth/signup').send(dto);
     id1 = authRes1.body._id;
@@ -47,6 +55,18 @@ describe('userController (e2e)', () => {
     const cookie2 = authRes2.headers['set-cookie'];
     token1 = cookie1[0].split('; ')[0].split('=')[1].replace('%20', ' ');
     token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
+  };
+  const createAdminWithToken = async () => {
+    const authRes = await request(server)
+      .post('/auth/signup')
+      .send({
+        ...dto,
+        email: `admin${dto.email}`,
+        username: `admin${dto.username}`,
+      });
+    adminId = authRes.body._id;
+    adminToken = getToken(authRes.header['set-cookie']);
+    await userService.makeAdmin(adminId);
   };
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -66,12 +86,20 @@ describe('userController (e2e)', () => {
         }),
       ],
       controllers: [AuthController, UserController],
-      providers: [UserService, AuthService, UserStrategy, EmailService],
+      providers: [
+        UserService,
+        AuthService,
+        UserStrategy,
+        EmailService,
+        AdminStrategy,
+      ],
     }).compile();
     app = moduleFixture.createNestApplication();
     await app.init();
+    userService = app.get<UserService>(UserService);
     server = app.getHttpServer();
     await createDummyUsers();
+    await createAdminWithToken();
   });
   describe('/POST /user/:user_id/follow', () => {
     it('must follow user successfully', async () => {
@@ -213,6 +241,70 @@ describe('userController (e2e)', () => {
       expect(res.body.message).toEqual(
         `user with id : ${id1.toString()} is not blocking user with id : ${id2.toString()}`,
       );
+    });
+  });
+  describe('/POST /user/:user_id/make-moderator', () => {
+    it('should create moderator successfully', async () => {
+      const res = await request(server)
+        .post(`/user/${id1.toString()}/make-moderator`)
+        .set('authorization', adminToken)
+        .expect(HttpStatus.CREATED);
+      expect(res.body.authType).toEqual('moderator');
+    });
+    it('should refuse to make the admin moderator', async () => {
+      const res = await request(server)
+        .post(`/user/${adminId.toString()}/make-moderator`)
+        .set('authorization', adminToken)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.body.message).toEqual(
+        'you are not allowed to change the role of the admin through this endpoint',
+      );
+    });
+    it('should throw unauthorized', async () => {
+      // regular user not admin
+      const res = await request(server)
+        .post(`/user/${id1.toString()}/make-moderator`)
+        .set('authorization', token1)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual(
+        'you must be an admin to make this action',
+      );
+      // no user
+      const res2 = await request(server)
+        .post(`/user/${id1.toString()}/make-moderator`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res2.body.message).toEqual('Unauthorized');
+    });
+  });
+  describe('/POST /user/:user_id/make-admin', () => {
+    it('should create admin successfully', async () => {
+      const res = await request(server)
+        .post(`/user/${id1.toString()}/make-admin`)
+        .set('authorization', adminToken)
+        .expect(HttpStatus.CREATED);
+      expect(res.body.authType).toEqual('admin');
+    });
+    it("mustn't change the admin role", async () => {
+      const res = await request(server)
+        .post(`/user/${adminId.toString()}/make-admin`)
+        .set('authorization', adminToken)
+        .expect(HttpStatus.CREATED);
+      expect(res.body.authType).toEqual('admin');
+    });
+    it('should throw unauthorized', async () => {
+      // regular user not admin
+      const res = await request(server)
+        .post(`/user/${id1.toString()}/make-admin`)
+        .set('authorization', token2)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual(
+        'you must be an admin to make this action',
+      );
+      // no user
+      const res2 = await request(server)
+        .post(`/user/${id1.toString()}/make-admin`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res2.body.message).toEqual('Unauthorized');
     });
   });
   afterAll(async () => {

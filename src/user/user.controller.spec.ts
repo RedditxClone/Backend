@@ -38,7 +38,7 @@ describe('UserControllerSpec', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
-  describe('unblock', () => {
+  describe('unfollow', () => {
     test('it should unfollow successfully', async () => {
       const req = createRequest();
       const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
@@ -63,6 +63,20 @@ describe('UserControllerSpec', () => {
       req.user = { id };
       const res: any = await userController.unblockUser(id, req);
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('make moderator', () => {
+    it('must be created successfully', async () => {
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      const res: any = await userController.makeModeration(id);
+      expect(res).toEqual({ ...stubUser(), authType: 'moderator' });
+    });
+  });
+  describe('make admin', () => {
+    it('must be created successfully', async () => {
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      const res: any = await userController.makeAdmin(id);
+      expect(res).toEqual({ ...stubUser(), authType: 'admin' });
     });
   });
 });

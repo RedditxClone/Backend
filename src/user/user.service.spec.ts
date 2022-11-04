@@ -174,6 +174,66 @@ describe('UserService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+  let admin_id: Types.ObjectId;
+  describe('make-admin', () => {
+    beforeAll(async () => {
+      const admin: UserDocument = await service.createUser({
+        ...dto,
+        email: 'anotherEmail@exmaple.com',
+        username: 'anotherusername',
+      });
+      admin_id = admin._id;
+    });
+    it('should be admin', async () => {
+      const user: UserDocument = await service.makeAdmin(admin_id);
+      expect(user.authType).toEqual('admin');
+    });
+    // to make sure that it has been changed inside database
+    it('must be changed inside database', async () => {
+      const user: UserDocument = await service.getUserById(admin_id);
+      expect(user.authType).toEqual('admin');
+    });
+    it('should throw bad exception', async () => {
+      const wrong_id: Types.ObjectId = new Types.ObjectId('wrong_id____');
+      await expect(async () => {
+        await service.makeAdmin(wrong_id);
+      }).rejects.toThrow(`there is no user with id ${wrong_id}`);
+    });
+  });
+  let moderator_id: Types.ObjectId;
+  describe('grant moderation', () => {
+    beforeAll(async () => {
+      const moderator: UserDocument = await service.createUser({
+        ...dto,
+        email: `moderator${dto.email}`,
+        username: `moderator${dto.username}`,
+      });
+      moderator_id = moderator._id;
+    });
+    it('should be a moderator', async () => {
+      const user: UserDocument = await service.allowUserToBeModerator(
+        moderator_id,
+      );
+      expect(user.authType).toEqual('moderator');
+    });
+    it('must be changed inside database', async () => {
+      const user: UserDocument = await service.getUserById(moderator_id);
+      expect(user.authType).toEqual('moderator');
+    });
+    it('must throw an error because of being admin', async () => {
+      await expect(async () => {
+        await service.allowUserToBeModerator(admin_id);
+      }).rejects.toThrow(
+        `you are not allowed to change the role of the admin through this endpoint`,
+      );
+    });
+    it('must be wrong id', async () => {
+      const wrong_id = new Types.ObjectId('wrong_id____');
+      await expect(async () => {
+        await service.allowUserToBeModerator(wrong_id);
+      }).rejects.toThrow(`there is no user with id ${wrong_id}`);
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

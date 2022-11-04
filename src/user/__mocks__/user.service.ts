@@ -7,4 +7,8 @@ export const UserService = jest.fn().mockReturnValue({
   unfollow: jest.fn().mockResolvedValue({ status: 'success' }),
   block: jest.fn().mockResolvedValue({ status: 'success' }),
   unblock: jest.fn().mockResolvedValue({ status: 'success' }),
+  allowUserToBeModerator: jest
+    .fn()
+    .mockResolvedValue({ ...stubUser(), authType: 'moderator' }),
+  makeAdmin: jest.fn().mockResolvedValue({ ...stubUser(), authType: 'admin' }),
 });
