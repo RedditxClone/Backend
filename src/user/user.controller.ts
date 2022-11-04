@@ -260,7 +260,10 @@ export class UserController {
     return await this.userService.allowUserToBeModerator(user_id);
   }
 
-  @ApiOperation({ description: 'give a moderation role to the ordinary user' })
+  @ApiOperation({
+    description:
+      'give an admin role to the ordinary user (for testing purpose and will be deleted)',
+  })
   @ApiOkResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
