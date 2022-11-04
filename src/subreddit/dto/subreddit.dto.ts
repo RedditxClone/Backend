@@ -75,7 +75,6 @@ export class subredditDto {
 
   welcomeMessageText: string;
 
-  postFlaris: FlairDto[];
-
-  userFlaris: FlairDto[];
+  flairList: FlairDto[];
+  icon: string;
 }

@@ -1,12 +1,12 @@
-import { Schema } from 'mongoose';
+import { IsNotEmpty } from 'class-validator';
+import mongoose from 'mongoose';
 
 export class FlairDto {
-  _id: Schema.Types.ObjectId;
+  _id?: mongoose.Types.ObjectId;
+  @IsNotEmpty()
   text: string;
+  @IsNotEmpty()
   backgroundColor: string;
-  textColor: boolean;
-  modOnly: boolean;
-  allowUserEdits: boolean;
-  flairAllow: number;
-  emojiNumbers: number;
+  @IsNotEmpty()
+  textColor: string;
 }
