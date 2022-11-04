@@ -47,4 +47,36 @@ describe('UserControllerSpec', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+  describe('block', () => {
+    test('it should block successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      req.user = { id };
+      const res: any = await userController.blockUser(id, req);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('unblock', () => {
+    test('it should unblock successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      req.user = { id };
+      const res: any = await userController.unblockUser(id, req);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('make moderator', () => {
+    it('must be created successfully', async () => {
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      const res: any = await userController.makeModeration(id);
+      expect(res).toEqual({ ...stubUser(), authType: 'moderator' });
+    });
+  });
+  describe('make admin', () => {
+    it('must be created successfully', async () => {
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      const res: any = await userController.makeAdmin(id);
+      expect(res).toEqual({ ...stubUser(), authType: 'admin' });
+    });
+  });
 });

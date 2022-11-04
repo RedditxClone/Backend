@@ -6,14 +6,14 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongooseInMemory';
-import { FollowSchema } from './follow.schema';
-import { FollowService } from './follow.service';
+import { BlockSchema } from './block.schema';
+import { BlockService } from './block.service';
 import { Types } from 'mongoose';
-import { BlockSchema } from '../block/block.schema';
-import { BlockService } from '../block/block.service';
+import { FollowService } from '../follow/follow.service';
+import { FollowSchema } from '../follow/follow.schema';
 
-describe('FollowService', () => {
-  let service: FollowService;
+describe('BlockService', () => {
+  let service: BlockService;
   let module: TestingModule;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
@@ -22,14 +22,14 @@ describe('FollowService', () => {
       imports: [
         rootMongooseTestModule(),
         MongooseModule.forFeature([
-          { name: 'Follow', schema: FollowSchema },
-          { name: 'User', schema: UserSchema },
           { name: 'Block', schema: BlockSchema },
+          { name: 'User', schema: UserSchema },
+          { name: 'Follow', schema: FollowSchema },
         ]),
       ],
-      providers: [FollowService, UserService, BlockService],
+      providers: [FollowService, BlockService, UserService],
     }).compile();
-    service = module.get<FollowService>(FollowService);
+    service = module.get<BlockService>(BlockService);
     const userService: UserService = module.get<UserService>(UserService);
     id1 = (
       await userService.createUser({
@@ -52,49 +52,49 @@ describe('FollowService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-  describe('follow', () => {
-    it('should follow successfully', async () => {
-      const followRes = await service.follow({
-        follower: id1,
-        followed: id2,
+  describe('block', () => {
+    it('should block successfully', async () => {
+      const blockRes = await service.block({
+        blocker: id1,
+        blocked: id2,
       });
-      expect(followRes).toEqual({ status: 'success' });
+      expect(blockRes).toEqual({ status: 'success' });
     });
     it('should give duplicate error', async () => {
       await expect(async () => {
-        await service.follow({
-          follower: id1,
-          followed: id2,
+        await service.block({
+          blocker: id1,
+          blocked: id2,
         });
       }).rejects.toThrow(
-        `user with id : ${id1.toString()} is already following user with id : ${id2.toString()}`,
+        `user with id : ${id1.toString()} is already blocking user with id : ${id2.toString()}`,
       );
     });
-    it('should give error because following myself', async () => {
+    it('should give error because blocking myself', async () => {
       await expect(async () => {
-        await service.follow({
-          follower: id1,
-          followed: id1,
+        await service.block({
+          blocker: id1,
+          blocked: id1,
         });
-      }).rejects.toThrow(`you are not allowed to follow yourself`);
+      }).rejects.toThrow(`you are not allowed to block yourself`);
     });
   });
-  describe('unfollow', () => {
-    it('should unfollow successfully', async () => {
-      const unfollowRes = await service.unfollow({
-        follower: id1,
-        followed: id2,
+  describe('unblock', () => {
+    it('should unblock successfully', async () => {
+      const unblockRes = await service.unblock({
+        blocker: id1,
+        blocked: id2,
       });
-      expect(unfollowRes).toEqual({ status: 'success' });
+      expect(unblockRes).toEqual({ status: 'success' });
     });
     it('should give error', async () => {
       await expect(async () => {
-        await service.unfollow({
-          follower: id1,
-          followed: id1,
+        await service.unblock({
+          blocker: id1,
+          blocked: id1,
         });
       }).rejects.toThrow(
-        `user with id : ${id1.toString()} is not following user with id : ${id1.toString()}`,
+        `user with id : ${id1.toString()} is not blocking user with id : ${id1.toString()}`,
       );
     });
   });
