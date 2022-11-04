@@ -31,6 +31,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  await app.listen(3000);
+  await app.listen(process.env.PORT);
 }
 bootstrap();
+// import * as _ from 'lodash';
+// console.log(_.pickBy({ a: null, b: 1, c: undefined }, _.identity));

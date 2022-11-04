@@ -49,14 +49,12 @@ describe('AuthService', () => {
   });
 
   const user1: CreateUserDto = {
-    age: 12,
     email: 'example@example.com',
     password: '12345678',
     username: 'test',
   };
 
   const user2: CreateUserDto = {
-    age: 12,
     email: 'example2@example.com',
     password: '12345678',
     username: 'test2',

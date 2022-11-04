@@ -39,7 +39,6 @@ describe('UserService', () => {
   const dto: CreateUserDto = {
     username: 'omarfareed',
     password: '12345678',
-    age: 10,
     email: 'email@example.com',
   };
   describe('validPassword', () => {
@@ -62,7 +61,6 @@ describe('UserService', () => {
       expect(user).toEqual(
         expect.objectContaining({
           username: dto.username,
-          age: dto.age,
           email: dto.email,
         }),
       );
@@ -81,7 +79,6 @@ describe('UserService', () => {
       const dto: CreateUserDto = {
         username: 'omarfareed',
         password: '12345678',
-        age: 10,
         email: 'email@example.com',
       };
       await expect(async () => await service.createUser(dto)).rejects.toThrow(
@@ -95,7 +92,6 @@ describe('UserService', () => {
       expect(user).toEqual(
         expect.objectContaining({
           username: dto.username,
-          age: dto.age,
           email: dto.email,
         }),
       );
@@ -121,7 +117,6 @@ describe('UserService', () => {
         expect.objectContaining({
           email: dto.email,
           username: dto.username,
-          age: dto.age,
         }),
       );
       const validPassword: boolean = await service.validPassword(

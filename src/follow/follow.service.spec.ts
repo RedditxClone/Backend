@@ -30,7 +30,6 @@ describe('FollowService', () => {
     const userService: UserService = module.get<UserService>(UserService);
     id1 = (
       await userService.createUser({
-        age: 10,
         email: 'email@example.com',
         password: '12345678',
         username: 'username',
@@ -38,7 +37,6 @@ describe('FollowService', () => {
     )._id;
     id2 = (
       await userService.createUser({
-        age: 10,
         email: 'email2@example.com',
         password: '12345678',
         username: 'username2',

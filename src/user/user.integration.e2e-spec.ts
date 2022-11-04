@@ -26,7 +26,6 @@ describe('userController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   const dto: CreateUserDto = {
-    age: 12,
     email: 'email@example.com',
     password: '12345678',
     username: 'username',
