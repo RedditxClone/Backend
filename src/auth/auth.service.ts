@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User, UserDocument } from 'src/user/user.schema';
+import { User, UserDocument } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import {
@@ -61,7 +61,8 @@ export class AuthService {
   private async sendToken(user: UserDocument, res: Response): Promise<void> {
     const token: string = await this.createToken(user._id);
     res.cookie('authorization', `Bearer ${token}`);
-    res.json({ status: 'success', user });
+    delete user.hashPassword;
+    res.json(user);
   }
   /**
    * login and get access token

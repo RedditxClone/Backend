@@ -14,6 +14,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { ControllerService } from './module/controller/controller.service';
 import { FollowModule } from './follow/follow.module';
 import { EmailModule } from './utils/mail/mail.module';
+import { BlockModule } from './block/block.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { EmailModule } from './utils/mail/mail.module';
     }),
     FollowModule,
     EmailModule,
+    BlockModule,
   ],
   controllers: [],
   providers: [ControllerService],

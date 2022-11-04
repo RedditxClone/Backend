@@ -17,6 +17,7 @@ import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
 import { Types } from 'mongoose';
 import { UserStrategy } from './stratigies/user.strategy';
+import { BlockModule } from '../block/block.module';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;
@@ -39,12 +40,12 @@ describe('authController (e2e)', () => {
   let id2: Types.ObjectId;
   const createDummyUsers = async () => {
     const authRes1 = await request(server).post('/auth/signup').send(dto1);
-    id1 = authRes1.body.user._id;
+    id1 = authRes1.body._id;
     const cookie1 = authRes1.headers['set-cookie'];
     const authRes2 = await request(server)
       .post('/auth/signup')
       .send({ ...dto, email: `a${dto.email}`, username: `a${dto.username}` });
-    id2 = authRes2.body.user._id;
+    id2 = authRes2.body._id;
     const cookie2 = authRes2.get('Set-Cookie');
     token1 = cookie1[0].split('; ')[0].split('=')[1].replace('%20', ' ');
     token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
@@ -60,6 +61,7 @@ describe('authController (e2e)', () => {
           signOptions: { expiresIn: '15d' },
         }),
         FollowModule,
+        BlockModule,
       ],
       controllers: [AuthController],
       providers: [UserService, AuthService, UserStrategy, EmailService],
@@ -79,8 +81,7 @@ describe('authController (e2e)', () => {
         .post('/auth/signup')
         .send(dto)
         .expect(HttpStatus.CREATED);
-      expect(res.body).toEqual(expect.objectContaining({ status: 'success' }));
-      expect(res.body.user).toEqual(
+      expect(res.body).toEqual(
         expect.objectContaining({
           username: dto.username,
           email: dto.email,
@@ -100,9 +101,6 @@ describe('authController (e2e)', () => {
         .expect(HttpStatus.CREATED)
         .then((res) => {
           expect(res.body).toEqual(
-            expect.objectContaining({ status: 'success' }),
-          );
-          expect(res.body.user).toEqual(
             expect.objectContaining({
               username: dto.username,
               age: dto.age,
