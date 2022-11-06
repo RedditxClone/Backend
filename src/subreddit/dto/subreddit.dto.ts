@@ -1,18 +1,6 @@
 import { FlairDto } from './flair.dto';
 
-class Rules {
-  title: string;
-  appliedTo: string;
-  reportReason?: string;
-  description?: string;
-}
-
-class RemovalReasons {
-  title: string;
-  description: string;
-}
-
-export class subredditDto {
+export class SubredditDto {
   name: string;
 
   type: string;
@@ -64,10 +52,6 @@ export class subredditDto {
   postTitleBannedWords: string[];
 
   requireWordsInPostTitle: boolean;
-
-  rules: Rules[];
-
-  removalReasons: RemovalReasons[];
 
   postGuidelines: string;
 

@@ -159,7 +159,6 @@ describe('SubredditService', () => {
           subredditWithFlairs1.flairList[0]._id.toString(),
         ),
       };
-      console.log(subredditWithFlairs1);
       expect(subredditWithFlairs1).toEqual(
         expect.objectContaining({
           _id: new mongoose.Types.ObjectId(id),
@@ -225,7 +224,7 @@ describe('SubredditService', () => {
 
   describe('uploadIcon', () => {
     it('The Icon uploaded successfully', async () => {
-      const file = await readFile('test/photos/testingPhoto.jpeg');
+      const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
       await subredditService.uploadIcon(id, { buffer: file });
       await expect(
         typeof (await readFile(`statics/subreddit_icons/${id}.jpeg`)),
@@ -236,7 +235,7 @@ describe('SubredditService', () => {
 
   describe('removeIcon', () => {
     it('The Icon removed successfully', async () => {
-      const file = await readFile('test/photos/testingPhoto.jpeg');
+      const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
       await subredditService.uploadIcon(id, { buffer: file });
       const sr = await subredditService.findSubreddit(id);
       expect(sr.icon).toBe(`statics/subreddit_icons/${id}.jpeg`);

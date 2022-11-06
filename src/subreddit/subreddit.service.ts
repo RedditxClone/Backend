@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
-import { unlinkSync } from 'node:fs';
 import * as sharp from 'sharp';
 import { Subreddit, SubredditDocument } from './subreddit.schema';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { throwIfNullObject } from '../utils/throwException';
+import { unlink } from 'fs/promises';
 @Injectable()
 export class SubredditService {
   constructor(
@@ -76,9 +76,11 @@ export class SubredditService {
     );
     await Promise.all([
       sharp(file.buffer).toFormat('jpeg').toFile(saveDir),
-      this.subredditModel.findByIdAndUpdate(subreddit, {
-        icon: saveDir,
-      }),
+      this.subredditModel
+        .findByIdAndUpdate(subreddit, {
+          icon: saveDir,
+        })
+        .select(''),
     ]);
     return {
       icon: saveDir,
@@ -90,7 +92,7 @@ export class SubredditService {
     throwIfNullObject(
       (
         await Promise.all([
-          unlinkSync(saveDir),
+          unlink(saveDir),
           this.subredditModel
             .findByIdAndUpdate(subreddit, {
               icon: null,

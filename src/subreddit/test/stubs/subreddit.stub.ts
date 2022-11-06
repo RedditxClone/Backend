@@ -31,8 +31,6 @@ export const stubSubreddit = (): Subreddit => {
     welcomeMessageEnabled: false,
     flairList: [],
     description: '',
-    rules: [undefined],
-    removalReasons: [undefined],
     icon: '',
     welcomeMessageText: '',
   };

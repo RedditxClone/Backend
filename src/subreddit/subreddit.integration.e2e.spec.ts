@@ -13,7 +13,9 @@ import { SubredditService } from './subreddit.service';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
+import { readFile, unlink } from 'fs/promises';
 import mongoose from 'mongoose';
+import path from 'path';
 
 jest.mock('../utils/mail/mail.service.ts');
 describe('subredditController (e2e)', () => {
@@ -44,8 +46,6 @@ describe('subredditController (e2e)', () => {
     acceptFollowers: true,
     allowImages: true,
     allowVideos: true,
-    rules: [],
-    removalReasons: [],
     postTitleBannedWords: [],
     postBodyBannedWords: [],
     communityTopics: [],
@@ -84,7 +84,6 @@ describe('subredditController (e2e)', () => {
   it('should be defined', () => {
     expect(app).toBeDefined();
   });
-  let ID: string;
   describe('/POST /subreddit', () => {
     it('must create subreddit successfully', async () => {
       const res = await request(server)
@@ -186,6 +185,47 @@ describe('subredditController (e2e)', () => {
       const res = await request(server).delete(
         `/subreddit/${notValidId}/flair/${flair_id}`,
       );
+      expect(res.body.message).toEqual('Internal server error');
+    });
+  });
+
+  describe('/POST /subreddit/:subreddit/icon', () => {
+    it('must upload a photo successfully', async () => {
+      const saveDir = `statics/subreddit_icons/${sr._id}.jpeg`;
+      const res = await request(server)
+        .post(`/subreddit/${sr._id}/icon`)
+        .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
+      expect(typeof (await readFile(saveDir))).toBe('object');
+      expect(res.body).toEqual({
+        icon: saveDir,
+      });
+      await unlink(saveDir);
+    });
+    it("must throw error subreddit doesn't exist", async () => {
+      const res = await request(server)
+        .post(`/subreddit/${sr._id}1/icon`)
+        .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
+      expect(res.body.message).toEqual('Internal server error');
+    });
+    it('must throw error subreddit no icon provided', async () => {
+      const res = await request(server).post(`/subreddit/${sr._id}1/icon`);
+      expect(res.body.message).toEqual('File is required');
+    });
+  });
+
+  describe('/DELETE /subreddit/:subreddit/icon', () => {
+    it('The Icon removed successfully', async () => {
+      // `statics/subreddit_icons/${sr._id}.jpeg`;
+      await request(server)
+        .post(`/subreddit/${sr._id}/icon`)
+        .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
+      const res = await request(server).delete(`/subreddit/${sr._id}/icon`);
+      expect(res.body).toEqual({
+        status: 'success',
+      });
+    });
+    it("must throw error subreddit doesn't exist", async () => {
+      const res = await request(server).delete(`/subreddit/${sr._id}1/icon`);
       expect(res.body.message).toEqual('Internal server error');
     });
   });

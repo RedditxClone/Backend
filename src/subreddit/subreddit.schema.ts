@@ -96,24 +96,6 @@ export class Subreddit {
   @Prop({ default: false })
   requireWordsInPostTitle: boolean;
 
-  @Prop()
-  rules: [
-    {
-      title: string;
-      appliedTo: string;
-      reportReason?: string;
-      description?: string;
-    },
-  ];
-
-  @Prop()
-  removalReasons: [
-    {
-      title: string;
-      description: string;
-    },
-  ];
-
   @Prop({ default: '' })
   postGuidelines: string;
 
