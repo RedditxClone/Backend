@@ -15,6 +15,7 @@ import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
 import { HttpStatus } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { BlockModule } from '../block/block.module';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -32,6 +33,7 @@ describe('AuthService', () => {
           signOptions: { expiresIn: '15d' },
         }),
         FollowModule,
+        BlockModule,
       ],
       providers: [AuthService, UserService, EmailService],
     })
@@ -70,7 +72,11 @@ describe('AuthService', () => {
         expect.stringMatching(/^Bearer /),
       );
       expect(JSON.parse(res._getData())).toEqual(
-        expect.objectContaining({ status: 'success' }),
+        expect.objectContaining({
+          email: user1.email,
+          username: user1.username,
+          age: user1.age,
+        }),
       );
     });
     it('should throw an error', async () => {
@@ -92,7 +98,11 @@ describe('AuthService', () => {
         expect.stringMatching(/^Bearer /),
       );
       expect(JSON.parse(res._getData())).toEqual(
-        expect.objectContaining({ status: 'success' }),
+        expect.objectContaining({
+          age: user1.age,
+          email: user1.email,
+          username: user1.username,
+        }),
       );
     });
     it("shouldn't login successfully", async () => {

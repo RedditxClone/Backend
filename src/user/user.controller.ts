@@ -17,7 +17,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { JWTUserGuard } from '../auth/guards/user.guard';
+import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { getFriendsDto } from './dto/get-friends.dto';
 import { getUserInfoDto } from './dto/get-user-info.dto';
@@ -82,15 +82,6 @@ export class UserController {
   @Delete('/:user_id/friend')
   unFriend() {
     return this.userService.unFriend();
-  }
-
-  @ApiOperation({ description: 'User block another user' })
-  @ApiOkResponse({ description: 'User blocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
-  @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  @Post('/:user_id/block')
-  block() {
-    return this.userService.block();
   }
 
   @ApiOperation({ description: 'mark user as a spam' })
@@ -228,5 +219,60 @@ export class UserController {
     @Req() request,
   ) {
     return await this.userService.unfollow(request.user._id, user_id);
+  }
+
+  @ApiOperation({ description: 'User block another user' })
+  @ApiOkResponse({ description: 'User blocked successfully' })
+  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/block')
+  async blockUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ): Promise<any> {
+    return await this.userService.block(request.user._id, user_id);
+  }
+
+  @ApiOperation({ description: 'User unblock another user' })
+  @ApiOkResponse({ description: 'User unblocked successfully' })
+  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:user_id/unblock')
+  async unblockUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+    @Req() request,
+  ): Promise<any> {
+    return await this.userService.unblock(request.user._id, user_id);
+  }
+
+  @ApiOperation({ description: 'give a moderation role to the ordinary user' })
+  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTAdminGuard)
+  @Post('/:user_id/make-moderator')
+  async makeModeration(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return await this.userService.allowUserToBeModerator(user_id);
+  }
+
+  @ApiOperation({
+    description:
+      'give an admin role to the ordinary user (for testing purpose and will be deleted)',
+  })
+  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTAdminGuard)
+  @Post('/:user_id/make-admin')
+  async makeAdmin(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return await this.userService.makeAdmin(user_id);
   }
 }
