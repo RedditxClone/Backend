@@ -55,9 +55,9 @@ export class AuthController {
   @ApiCreatedResponse({
     description: 'An email will be sent if the user exists in the database',
   })
-  @Post('forget_password')
-  forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
-    return this.authService.forgetPassword(forgetPasswordDto);
+  @Post('forget-password')
+  async forgetPassword(@Body() dto: ForgetPasswordDto) {
+    return this.authService.forgetPassword(dto);
   }
 
   @ApiOperation({ description: 'Recover the password of an account' })

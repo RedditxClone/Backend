@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Global,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { FollowService } from '../follow/follow.service';
 import { BlockService } from '../block/block.service';
 import { throwGeneralException } from '../utils/throwException';
+import { FilterUserDto } from './dto/user-filter.dto';
 
 @Global()
 @Injectable()
@@ -61,31 +63,40 @@ export class UserService {
       throw new BadRequestException(err.message);
     }
   };
+  private async getOneUser(filter: FilterUserDto) {
+    try {
+      const user: UserDocument = await this.userModel.findOne(filter);
+      if (!user)
+        throw new NotFoundException(
+          `there is no user with information ${JSON.stringify(filter)}`,
+        );
+      return user;
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  }
   /**
    * get a user with specific id
    * @param id id of the user
    * @returns the user
    */
-  getUserById = async (id: Types.ObjectId): Promise<UserDocument> => {
-    try {
-      const user: UserDocument = await this.userModel.findById(id);
-      if (!user)
-        throw new BadRequestException(`there is no user with id ${id}`);
-      return user;
-    } catch (err) {
-      throw new BadRequestException(err.message);
-    }
-  };
-  getUserByEmail = async (email: string): Promise<UserDocument> => {
-    const user: UserDocument = await this.userModel.findOne({ email });
-    if (!user) throw new BadRequestException(`no user with email ${email}`);
-    return user;
-  };
+  async getUserById(id: Types.ObjectId): Promise<UserDocument> {
+    return this.getOneUser({ _id: id });
+  }
+  async getUserByEmail(email: string): Promise<UserDocument> {
+    return this.getOneUser({ email });
+  }
+  async getUserByUsername(username: string): Promise<UserDocument> {
+    return this.getOneUser({ username });
+  }
   async validPassword(
     userPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
     return await bcrypt.compare(userPassword, hashedPassword);
+  }
+  async userExist(filter: FilterUserDto): Promise<boolean> {
+    return (await this.userModel.count(filter)) > 0;
   }
   /**
    * follow a user
@@ -98,10 +109,7 @@ export class UserService {
     followed: Types.ObjectId,
   ): Promise<any> {
     try {
-      const followedExist: boolean =
-        (await this.userModel.count({
-          _id: followed,
-        })) > 0;
+      const followedExist: boolean = await this.userExist({ _id: followed });
       if (!followedExist)
         throw new BadRequestException(
           `there is no user with id : ${followed.toString()}`,
@@ -138,10 +146,7 @@ export class UserService {
    * @returns {status : 'success'}
    */
   async block(blocker: Types.ObjectId, blocked: Types.ObjectId): Promise<any> {
-    const blockedExist: boolean =
-      (await this.userModel.count({
-        _id: blocked,
-      })) > 0;
+    const blockedExist: boolean = await this.userExist({ _id: blocked });
     if (!blockedExist)
       throw new BadRequestException(
         `there is no user with id : ${blocked.toString()}`,
