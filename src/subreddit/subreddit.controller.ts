@@ -26,6 +26,7 @@ import {
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import { SubredditDocument } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
 @ApiTags('subreddit')
@@ -38,7 +39,9 @@ export class SubredditController {
   @ApiUnprocessableEntityResponse({ description: 'Bad Request' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post()
-  createSubreddit(@Body() createSubredditDto: CreateSubredditDto) {
+  createSubreddit(
+    @Body() createSubredditDto: CreateSubredditDto,
+  ): Promise<SubredditDocument> {
     return this.subredditService.create(createSubredditDto);
   }
 
@@ -46,7 +49,9 @@ export class SubredditController {
   @ApiCreatedResponse({ description: 'The subreddit returned succesfully' })
   @ApiBadRequestResponse({ description: "The subreddit name doesn't exist" })
   @Get('/:subreddit')
-  getSubreddit(@Param('subreddit') subreddit: string) {
+  getSubreddit(
+    @Param('subreddit') subreddit: string,
+  ): Promise<SubredditDocument> {
     return this.subredditService.findSubreddit(subreddit);
   }
 
@@ -144,11 +149,11 @@ export class SubredditController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Patch(':subreddit')
-  update(
+  updateSubreddit(
     @Param('subreddit') subreddit: string,
     @Body() updateSubredditDto: UpdateSubredditDto,
   ) {
-    this.subredditService.updateSubreddit(subreddit, updateSubredditDto);
+    return this.subredditService.update(subreddit, updateSubredditDto);
   }
 
   @ApiOperation({ description: 'Delete a subreddit icon' })
@@ -157,8 +162,7 @@ export class SubredditController {
   @ApiNotFoundResponse({ description: 'The subreddit not found' })
   @Delete(':subreddit/icon')
   removeIcon(@Param('subreddit') subreddit: string) {
-    this.subredditService.removeIcon(subreddit);
-    return;
+    return this.subredditService.removeIcon(subreddit);
   }
 
   @ApiOperation({ description: 'Delete flair from subreddit flairlist' })
@@ -170,8 +174,7 @@ export class SubredditController {
     @Param('subreddit') subreddit: string,
     @Param('flair_id') flair_id: string,
   ) {
-    this.subredditService.deleteFlairById(subreddit, flair_id);
-    return;
+    return this.subredditService.deleteFlairById(subreddit, flair_id);
   }
 
   @ApiOperation({ description: 'Get the flairs of the user in a subreddit' })

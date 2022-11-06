@@ -121,29 +121,19 @@ describe('SubredditService', () => {
     };
 
     it('Should update the subreddit successfully', async () => {
-      const subredditUpdated = await subredditService.updateSubreddit(
-        id,
-        updatedFields,
-      );
-      expect(subredditUpdated).toEqual(
-        expect.objectContaining({
-          ...defaultFields,
-          name: subredditDefault.name,
-          over18: subredditDefault.over18,
-          ...updatedFields,
-        }),
-      );
+      const subredditUpdated = await subredditService.update(id, updatedFields);
+      expect(subredditUpdated).toEqual({ status: 'success' });
     });
 
     it('Should throw an error', async () => {
       await expect(async () => {
-        await subredditService.updateSubreddit(
+        await subredditService.update(
           '6363fba4ab2c2f94f3ac9f31',
           updatedFields,
         );
       }).rejects.toThrow('No subreddit with such id');
       await expect(async () => {
-        await subredditService.updateSubreddit(
+        await subredditService.update(
           '6363fba4ab2c2f94f3ac9f31',
           updatedFields,
         );
@@ -169,10 +159,10 @@ describe('SubredditService', () => {
           subredditWithFlairs1.flairList[0]._id.toString(),
         ),
       };
+      console.log(subredditWithFlairs1);
       expect(subredditWithFlairs1).toEqual(
         expect.objectContaining({
-          ...defaultFields,
-          ...subredditDefault,
+          _id: new mongoose.Types.ObjectId(id),
           flairList: [newFlair1],
         }),
       );
@@ -188,8 +178,7 @@ describe('SubredditService', () => {
       };
       expect(subredditWithFlairs2).toEqual(
         expect.objectContaining({
-          ...defaultFields,
-          ...subredditDefault,
+          _id: new mongoose.Types.ObjectId(id),
           flairList: [newFlair1, newFlair2],
         }),
       );
@@ -228,12 +217,9 @@ describe('SubredditService', () => {
         id,
         newFlair1._id.toString(),
       );
-      expect(newSubreddit).toEqual(
-        expect.objectContaining({
-          _id: new mongoose.Types.ObjectId(id),
-          flairList: [newFlair2],
-        }),
-      );
+      expect(newSubreddit).toEqual({
+        status: 'success',
+      });
     });
   });
 

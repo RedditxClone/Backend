@@ -30,18 +30,16 @@ export class SubredditService {
     );
   }
 
-  async updateSubreddit(
-    subreddit: string,
-    updateSubredditDto: UpdateSubredditDto,
-  ): Promise<SubredditDocument> {
-    return throwIfNullObject(
-      await this.subredditModel.findByIdAndUpdate(
-        subreddit,
-        updateSubredditDto,
-        { new: true },
-      ),
+  async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
+    throwIfNullObject(
+      await this.subredditModel
+        .findByIdAndUpdate(subreddit, updateSubredditDto)
+        .select('_id'),
       'No subreddit with such id',
     );
+    return {
+      status: 'success',
+    };
   }
 
   async createFlair(
@@ -50,13 +48,15 @@ export class SubredditService {
   ): Promise<SubredditDocument> {
     flairDto._id = new mongoose.Types.ObjectId();
     return throwIfNullObject(
-      await this.subredditModel.findByIdAndUpdate(
-        subreddit,
-        {
-          $push: { flairList: flairDto },
-        },
-        { new: true },
-      ),
+      await this.subredditModel
+        .findByIdAndUpdate(
+          subreddit,
+          {
+            $push: { flairList: flairDto },
+          },
+          { new: true },
+        )
+        .select('flairList'),
       'No subreddit with such id',
     );
   }
@@ -91,9 +91,11 @@ export class SubredditService {
       (
         await Promise.all([
           unlinkSync(saveDir),
-          this.subredditModel.findByIdAndUpdate(subreddit, {
-            icon: null,
-          }),
+          this.subredditModel
+            .findByIdAndUpdate(subreddit, {
+              icon: null,
+            })
+            .select(''),
         ])
       )[1],
       'No subreddit with such id',
@@ -102,20 +104,15 @@ export class SubredditService {
   }
 
   async deleteFlairById(subreddit: string, flair_id: string) {
-    return throwIfNullObject(
-      await this.subredditModel
-        .findByIdAndUpdate(
-          subreddit,
-          {
-            $pull: {
-              flairList: { _id: new mongoose.Types.ObjectId(flair_id) },
-            },
-          },
-          { new: true },
-        )
-        .select('flairList'),
+    const flair = throwIfNullObject(
+      await this.subredditModel.findByIdAndUpdate(subreddit, {
+        $pull: {
+          flairList: { _id: new mongoose.Types.ObjectId(flair_id) },
+        },
+      }),
       'No subreddit with such id',
     );
+    return { status: 'success' };
   }
 
   getHotSubreddits(subreddit: string) {

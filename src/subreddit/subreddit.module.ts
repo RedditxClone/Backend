@@ -10,5 +10,6 @@ import { SubredditSchema } from './subreddit.schema';
   ],
   controllers: [SubredditController],
   providers: [SubredditService],
+  exports: [SubredditService],
 })
 export class SubredditModule {}

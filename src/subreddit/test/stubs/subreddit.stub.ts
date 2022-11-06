@@ -14,7 +14,7 @@ export const stubSubreddit = (): Subreddit => {
     spoilersEnabled: true,
     suggestedCommentSort: 'None',
     acceptFollowers: true,
-    over18: true,
+    over18: false,
     allowImages: true,
     allowVideos: true,
     acceptingRequestsToJoin: true,
