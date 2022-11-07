@@ -73,7 +73,6 @@ describe('AuthService', () => {
         expect.objectContaining({
           email: user1.email,
           username: user1.username,
-          age: user1.age,
         }),
       );
     });
@@ -97,7 +96,6 @@ describe('AuthService', () => {
       );
       expect(JSON.parse(res._getData())).toEqual(
         expect.objectContaining({
-          age: user1.age,
           email: user1.email,
           username: user1.username,
         }),
