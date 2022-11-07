@@ -118,8 +118,8 @@ describe('apiFeaturesService', () => {
       expect(data.length).toBe(1);
       expect(data[0]).toEqual(
         expect.objectContaining({
-          name: 'test_10',
-          age: 10,
+          name: data[0].name,
+          age: data[0].age,
         }),
       );
     });
