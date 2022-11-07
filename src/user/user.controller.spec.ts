@@ -36,7 +36,7 @@ describe('UserControllerSpec', () => {
         availableUsernameDto,
         res,
       );
-      expect(val).toBeUndefined();
+      expect(val).toEqual({ status: true });
     });
   });
 

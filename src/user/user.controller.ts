@@ -219,7 +219,10 @@ export class UserController {
     @Body() availableUsernameDto: AvailableUsernameDto,
     @Res() res: Response,
   ) {
-    await this.userService.checkAvailableUsername(availableUsernameDto, res);
+    return await this.userService.checkAvailableUsername(
+      availableUsernameDto,
+      res,
+    );
   }
   @ApiOperation({ description: 'follow specific user' })
   @UseGuards(JWTUserGuard)
