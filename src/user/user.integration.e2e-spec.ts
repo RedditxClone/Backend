@@ -125,8 +125,10 @@ describe('userController (e2e)', () => {
       const wrong_id = new Types.ObjectId('wrong_id____');
       const res = await request(server)
         .get(`/user/${wrong_id}`)
-        .expect(HttpStatus.BAD_REQUEST);
-      expect(res.body.message).toEqual(`there is no user with id ${wrong_id}`);
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toEqual(
+        `there is no user with information {"_id":"${wrong_id}"}`,
+      );
     });
   });
   describe('/POST /user/:user_id/follow', () => {

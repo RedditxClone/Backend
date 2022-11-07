@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
@@ -49,13 +50,13 @@ export class AuthService {
   private async createAuthToken(id: string): Promise<string> {
     return await this.jwtService.signAsync(
       { id },
-      { secret: process.env.JWT_SECRET },
+      { secret: process.env.JWT_SECRET, expiresIn: '10d' },
     );
   }
-  private async createChangePasswordToken(username: string) {
+  async createChangePasswordToken(username: string) {
     return await this.jwtService.signAsync(
       { username },
-      { secret: process.env.FORGET_PASSWORD_SECRET },
+      { secret: process.env.FORGET_PASSWORD_SECRET, expiresIn: '1h' },
     );
   }
   /**
@@ -115,19 +116,26 @@ export class AuthService {
         'FORGET PASSWORD',
         `this is a url to a token ${token}`,
       );
+      return { status: 'success' };
     } catch (err) {
       throwGeneralException(err);
     }
   }
 
-  async changePasswordUsingToken(dto: ChangePasswordDto) {
+  /**
+   * A function to change user password.
+   *
+   * @param id the user id
+   * @param password the new password
+   * @returns a response 401 if password 404 if the user doesn't exist invalid 200 if changed
+   */
+  async changePasswordUsingToken(id: Types.ObjectId, password: string) {
     try {
-      if (dto.oldPassword !== dto.newPassword)
-        throw new BadRequestException(
-          `old password must be equal to new password`,
-        );
-        this.userService.
-    } catch (err) {}
+      await this.userService.changePassword(id, password);
+      return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
   }
   /**
    * A function to change user password.

@@ -14,6 +14,7 @@ import { FollowService } from '../follow/follow.service';
 import { BlockService } from '../block/block.service';
 import { throwGeneralException } from '../utils/throwException';
 import { FilterUserDto } from './dto/user-filter.dto';
+import { ChangePasswordDto } from 'src/auth/dto';
 
 @Global()
 @Injectable()
@@ -88,6 +89,17 @@ export class UserService {
   }
   async getUserByUsername(username: string): Promise<UserDocument> {
     return this.getOneUser({ username });
+  }
+  private async createHashedPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, await bcrypt.genSalt(10));
+  }
+  async changePassword(id: Types.ObjectId, password: string): Promise<void> {
+    const hashPassword = await this.createHashedPassword(password);
+    const user: UserDocument = await this.userModel.findByIdAndUpdate(id, {
+      hashPassword,
+    });
+    if (!user)
+      throw new NotFoundException(`there is no user with id ${id.toString()}`);
   }
   async validPassword(
     userPassword: string,

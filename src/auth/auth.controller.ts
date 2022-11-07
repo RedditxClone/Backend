@@ -8,7 +8,6 @@ import {
   Req,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -17,13 +16,17 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { ChangePasswordDto } from './dto/changePassword.dto';
+import {
+  ChangeForgottenPasswordDto,
+  ChangePasswordDto,
+} from './dto/changePassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto';
 import { Response } from 'express';
 import { ForgetUsernameDto, SigninDto } from './dto';
 import { JWTUserGuard } from './guards';
+import { JWTForgetPasswordGuard } from './guards/forget-password.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -57,7 +60,7 @@ export class AuthController {
   })
   @Post('forget-password')
   async forgetPassword(@Body() dto: ForgetPasswordDto) {
-    return this.authService.forgetPassword(dto);
+    return await this.authService.forgetPassword(dto);
   }
 
   @ApiOperation({ description: 'Recover the password of an account' })
@@ -73,6 +76,18 @@ export class AuthController {
     @Res() res: Response,
   ) {
     await this.authService.forgetUsername(forgetUsernameDto, res);
+  }
+
+  @UseGuards(JWTForgetPasswordGuard)
+  @Post('change-forgotten-password')
+  async changeForgottenPassword(
+    @Body() dto: ChangeForgottenPasswordDto,
+    @Req() req: any,
+  ) {
+    return await this.authService.changePasswordUsingToken(
+      req.user._id,
+      dto.password,
+    );
   }
 
   @ApiOperation({ description: 'Change the password of an account' })
