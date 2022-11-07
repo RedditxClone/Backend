@@ -1,4 +1,5 @@
 export * from './user.dto';
+export * from './available-username.dto';
 export * from './friend.dto';
 export * from './get-friends.dto';
 export * from './get-user-info.dto';

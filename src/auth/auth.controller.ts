@@ -8,6 +8,7 @@ import {
   Req,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -22,7 +23,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto';
 import { Response } from 'express';
 import { ForgetUsernameDto, SigninDto } from './dto';
-import { JWTUserGuard } from './guards/user.guard';
+import { JWTUserGuard } from './guards';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -85,6 +86,10 @@ export class AuthController {
     @Res() res: Response,
     @Req() req,
   ) {
-    await this.authService.changePassword(req.user._id, changePasswordDto, res);
+    return await this.authService.changePassword(
+      req.user._id,
+      changePasswordDto,
+      res,
+    );
   }
 }

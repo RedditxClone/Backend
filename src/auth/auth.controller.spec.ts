@@ -68,7 +68,7 @@ describe('AuthController', () => {
       };
       req.user = { _id: 213 };
       const val = await controller.changePassword(dto, res, req);
-      expect(val).toBeUndefined();
+      expect(val).not.toBeTruthy();
     });
   });
 });
