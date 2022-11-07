@@ -9,6 +9,8 @@ import { CreateUserDto } from './dto';
 import { UserDocument, UserSchema } from './user.schema';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
+import { createResponse } from 'node-mocks-http';
+import { HttpStatus } from '@nestjs/common';
 import { FollowModule } from '../follow/follow.module';
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { ConfigModule } from '@nestjs/config';
@@ -136,6 +138,24 @@ describe('UserService', () => {
       await expect(async () => {
         await service.getUserByEmail('wrong_email@gmail.com');
       }).rejects.toThrow(`no user with email wrong_email@gmail.com`);
+    });
+  });
+  describe('checkAvailableUsername', () => {
+    it('should return 201', async () => {
+      const res = createResponse();
+      await service.checkAvailableUsername({ username: 'notTaken' }, res);
+      expect(res._getStatusCode()).toEqual(HttpStatus.CREATED);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: true }),
+      );
+    });
+    it('should return 401', async () => {
+      const res = createResponse();
+      await service.checkAvailableUsername({ username: 'omarfareed' }, res);
+      expect(res._getStatusCode()).toEqual(HttpStatus.UNAUTHORIZED);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: false }),
+      );
     });
   });
   describe('follow', () => {

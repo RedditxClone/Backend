@@ -12,7 +12,7 @@ import { UserSchema } from './user.schema';
 import { AuthController } from '../auth/auth.controller';
 import { UserService } from './user.service';
 import { AuthService } from '../auth/auth.service';
-import { CreateUserDto } from './dto';
+import { AvailableUsernameDto, CreateUserDto } from './dto';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowModule } from '../follow/follow.module';
 import { Types } from 'mongoose';
@@ -127,6 +127,28 @@ describe('userController (e2e)', () => {
         .get(`/user/${wrong_id}`)
         .expect(HttpStatus.BAD_REQUEST);
       expect(res.body.message).toEqual(`there is no user with id ${wrong_id}`);
+    });
+  });
+  describe('/POST /user/check-available-username', () => {
+    it('must send successfully', async () => {
+      const dto: AvailableUsernameDto = { username: 'notTaken' };
+      await request(server)
+        .post('/user/check-available-username')
+        .send(dto)
+        .expect(HttpStatus.CREATED)
+        .then((res) => {
+          expect(res.body).toEqual(expect.objectContaining({ status: true }));
+        });
+    });
+    it("mustn't send successfully", async () => {
+      const dto: AvailableUsernameDto = { username: 'username' };
+      await request(server)
+        .post('/user/check-available-username')
+        .send(dto)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .then((res) => {
+          expect(res.body).toEqual(expect.objectContaining({ status: false }));
+        });
     });
   });
   describe('/POST /user/:user_id/follow', () => {
