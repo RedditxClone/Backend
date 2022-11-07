@@ -1,3 +1,5 @@
+import { plainToClass } from 'class-transformer';
+import { PrefsDto } from '../dto';
 import { stubUser } from '../test/stubs/user.stub';
 
 export const UserService = jest.fn().mockReturnValue({
@@ -5,4 +7,6 @@ export const UserService = jest.fn().mockReturnValue({
   getUserById: jest.fn().mockResolvedValue(stubUser()),
   follow: jest.fn().mockResolvedValue({ status: 'success' }),
   unfollow: jest.fn().mockResolvedValue({ status: 'success' }),
+  getUserPrefs: jest.fn().mockResolvedValue(plainToClass(PrefsDto, stubUser())),
+  updateUserPrefs: jest.fn().mockResolvedValue({ status: 'success' }),
 });

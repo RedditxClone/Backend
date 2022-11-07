@@ -5,13 +5,15 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongooseInMemory';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, PrefsDto } from './dto';
 import { UserDocument, UserSchema } from './user.schema';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
 import { FollowModule } from '../follow/follow.module';
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { stubUser } from './test/stubs/user.stub';
+import { plainToClass } from 'class-transformer';
 
 jest.mock('../follow/follow.service.ts');
 
@@ -150,6 +152,35 @@ describe('UserService', () => {
     });
   });
 
+  describe('updatePrefsSpec', () => {
+    it('should update succesfully', async () => {
+      const res: any = await service.updateUserPrefs(
+        id,
+        plainToClass(PrefsDto, stubUser()),
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('getPrefsSpec', () => {
+    it('should get succesfully', async () => {
+      const prefs: PrefsDto = { countryCode: 'eg' };
+      const user = plainToClass(PrefsDto, stubUser());
+      const res1: PrefsDto = await service.getUserPrefs(id);
+      expect(res1).toEqual(expect.objectContaining(user));
+      user.countryCode = 'eg';
+      await service.updateUserPrefs(id, prefs);
+      const res2: PrefsDto = await service.getUserPrefs(id);
+      expect(res2).toEqual(expect.objectContaining({ ...user }));
+    });
+    it('should fail', async () => {
+      const prefs: PrefsDto = { countryCode: 'eg', allowFollow: false };
+      const user = plainToClass(PrefsDto, stubUser());
+      user.countryCode = 'eg';
+      await service.updateUserPrefs(id, prefs);
+      const res2: PrefsDto = await service.getUserPrefs(id);
+      expect(res2).not.toEqual(expect.objectContaining({ ...user }));
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

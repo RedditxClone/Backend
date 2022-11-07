@@ -9,29 +9,29 @@ export class PrefsDto {
   @Expose()
   @ApiProperty({ description: 'Country Code ex: eg for Egypt' })
   @IsString()
-  countryCode: string;
+  countryCode?: string;
   @IsOptional()
   @Expose()
   @ApiProperty({ description: 'gender male or female' })
   @IsString()
   @IsIn(['male', 'female'])
-  gender: string;
+  gender?: string;
   @IsOptional()
   @Expose()
   //profile
   @ApiProperty({ description: 'display name of user' })
   @IsString()
-  displayName: string;
+  displayName?: string;
   @IsOptional()
   @Expose()
   @ApiProperty({ description: "user's about" })
   @IsString()
-  about: string;
+  about?: string;
   @IsOptional()
   @Expose()
   @ApiProperty({ description: 'social links like twitter' })
   @IsString({ each: true })
-  socialLinks: string[];
+  socialLinks?: string[];
   @IsOptional()
   @Expose()
   @ApiProperty({
@@ -39,7 +39,7 @@ export class PrefsDto {
       'This content is NSFW (may contain nudity, pornography, profanity or inappropriate content for those under 18)',
   })
   @IsBoolean()
-  nsfw: boolean;
+  nsfw?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
@@ -47,21 +47,21 @@ export class PrefsDto {
       'Followers will be notified about posts you make to your profile and see them in their home feed.',
   })
   @IsBoolean()
-  allowFollow: boolean;
+  allowFollow?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `Posts to this profile can appear in r/all and your profile can be discovered in /users`,
   })
   @IsBoolean()
-  contentVisibility: boolean;
+  contentVisibility?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: 'Show which communities I am active in on my profile.',
   })
   @IsBoolean()
-  activeInCommunitiesVisibility: boolean;
+  activeInCommunitiesVisibility?: boolean;
   @IsOptional()
   @Expose()
   //safety
@@ -70,14 +70,14 @@ export class PrefsDto {
   })
   @IsString()
   @IsIn([`off`, `low`, `medium`, `high`])
-  badCommentAutoCollapse: string;
+  badCommentAutoCollapse?: string;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `Allow search engines like Google to link to your profile in their search results.`,
   })
   @IsBoolean()
-  showInSearch: boolean;
+  showInSearch?: boolean;
   @IsOptional()
   @Expose()
   //feed
@@ -85,14 +85,14 @@ export class PrefsDto {
     description: `Enable to view adult and NSFW (not safe for work) content in your feed and search results.`,
   })
   @IsBoolean()
-  adultContent: boolean;
+  adultContent?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `Play videos and gifs automatically when in the viewport.`,
   })
   @IsBoolean()
-  autoPlayMedia: boolean;
+  autoPlayMedia?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
@@ -100,7 +100,7 @@ export class PrefsDto {
   })
   @IsIn([`hot`, `new`, `top`, `rising`])
   @IsString()
-  suggestedSort: string;
+  suggestedSort?: string;
   @IsOptional()
   @Expose()
   //notifications
@@ -108,112 +108,112 @@ export class PrefsDto {
     description: `notify on inbox message`,
   })
   @IsBoolean()
-  inboxMessages: boolean;
+  inboxMessages?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on mention`,
   })
   @IsBoolean()
-  mentions: boolean;
+  mentions?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on comment on post`,
   })
   @IsBoolean()
-  commentsOnPost: boolean;
+  commentsOnPost?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on post upvote`,
   })
   @IsBoolean()
-  upvotePosts: boolean;
+  upvotePosts?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on comment upvote`,
   })
   @IsBoolean()
-  upvoteComments: boolean;
+  upvoteComments?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on reply comment`,
   })
   @IsBoolean()
-  repliesComments: boolean;
+  repliesComments?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on activity on your comment`,
   })
   @IsBoolean()
-  activityComments: boolean;
+  activityComments?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on activity on your thread`,
   })
   @IsBoolean()
-  activityOnThreads: boolean;
+  activityOnThreads?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on new followers`,
   })
   @IsBoolean()
-  newFollowers: boolean;
+  newFollowers?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on new post flairs`,
   })
   @IsBoolean()
-  newPostFlair: boolean;
+  newPostFlair?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on new user flair`,
   })
   @IsBoolean()
-  newUserFlair: boolean;
+  newUserFlair?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on pinned posts`,
   })
   @IsBoolean()
-  pinnedPosts: boolean;
+  pinnedPosts?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on posts you follow`,
   })
   @IsBoolean()
-  postsYouFollow: boolean;
+  postsYouFollow?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on comments you follow`,
   })
   @IsBoolean()
-  commentsYouFollow: boolean;
+  commentsYouFollow?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on reddit announcement`,
   })
   @IsBoolean()
-  redditAnnouncements: boolean;
+  redditAnnouncements?: boolean;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on your cake day`,
   })
   @IsBoolean()
-  cakeDay: boolean;
+  cakeDay?: boolean;
   @IsOptional()
   @Expose()
   //messages
@@ -222,12 +222,12 @@ export class PrefsDto {
   })
   @IsString()
   @IsIn(['everyone', 'whitelisted'])
-  acceptPms: string;
+  acceptPms?: string;
   @IsOptional()
   @Expose()
   @ApiProperty({
     description: 'List of users allowed to private message the user',
   })
   @IsString({ each: true })
-  whitelisted: string[];
+  whitelisted?: string[];
 }
