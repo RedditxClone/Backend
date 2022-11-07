@@ -128,7 +128,7 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
   async getUserPrefs(@Req() request) {
-    return this.userService.getUserPrefs(request.user._id, new PrefsDto());
+    return await this.userService.getUserPrefs(request.user._id);
   }
 
   @ApiOperation({ description: 'Update user preferences' })
@@ -137,7 +137,7 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
   async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
-    return this.userService.getUserPrefs(request.user._id, prefsDto);
+    return await this.userService.updateUserPrefs(request.user._id, prefsDto);
   }
 
   @ApiOperation({ description: 'Get information about the user' })

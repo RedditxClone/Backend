@@ -18,7 +18,7 @@ export class User {
   //Account
   @Prop({ required: false, default: '' })
   countryCode: string;
-  @Prop({ enum: [`male`, `female`], default: '' })
+  @Prop({ enum: [`male`, `female`, ``], default: '' })
   gender: string;
   //profile
   @Prop({ default: '' })

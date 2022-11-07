@@ -6,6 +6,8 @@ import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { FollowService } from '../follow/follow.service';
 import { PrefsDto } from './dto';
+import { throwGeneralException } from '../utils/throwException';
+import { plainToClass } from 'class-transformer';
 
 @Global()
 @Injectable()
@@ -109,11 +111,31 @@ export class UserService {
   async unfollow(follower: Types.ObjectId, followed: Types.ObjectId) {
     return this.followService.unfollow({ follower, followed });
   }
-
-  getUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
-    return prefsDto;
+  /**
+   * returns all user's preferences
+   * @param _id user's Id
+   * @returns a promise of PrefsDto
+   */
+  getUserPrefs = async (_id: Types.ObjectId): Promise<PrefsDto> => {
+    try {
+      const user: UserDocument = await this.getUserById(_id);
+      return plainToClass(PrefsDto, user);
+    } catch (err) {
+      throwGeneralException(err);
+    }
   };
-  // name = async (params: type) => {
-  //   console.log(_.pickBy({ a: null, b: 1, c: undefined }, _.identity));
-  // };
+  /**
+   * update some or all user's preferences
+   * @param _id user's Id
+   * @param prefsDto encapsulates requests data
+   * @returns succuss status if Ok
+   */
+  updateUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
+    try {
+      await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
+      return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  };
 }
