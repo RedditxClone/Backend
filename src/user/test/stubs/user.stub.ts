@@ -27,6 +27,7 @@ export const stubUser = (): User => {
     inboxMessages: true,
     mentions: true,
     commentsOnPost: true,
+    upvotePosts: true,
     upvoteComments: true,
     repliesComments: true,
     activityComments: true,
@@ -41,5 +42,6 @@ export const stubUser = (): User => {
     cakeDay: true,
     //messages
     acceptPms: 'everyone',
+    whitelisted: [],
   };
 };

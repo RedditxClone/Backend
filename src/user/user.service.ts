@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { FollowService } from '../follow/follow.service';
+import { PrefsDto } from './dto';
 
 @Global()
 @Injectable()
@@ -108,4 +109,11 @@ export class UserService {
   async unfollow(follower: Types.ObjectId, followed: Types.ObjectId) {
     return this.followService.unfollow({ follower, followed });
   }
+
+  getUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
+    return prefsDto;
+  };
+  // name = async (params: type) => {
+  //   console.log(_.pickBy({ a: null, b: 1, c: undefined }, _.identity));
+  // };
 }

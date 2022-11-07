@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -19,13 +20,15 @@ import {
 import { Types } from 'mongoose';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
-import { getFriendsDto } from './dto/get-friends.dto';
-import { getUserInfoDto } from './dto/get-user-info.dto';
-import { PrefsDto } from './dto/prefs.dto';
-import { UserAccountDto } from './dto/user-account.dto';
-import { UserCommentsDto } from './dto/user-comments.dto';
-import { UserOverviewDto } from './dto/user-overview.dto';
-import { UserPostsDto } from './dto/user-posts.dto';
+import {
+  getFriendsDto,
+  UserAccountDto,
+  PrefsDto,
+  getUserInfoDto,
+  UserOverviewDto,
+  UserPostsDto,
+  UserCommentsDto,
+} from './dto';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -122,17 +125,19 @@ export class UserController {
     type: PrefsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
-  getUserPrefs() {
-    return 'Get the logged user preferences (Settings)';
+  async getUserPrefs(@Req() request) {
+    return this.userService.getUserPrefs(request.user._id, new PrefsDto());
   }
 
   @ApiOperation({ description: 'Update user preferences' })
   @ApiOkResponse({ description: 'The preferences updated successfully' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
-  updateUserPrefs() {
-    return 'Updata the logged user preferences (Settings)';
+  async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
+    return this.userService.getUserPrefs(request.user._id, prefsDto);
   }
 
   @ApiOperation({ description: 'Get information about the user' })

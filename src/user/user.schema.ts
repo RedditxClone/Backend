@@ -12,23 +12,20 @@ export class User {
   email: string;
   @Prop({ required: true })
   hashPassword: string;
-  // default value and enum values will be added
-  @Prop({ enum: ['hot', 'new', 'top', 'rising'], default: 'hot' })
-  suggestedSort: string;
   // moderator access is given to specific users
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
   authType: string;
   //Account
-  @Prop({ required: false })
+  @Prop({ required: false, default: '' })
   countryCode: string;
-  @Prop({ enum: [`male`, `female`] })
+  @Prop({ enum: [`male`, `female`], default: '' })
   gender: string;
   //profile
-  @Prop()
+  @Prop({ default: '' })
   displayName: string;
-  @Prop()
+  @Prop({ default: '' })
   about: string;
-  @Prop()
+  @Prop({ default: [] })
   socialLinks: string[];
   @Prop({ default: false })
   nsfw: boolean;
@@ -48,6 +45,9 @@ export class User {
   adultContent: boolean;
   @Prop({ default: true })
   autoPlayMedia: boolean;
+  // default value and enum values will be added
+  @Prop({ enum: ['hot', 'new', 'top', 'rising'], default: 'hot' })
+  suggestedSort: string;
   //notifications
   @Prop({ default: true })
   inboxMessages: boolean;
@@ -55,6 +55,8 @@ export class User {
   mentions: boolean;
   @Prop({ default: true })
   commentsOnPost: boolean;
+  @Prop({ default: true })
+  upvotePosts: boolean;
   @Prop({ default: true })
   upvoteComments: boolean;
   @Prop({ default: true })
@@ -82,6 +84,8 @@ export class User {
   //messages
   @Prop({ enum: [`everyone`, `whitelisted`], default: 'everyone' })
   acceptPms: string;
+  @Prop({ default: [] })
+  whitelisted: string[];
 }
 
 export const UserSchema = (() => {
