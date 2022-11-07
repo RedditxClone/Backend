@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Global,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
+import { AvailableUsernameDto } from './dto';
+import { Response } from 'express';
 import { FollowService } from '../follow/follow.service';
 import { BlockService } from '../block/block.service';
 import { throwGeneralException } from '../utils/throwException';
@@ -87,6 +90,22 @@ export class UserService {
   ): Promise<boolean> {
     return await bcrypt.compare(userPassword, hashedPassword);
   }
+  /**
+   * A function to check if username is taken before or not
+   * @param availableUsernameDto encapsulates the data of the request username
+   * @param res the response that will be sent to the requester
+   */
+  checkAvailableUsername = async (
+    availableUsernameDto: AvailableUsernameDto,
+    res: Response,
+  ) => {
+    const user: UserDocument = await this.userModel.findOne({
+      ...availableUsernameDto,
+    });
+    if (!user) {
+      res.status(HttpStatus.CREATED).json({ status: true });
+    } else res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
+  };
   /**
    * follow a user
    * @param follower id of the follower user

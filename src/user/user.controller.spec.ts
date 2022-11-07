@@ -1,12 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { CreateUserDto } from './dto';
+import { AvailableUsernameDto } from './dto';
 import { UserController } from './user.controller';
 import { UserDocument } from './user.schema';
 import { UserService } from './user.service';
 import { stubUser } from './test/stubs/user.stub';
-import { createRequest } from 'node-mocks-http';
-import { JWTUserGuard } from '../auth/guards/user.guard';
+import { createRequest, createResponse } from 'node-mocks-http';
 
 jest.mock('./user.service');
 describe('UserControllerSpec', () => {
@@ -29,6 +28,18 @@ describe('UserControllerSpec', () => {
       expect(user).toEqual(stubUser());
     });
   });
+  describe('availableUsernameSpec', () => {
+    it('should run without problems', async () => {
+      const availableUsernameDto: AvailableUsernameDto = { username: 'test' };
+      const res = createResponse();
+      const val = await userController.checkAvailableUsername(
+        availableUsernameDto,
+        res,
+      );
+      expect(val).toEqual({ status: true });
+    });
+  });
+
   describe('follow', () => {
     test('it should follow successfully', async () => {
       const req = createRequest();

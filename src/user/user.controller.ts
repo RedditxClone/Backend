@@ -1,15 +1,18 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   Patch,
   Post,
+  Res,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
@@ -19,14 +22,18 @@ import {
 import { Types } from 'mongoose';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { ParseObjectIdPipe } from '../utils/utils.service';
-import { getFriendsDto } from './dto/get-friends.dto';
-import { getUserInfoDto } from './dto/get-user-info.dto';
-import { PrefsDto } from './dto/prefs.dto';
-import { UserAccountDto } from './dto/user-account.dto';
-import { UserCommentsDto } from './dto/user-comments.dto';
-import { UserOverviewDto } from './dto/user-overview.dto';
-import { UserPostsDto } from './dto/user-posts.dto';
+import {
+  AvailableUsernameDto,
+  getFriendsDto,
+  getUserInfoDto,
+  PrefsDto,
+  UserAccountDto,
+  UserCommentsDto,
+  UserOverviewDto,
+  UserPostsDto,
+} from './dto';
 import { UserService } from './user.service';
+import { Response } from 'express';
 
 @ApiTags('User')
 @Controller('user')
@@ -202,6 +209,21 @@ export class UserController {
     return;
   }
 
+  @ApiOperation({ description: 'Check if username is available' })
+  @ApiCreatedResponse({
+    description: 'Username Available',
+  })
+  @ApiUnauthorizedResponse({ description: 'Username Taken' })
+  @Post('/check-available-username')
+  async checkAvailableUsername(
+    @Body() availableUsernameDto: AvailableUsernameDto,
+    @Res() res: Response,
+  ) {
+    return await this.userService.checkAvailableUsername(
+      availableUsernameDto,
+      res,
+    );
+  }
   @ApiOperation({ description: 'follow specific user' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/follow')
