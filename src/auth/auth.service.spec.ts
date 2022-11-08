@@ -51,14 +51,12 @@ describe('AuthService', () => {
   });
 
   const user1: CreateUserDto = {
-    age: 12,
     email: 'example@example.com',
     password: '12345678',
     username: 'test',
   };
 
   const user2: CreateUserDto = {
-    age: 12,
     email: 'example2@example.com',
     password: '12345678',
     username: 'test2',
@@ -75,7 +73,6 @@ describe('AuthService', () => {
         expect.objectContaining({
           email: user1.email,
           username: user1.username,
-          age: user1.age,
         }),
       );
     });
@@ -99,7 +96,6 @@ describe('AuthService', () => {
       );
       expect(JSON.parse(res._getData())).toEqual(
         expect.objectContaining({
-          age: user1.age,
           email: user1.email,
           username: user1.username,
         }),

@@ -5,7 +5,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongooseInMemory';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, PrefsDto } from './dto';
 import { UserDocument, UserSchema } from './user.schema';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +14,8 @@ import { HttpStatus } from '@nestjs/common';
 import { FollowModule } from '../follow/follow.module';
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { stubUser } from './test/stubs/user.stub';
+import { plainToClass } from 'class-transformer';
 import { BlockModule } from '../block/block.module';
 
 jest.mock('../follow/follow.service.ts');
@@ -43,7 +45,6 @@ describe('UserService', () => {
   const dto: CreateUserDto = {
     username: 'omarfareed',
     password: '12345678',
-    age: 10,
     email: 'email@example.com',
   };
   describe('validPassword', () => {
@@ -66,7 +67,6 @@ describe('UserService', () => {
       expect(user).toEqual(
         expect.objectContaining({
           username: dto.username,
-          age: dto.age,
           email: dto.email,
         }),
       );
@@ -85,7 +85,6 @@ describe('UserService', () => {
       const dto: CreateUserDto = {
         username: 'omarfareed',
         password: '12345678',
-        age: 10,
         email: 'email@example.com',
       };
       await expect(async () => await service.createUser(dto)).rejects.toThrow(
@@ -99,7 +98,6 @@ describe('UserService', () => {
       expect(user).toEqual(
         expect.objectContaining({
           username: dto.username,
-          age: dto.age,
           email: dto.email,
         }),
       );
@@ -125,7 +123,6 @@ describe('UserService', () => {
         expect.objectContaining({
           email: dto.email,
           username: dto.username,
-          age: dto.age,
         }),
       );
       const validPassword: boolean = await service.validPassword(
@@ -176,6 +173,37 @@ describe('UserService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+
+  describe('updatePrefsSpec', () => {
+    it('should update succesfully', async () => {
+      const res: any = await service.updateUserPrefs(
+        id,
+        plainToClass(PrefsDto, stubUser()),
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('getPrefsSpec', () => {
+    it('should get succesfully', async () => {
+      const prefs: PrefsDto = { countryCode: 'eg' };
+      const user = plainToClass(PrefsDto, stubUser());
+      const res1: PrefsDto = await service.getUserPrefs(id);
+      expect(res1).toEqual(expect.objectContaining(user));
+      user.countryCode = 'eg';
+      await service.updateUserPrefs(id, prefs);
+      const res2: PrefsDto = await service.getUserPrefs(id);
+      expect(res2).toEqual(expect.objectContaining({ ...user }));
+    });
+    it('should fail', async () => {
+      const prefs: PrefsDto = { countryCode: 'eg', allowFollow: false };
+      const user = plainToClass(PrefsDto, stubUser());
+      user.countryCode = 'eg';
+      await service.updateUserPrefs(id, prefs);
+      const res2: PrefsDto = await service.getUserPrefs(id);
+      expect(res2).not.toEqual(expect.objectContaining({ ...user }));
+    });
+  });
+
   describe('block', () => {
     it('should block successfully', async () => {
       const res: any = await service.block(id, id);

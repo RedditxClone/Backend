@@ -12,7 +12,7 @@ import { UserSchema } from './user.schema';
 import { AuthController } from '../auth/auth.controller';
 import { UserService } from './user.service';
 import { AuthService } from '../auth/auth.service';
-import { AvailableUsernameDto, CreateUserDto } from './dto';
+import { AvailableUsernameDto, CreateUserDto, PrefsDto } from './dto';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowModule } from '../follow/follow.module';
 import { Types } from 'mongoose';
@@ -22,6 +22,8 @@ import { EmailService } from '../utils';
 import { BlockSchema } from '../block/block.schema';
 import { BlockModule } from '../block/block.module';
 import { AdminStrategy } from '../auth/stratigies/admin.startegy';
+import { stubUser, stubUserFresh } from './test/stubs/user.stub';
+import { plainToClass } from 'class-transformer';
 
 jest.mock('../utils/mail/mail.service.ts');
 describe('userController (e2e)', () => {
@@ -29,7 +31,6 @@ describe('userController (e2e)', () => {
   let server: any;
   let userService: UserService;
   const dto: CreateUserDto = {
-    age: 12,
     email: 'email@example.com',
     password: '12345678',
     username: 'username',
@@ -111,7 +112,6 @@ describe('userController (e2e)', () => {
           _id: id1,
           username: dto.username,
           email: dto.email,
-          age: dto.age,
         }),
       );
     });
@@ -355,6 +355,46 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-admin`)
         .expect(HttpStatus.UNAUTHORIZED);
       expect(res2.body.message).toEqual('Unauthorized');
+    });
+  });
+  describe('/GET /user/me/prefs', () => {
+    it('should get successfully', async () => {
+      const res = await request(server)
+        .get(`/user/me/prefs`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual(plainToClass(PrefsDto, stubUserFresh()));
+    });
+  });
+  describe('/PATCH /user/me/prefs', () => {
+    it('should update successfully', async () => {
+      const res = await request(server)
+        .patch(`/user/me/prefs`)
+        .set('authorization', token1)
+        .send({})
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('should update get successfully', async () => {
+      const res0 = await request(server)
+        .get(`/user/me/prefs`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res0.body).toEqual(plainToClass(PrefsDto, stubUserFresh()));
+      const res1 = await request(server)
+        .patch(`/user/me/prefs`)
+        .set('authorization', token1)
+        .send({ countryCode: 'eg' })
+        .expect(HttpStatus.OK);
+      expect(res1.body).toEqual({ status: 'success' });
+      const res2 = await request(server)
+        .get(`/user/me/prefs`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res2.body).toEqual({
+        ...plainToClass(PrefsDto, stubUserFresh()),
+        countryCode: 'eg',
+      });
     });
   });
   afterAll(async () => {

@@ -55,7 +55,7 @@ describe('SubredditService', () => {
     flairList: [],
   };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
@@ -227,7 +227,7 @@ describe('SubredditService', () => {
       const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
       await subredditService.uploadIcon(id, { buffer: file });
       await expect(
-        typeof (await readFile(`statics/subreddit_icons/${id}.jpeg`)),
+        typeof (await readFile(`src/statics/subreddit_icons/${id}.jpeg`)),
       ).toBe('object');
       await subredditService.removeIcon(id);
     });
@@ -238,7 +238,7 @@ describe('SubredditService', () => {
       const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
       await subredditService.uploadIcon(id, { buffer: file });
       const sr = await subredditService.findSubreddit(id);
-      expect(sr.icon).toBe(`statics/subreddit_icons/${id}.jpeg`);
+      expect(sr.icon).toBe(`src/statics/subreddit_icons/${id}.jpeg`);
       await subredditService.removeIcon(id);
       const srWithoutIcon = await subredditService.findSubreddit(id);
       expect(srWithoutIcon.icon).toBe(null);

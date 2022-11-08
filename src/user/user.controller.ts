@@ -120,17 +120,19 @@ export class UserController {
     type: PrefsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
-  getUserPrefs() {
-    return 'Get the logged user preferences (Settings)';
+  async getUserPrefs(@Req() request) {
+    return await this.userService.getUserPrefs(request.user._id);
   }
 
   @ApiOperation({ description: 'Update user preferences' })
   @ApiOkResponse({ description: 'The preferences updated successfully' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
-  updateUserPrefs() {
-    return 'Updata the logged user preferences (Settings)';
+  async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
+    return await this.userService.updateUserPrefs(request.user._id, prefsDto);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -231,7 +233,6 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ) {
-    console.log(request.headers);
     return await this.userService.follow(request.user._id, user_id);
   }
   @UseGuards(JWTUserGuard)

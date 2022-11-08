@@ -13,8 +13,10 @@ import * as bcrypt from 'bcrypt';
 import { AvailableUsernameDto } from './dto';
 import { Response } from 'express';
 import { FollowService } from '../follow/follow.service';
-import { BlockService } from '../block/block.service';
+import { PrefsDto } from './dto';
 import { throwGeneralException } from '../utils/throwException';
+import { plainToClass } from 'class-transformer';
+import { BlockService } from '../block/block.service';
 
 @Global()
 @Injectable()
@@ -150,6 +152,33 @@ export class UserService {
   ): Promise<any> {
     return this.followService.unfollow({ follower, followed });
   }
+  /**
+   * returns all user's preferences
+   * @param _id user's Id
+   * @returns a promise of PrefsDto
+   */
+  getUserPrefs = async (_id: Types.ObjectId): Promise<PrefsDto> => {
+    try {
+      const user: UserDocument = await this.getUserById(_id);
+      return plainToClass(PrefsDto, user);
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  };
+  /**
+   * update some or all user's preferences
+   * @param _id user's Id
+   * @param prefsDto encapsulates requests data
+   * @returns succuss status if Ok
+   */
+  updateUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
+    try {
+      await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
+      return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  };
   /**
    * block a user
    * @param blocker id of the blocker user
