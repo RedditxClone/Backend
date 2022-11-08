@@ -21,7 +21,7 @@ jest.mock('../utils/mail/mail.service.ts');
 describe('subredditController (e2e)', () => {
   let app: INestApplication;
   let server: any;
-  const notValidId = '6366f305867190906ea355611';
+  const invalidId = '6363fba4ab2c2f94f3ac9f37';
   const createSubreddit: CreateSubredditDto = {
     name: 'subreddit',
     over18: false,
@@ -99,11 +99,17 @@ describe('subredditController (e2e)', () => {
       const res = await request(server)
         .post('/subreddit')
         .send(createSubreddit);
-      expect(res.body.message).toEqual('Internal server error');
+      expect(res.body.message).toBe(
+        'E11000 duplicate key error collection: test.subreddits index: name_1 dup key: { name: "subreddit" }',
+      );
     });
     it('must throw error leckage of data', async () => {
-      const res = await request(server).post('/subreddit').send({});
-      expect(res.body.message).toEqual('Internal server error');
+      const res = await request(server)
+        .post('/subreddit')
+        .send({ over18: true, type: 'public' });
+      expect(res.body.message).toEqual(
+        'subreddit validation failed: name: Path `name` is required.',
+      );
     });
   });
 
@@ -115,8 +121,8 @@ describe('subredditController (e2e)', () => {
       });
     });
     it('must throw error not found', async () => {
-      const res = await request(server).get(`/subreddit/${notValidId}`);
-      expect(res.body.message).toEqual('Internal server error');
+      const res = await request(server).get(`/subreddit/${invalidId}`);
+      expect(res.body.message).toEqual('No subreddit with such id');
     });
   });
 
@@ -133,15 +139,15 @@ describe('subredditController (e2e)', () => {
         status: 'success',
       });
     });
-    it('must throw error not valid body', async () => {
+    it('must throw error no such subreddit exist', async () => {
       const updatedFields: UpdateSubredditDto = {
         acceptFollowers: false,
         type: 'public',
       };
       const res = await request(server)
-        .patch(`/subreddit/${notValidId}`)
+        .patch(`/subreddit/${invalidId}`)
         .send(updatedFields);
-      expect(res.body.message).toEqual('Internal server error');
+      expect(res.body.message).toEqual('No subreddit with such id');
     });
   });
   let flair_id: string;
@@ -168,9 +174,9 @@ describe('subredditController (e2e)', () => {
     });
     it('must throw error subreddit is not exist', async () => {
       const res = await request(server)
-        .post(`/subreddit/${notValidId}/flair`)
+        .post(`/subreddit/${invalidId}/flair`)
         .send(flair);
-      expect(res.body.message).toEqual('Internal server error');
+      expect(res.body.message).toEqual('No subreddit with such id');
     });
   });
 
@@ -183,9 +189,9 @@ describe('subredditController (e2e)', () => {
     });
     it("must throw error subreddit doesn't exist", async () => {
       const res = await request(server).delete(
-        `/subreddit/${notValidId}/flair/${flair_id}`,
+        `/subreddit/${invalidId}/flair/${flair_id}`,
       );
-      expect(res.body.message).toEqual('Internal server error');
+      expect(res.body.message).toEqual('No subreddit with such id');
     });
   });
 
@@ -203,9 +209,9 @@ describe('subredditController (e2e)', () => {
     });
     it("must throw error subreddit doesn't exist", async () => {
       const res = await request(server)
-        .post(`/subreddit/${sr._id}1/icon`)
+        .post(`/subreddit/${invalidId}/icon`)
         .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
-      expect(res.body.message).toEqual('Internal server error');
+      expect(res.body.message).toEqual('No subreddit with such id');
     });
     it('must throw error subreddit no icon provided', async () => {
       const res = await request(server).post(`/subreddit/${sr._id}1/icon`);
@@ -225,8 +231,8 @@ describe('subredditController (e2e)', () => {
       });
     });
     it("must throw error subreddit doesn't exist", async () => {
-      const res = await request(server).delete(`/subreddit/${sr._id}1/icon`);
-      expect(res.body.message).toEqual('Internal server error');
+      const res = await request(server).delete(`/subreddit/${invalidId}/icon`);
+      expect(res.body.message).toEqual('No subreddit with such id');
     });
   });
 

@@ -233,7 +233,6 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ) {
-    console.log(request.headers);
     return await this.userService.follow(request.user._id, user_id);
   }
   @UseGuards(JWTUserGuard)

@@ -6,7 +6,10 @@ import { FlairDto } from './dto/flair.dto';
 import * as sharp from 'sharp';
 import { Subreddit, SubredditDocument } from './subreddit.schema';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
-import { throwIfNullObject } from '../utils/throwException';
+import {
+  throwGeneralException,
+  throwIfNullObject,
+} from '../utils/throwException';
 import { unlink } from 'fs/promises';
 @Injectable()
 export class SubredditService {
@@ -17,10 +20,14 @@ export class SubredditService {
   async create(
     createSubredditDto: CreateSubredditDto,
   ): Promise<SubredditDocument> {
-    const subreddit: SubredditDocument = await this.subredditModel.create(
-      createSubredditDto,
-    );
-    return subreddit;
+    try {
+      const subreddit: SubredditDocument = await this.subredditModel.create(
+        createSubredditDto,
+      );
+      return subreddit;
+    } catch (error) {
+      throwGeneralException(error);
+    }
   }
 
   async findSubreddit(subreddit: string): Promise<SubredditDocument> {
@@ -90,18 +97,19 @@ export class SubredditService {
   async removeIcon(subreddit: string) {
     const saveDir = `statics/subreddit_icons/${subreddit}.jpeg`;
     throwIfNullObject(
-      (
-        await Promise.all([
-          unlink(saveDir),
-          this.subredditModel
-            .findByIdAndUpdate(subreddit, {
-              icon: null,
-            })
-            .select(''),
-        ])
-      )[1],
+      await this.subredditModel
+        .findByIdAndUpdate(subreddit, {
+          icon: null,
+        })
+        .select(''),
       'No subreddit with such id',
     );
+
+    try {
+      await unlink(saveDir);
+    } catch (error) {
+      throwIfNullObject(null, "The subreddit doesn't have already an icon");
+    }
     return { status: 'success' };
   }
 
