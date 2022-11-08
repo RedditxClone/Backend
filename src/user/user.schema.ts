@@ -17,6 +17,10 @@ export class User {
   authType: string;
   //Account
   @Prop({ required: false, default: '' })
+  profilePhoto: string;
+  @Prop({ required: false, default: '' })
+  coverPhoto: string;
+  @Prop({ required: false, default: '' })
   countryCode: string;
   @Prop({ enum: [`male`, `female`, ``], default: '' })
   gender: string;
@@ -45,6 +49,18 @@ export class User {
   adultContent: boolean;
   @Prop({ default: true })
   autoPlayMedia: boolean;
+  @Prop({ default: true })
+  personalizeAllOfReddit: boolean;
+  @Prop({ default: true })
+  personalizeAdsInformation: boolean;
+  @Prop({ default: true })
+  personalizeAdsYourActivity: boolean;
+  @Prop({ default: true })
+  personalizeRecGeneralLocation: boolean;
+  @Prop({ default: true })
+  personalizeRecOurPartners: boolean;
+  @Prop({ default: true })
+  useTwoFactorAuthentication: boolean;
   // default value and enum values will be added
   @Prop({ enum: ['hot', 'new', 'top', 'rising'], default: 'hot' })
   suggestedSort: string;
