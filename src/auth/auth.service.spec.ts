@@ -16,6 +16,7 @@ import { EmailService, EmailServiceMock } from '../utils';
 import { HttpStatus } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { BlockModule } from '../block/block.module';
+import { ForgetPasswordDto } from './dto';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -172,6 +173,36 @@ describe('AuthService', () => {
       expect(res._getStatusCode()).toEqual(HttpStatus.FORBIDDEN);
       expect(JSON.parse(res._getData())).toEqual(
         expect.objectContaining({ status: false }),
+      );
+    });
+  });
+  describe('change password using token', () => {
+    it('should change password successfully', async () => {
+      const res: any = await authService.changePasswordUsingToken(
+        id,
+        'new password',
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should throw an error due to wrong id', async () => {
+      const wrong_id: Types.ObjectId = new Types.ObjectId(10);
+      await expect(
+        authService.changePasswordUsingToken(wrong_id, 'new password'),
+      ).rejects.toThrow(`there is no user with id ${wrong_id}`);
+    });
+  });
+  describe('forget password', () => {
+    it('should create and send token successfully', async () => {
+      const dto: ForgetPasswordDto = { username: user1.username };
+      const res: any = await authService.forgetPassword(dto);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should throw an error because wrong username', async () => {
+      const dto: ForgetPasswordDto = { username: 'wrong_username' };
+      await expect(async () => {
+        await authService.forgetPassword(dto);
+      }).rejects.toThrow(
+        `there is no user with information {"username":"wrong_username"}`,
       );
     });
   });

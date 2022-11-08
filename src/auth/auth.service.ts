@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly mailService: EmailService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
   /**
    * check if the user exist and if the password is valid
@@ -45,12 +47,16 @@ export class AuthService {
       (await this.userService.validPassword(password, user.hashPassword))
     );
   }
-  private async createToken(id: string): Promise<string> {
+  private async createAuthToken(id: string): Promise<string> {
     return await this.jwtService.signAsync(
       { id },
-      {
-        secret: process.env.JWT_SECRET,
-      },
+      { secret: process.env.JWT_SECRET, expiresIn: '10d' },
+    );
+  }
+  async createChangePasswordToken(username: string) {
+    return await this.jwtService.signAsync(
+      { username },
+      { secret: process.env.FORGET_PASSWORD_SECRET, expiresIn: '1h' },
     );
   }
   /**
@@ -58,8 +64,11 @@ export class AuthService {
    * @param user user to whom you will send a token
    * @param res express response object
    */
-  private async sendToken(user: UserDocument, res: Response): Promise<void> {
-    const token: string = await this.createToken(user._id);
+  private async sendAuthToken(
+    user: UserDocument,
+    res: Response,
+  ): Promise<void> {
+    const token: string = await this.createAuthToken(user._id);
     res.cookie('authorization', `Bearer ${token}`);
     delete user.hashPassword;
     res.json(user);
@@ -77,7 +86,7 @@ export class AuthService {
       const userExist: boolean = await this.isValidUser(user, dto.password);
       if (!userExist)
         throw new UnauthorizedException('wrong email or password');
-      await this.sendToken(user, res);
+      await this.sendAuthToken(user, res);
     } catch (err) {
       throwGeneralException(err);
     }
@@ -90,13 +99,43 @@ export class AuthService {
   signup = async (dto: CreateUserDto, res: Response) => {
     try {
       const user: UserDocument = await this.userService.createUser(dto);
-      await this.sendToken(user, res);
+      await this.sendAuthToken(user, res);
     } catch (err) {
       throwGeneralException(err);
     }
   };
-  forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
-    return 'this action apply forget password steps';
+  async forgetPassword(dto: ForgetPasswordDto) {
+    try {
+      console.log(dto);
+      const user: UserDocument = await this.userService.getUserByUsername(
+        dto.username,
+      );
+      const token: string = await this.createChangePasswordToken(dto.username);
+      await this.emailService.sendEmail(
+        user.email,
+        'FORGET PASSWORD',
+        `this is a url to a token ${token}`,
+      );
+      return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  }
+
+  /**
+   * A function to change user password.
+   *
+   * @param id the user id
+   * @param password the new password
+   * @returns a response 401 if password 404 if the user doesn't exist invalid 200 if changed
+   */
+  async changePasswordUsingToken(id: Types.ObjectId, password: string) {
+    try {
+      await this.userService.changePassword(id, password);
+      return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
   }
   /**
    * A function to change user password.

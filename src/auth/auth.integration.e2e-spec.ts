@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -18,6 +18,7 @@ import { EmailService, EmailServiceMock } from '../utils';
 import { Types } from 'mongoose';
 import { UserStrategy } from './stratigies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import { ForgetPasswordStrategy } from './stratigies/forget-password.strategy';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;
@@ -32,6 +33,7 @@ describe('authController (e2e)', () => {
     password: '12345678',
     username: 'username1',
   };
+  let authService: AuthService;
   let token1: string;
   let token2: string;
   let id1: Types.ObjectId;
@@ -62,13 +64,21 @@ describe('authController (e2e)', () => {
         BlockModule,
       ],
       controllers: [AuthController],
-      providers: [UserService, AuthService, UserStrategy, EmailService],
+      providers: [
+        UserService,
+        AuthService,
+        UserStrategy,
+        EmailService,
+        ForgetPasswordStrategy,
+      ],
     })
       .overrideProvider(EmailService)
       .useValue(EmailServiceMock)
       .compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    authService = app.get<AuthService>(AuthService);
     await app.init();
     server = app.getHttpServer();
     await createDummyUsers();
@@ -128,7 +138,7 @@ describe('authController (e2e)', () => {
     it("mustn't send successfully", async () => {
       await request(server)
         .post('/auth/forget-username')
-        .send({ email: 'throw' })
+        .send({ email: 'throw@throw.throw' })
         .expect(HttpStatus.UNAUTHORIZED)
         .then((res) => {
           expect(res.body).toEqual(
@@ -157,6 +167,67 @@ describe('authController (e2e)', () => {
         .then((res) => {
           expect(res.body).toEqual(expect.objectContaining({ status: false }));
         });
+    });
+  });
+
+  describe('/POST /auth/forget-password', () => {
+    it('must send with a token successfully', async () => {
+      const res: any = await request(server)
+        .post('/auth/forget-password')
+        .send({ username: dto.username })
+        .expect(HttpStatus.CREATED);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('must throw an error because user not exist', async () => {
+      const res = await request(server)
+        .post('/auth/forget-password')
+        .send({ username: 'wrong username' })
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toEqual(
+        'there is no user with information {"username":"wrong username"}',
+      );
+    });
+  });
+
+  describe('/POST /auth/change-forgotten-password', () => {
+    let token: string;
+    beforeAll(async () => {
+      token = await authService.createChangePasswordToken(dto.username);
+    });
+    it('must change password successfully', async () => {
+      // first get token for testing purpose
+      // first change password
+      const newPassword = 'new_password';
+      const res = await request(server)
+        .post('/auth/change-forgotten-password')
+        .send({ password: newPassword })
+        .set('authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+      expect(res.body).toEqual({ status: 'success' });
+      //login to make sure that it has been changed successfully
+      await request(server)
+        .post('/auth/login')
+        .send({ email: dto.email, password: newPassword })
+        .expect(HttpStatus.CREATED);
+    });
+    it('must throw an error due to unauthorized', async () => {
+      const res = await request(server)
+        .post('/auth/change-forgotten-password')
+        .send({
+          password: '123425h534',
+        })
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+    it('must throw an error due to small password', async () => {
+      const res = await request(server)
+        .post('/auth/change-forgotten-password')
+        .send({ password: '12kfl' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.body.message).toEqual([
+        'Password Must have at least 8 characters',
+      ]);
     });
   });
   afterAll(async () => {

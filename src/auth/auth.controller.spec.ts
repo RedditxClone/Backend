@@ -1,11 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response, Request } from 'express';
+import { Types } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { CreateUserDto } from '../user/dto';
 import { stubUser } from '../user/test/stubs/user.stub';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ForgetUsernameDto, LoginDto, ChangePasswordDto } from './dto';
+import {
+  ForgetUsernameDto,
+  LoginDto,
+  ChangePasswordDto,
+  ForgetPasswordDto,
+  ChangeForgottenPasswordDto,
+} from './dto';
 
 jest.mock('./auth.service');
 describe('AuthController', () => {
@@ -69,6 +76,24 @@ describe('AuthController', () => {
       req.user = { _id: 213 };
       const val = await controller.changePassword(dto, res, req);
       expect(val).not.toBeTruthy();
+    });
+  });
+  describe('forget password', () => {
+    it('should send an with the token successfully', async () => {
+      const dto: ForgetPasswordDto = { username: 'someusername' };
+      const res: any = await controller.forgetPassword(dto);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('change forgotten password', () => {
+    it('should change password successfully', async () => {
+      const req: any = createRequest();
+      const dto: ChangeForgottenPasswordDto = { password: '12345678' };
+      // TODO:
+      // there exist a type issue i can't use user._id if i used Request type as it uses Express.User type
+      req.user = { _id: 1 };
+      const res: any = await controller.changeForgottenPassword(dto, req);
+      expect(res).toEqual({ status: 'success' });
     });
   });
 });
