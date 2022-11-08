@@ -17,7 +17,6 @@ export class BlockService {
    */
   async block(dto: BlockDto): Promise<any> {
     try {
-      console.log(dto);
       if (dto.blocker.toString() == dto.blocked.toString())
         throw new BadRequestException('you are not allowed to block yourself');
       await this.blockModel.create(dto);

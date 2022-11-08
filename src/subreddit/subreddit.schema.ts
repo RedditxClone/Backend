@@ -1,22 +1,16 @@
-import { Prop, Schema } from '@nestjs/mongoose';
-import { ObjectId } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { Schema as schemaType } from 'mongoose';
 
 class Flair {
-  id: ObjectId;
   @Prop({ required: true })
   text: string;
+  @Prop({ auto: true, required: true })
+  _id: schemaType.Types.ObjectId;
   @Prop()
   backgroundColor: string;
   @Prop({ required: true })
-  textColor: boolean;
-  @Prop({ required: true })
-  modOnly: boolean;
-  @Prop({ required: true })
-  allowUserEdits: boolean;
-  @Prop({ default: 0 })
-  flairAllow: number;
-  @Prop({ default: 10 })
-  emojiNumbers: number;
+  textColor: string;
 }
 @Schema()
 export class Subreddit {
@@ -102,24 +96,6 @@ export class Subreddit {
   @Prop({ default: false })
   requireWordsInPostTitle: boolean;
 
-  @Prop()
-  rules: [
-    {
-      title: string;
-      appliedTo: string;
-      reportReason?: string;
-      description?: string;
-    },
-  ];
-
-  @Prop()
-  removalReasons: [
-    {
-      title: string;
-      description: string;
-    },
-  ];
-
   @Prop({ default: '' })
   postGuidelines: string;
 
@@ -130,7 +106,11 @@ export class Subreddit {
   welcomeMessageText: string;
 
   @Prop({ default: [] })
-  postFlairs: Flair[];
-  @Prop({ default: [] })
-  userFlairs: Flair[];
+  flairList: Flair[];
+  @Prop()
+  icon: string;
 }
+
+export const SubredditSchema = SchemaFactory.createForClass(Subreddit);
+
+export type SubredditDocument = Subreddit & Document;

@@ -1,15 +1,18 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   Patch,
   Post,
+  Res,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
@@ -19,14 +22,18 @@ import {
 import { Types } from 'mongoose';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { ParseObjectIdPipe } from '../utils/utils.service';
-import { getFriendsDto } from './dto/get-friends.dto';
-import { getUserInfoDto } from './dto/get-user-info.dto';
-import { PrefsDto } from './dto/prefs.dto';
-import { UserAccountDto } from './dto/user-account.dto';
-import { UserCommentsDto } from './dto/user-comments.dto';
-import { UserOverviewDto } from './dto/user-overview.dto';
-import { UserPostsDto } from './dto/user-posts.dto';
+import {
+  AvailableUsernameDto,
+  getFriendsDto,
+  getUserInfoDto,
+  PrefsDto,
+  UserAccountDto,
+  UserCommentsDto,
+  UserOverviewDto,
+  UserPostsDto,
+} from './dto';
 import { UserService } from './user.service';
+import { Response } from 'express';
 
 @ApiTags('User')
 @Controller('user')
@@ -113,17 +120,19 @@ export class UserController {
     type: PrefsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
-  getUserPrefs() {
-    return 'Get the logged user preferences (Settings)';
+  async getUserPrefs(@Req() request) {
+    return await this.userService.getUserPrefs(request.user._id);
   }
 
   @ApiOperation({ description: 'Update user preferences' })
   @ApiOkResponse({ description: 'The preferences updated successfully' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
-  updateUserPrefs() {
-    return 'Updata the logged user preferences (Settings)';
+  async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
+    return await this.userService.updateUserPrefs(request.user._id, prefsDto);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -202,6 +211,21 @@ export class UserController {
     return;
   }
 
+  @ApiOperation({ description: 'Check if username is available' })
+  @ApiCreatedResponse({
+    description: 'Username Available',
+  })
+  @ApiUnauthorizedResponse({ description: 'Username Taken' })
+  @Post('/check-available-username')
+  async checkAvailableUsername(
+    @Body() availableUsernameDto: AvailableUsernameDto,
+    @Res() res: Response,
+  ) {
+    return await this.userService.checkAvailableUsername(
+      availableUsernameDto,
+      res,
+    );
+  }
   @ApiOperation({ description: 'follow specific user' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/follow')
@@ -209,7 +233,6 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ) {
-    console.log(request.headers);
     return await this.userService.follow(request.user._id, user_id);
   }
   @UseGuards(JWTUserGuard)

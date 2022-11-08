@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Global,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,11 +11,14 @@ import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
+import { AvailableUsernameDto } from './dto';
+import { Response } from 'express';
 import { FollowService } from '../follow/follow.service';
-import { BlockService } from '../block/block.service';
+import { PrefsDto } from './dto';
 import { throwGeneralException } from '../utils/throwException';
 import { FilterUserDto } from './dto/user-filter.dto';
-import { ChangePasswordDto } from 'src/auth/dto';
+import { plainToClass } from 'class-transformer';
+import { BlockService } from '../block/block.service';
 
 @Global()
 @Injectable()
@@ -111,6 +115,22 @@ export class UserService {
     return (await this.userModel.count(filter)) > 0;
   }
   /**
+   * A function to check if username is taken before or not
+   * @param availableUsernameDto encapsulates the data of the request username
+   * @param res the response that will be sent to the requester
+   */
+  checkAvailableUsername = async (
+    availableUsernameDto: AvailableUsernameDto,
+    res: Response,
+  ) => {
+    const user: UserDocument = await this.userModel.findOne({
+      ...availableUsernameDto,
+    });
+    if (!user) {
+      res.status(HttpStatus.CREATED).json({ status: true });
+    } else res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
+  };
+  /**
    * follow a user
    * @param follower id of the follower user
    * @param followed id of the followed user
@@ -151,6 +171,33 @@ export class UserService {
   ): Promise<any> {
     return this.followService.unfollow({ follower, followed });
   }
+  /**
+   * returns all user's preferences
+   * @param _id user's Id
+   * @returns a promise of PrefsDto
+   */
+  getUserPrefs = async (_id: Types.ObjectId): Promise<PrefsDto> => {
+    try {
+      const user: UserDocument = await this.getUserById(_id);
+      return plainToClass(PrefsDto, user);
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  };
+  /**
+   * update some or all user's preferences
+   * @param _id user's Id
+   * @param prefsDto encapsulates requests data
+   * @returns succuss status if Ok
+   */
+  updateUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
+    try {
+      await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
+      return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  };
   /**
    * block a user
    * @param blocker id of the blocker user

@@ -17,7 +17,6 @@ export class FollowService {
    */
   async follow(dto: FollowDto): Promise<any> {
     try {
-      console.log(dto);
       if (dto.followed.toString() == dto.follower.toString())
         throw new BadRequestException('you are not allowed to follow yourself');
       await this.followModel.create(dto);

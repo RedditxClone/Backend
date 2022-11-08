@@ -43,7 +43,6 @@ describe('AuthController', () => {
       const dto: CreateUserDto = {
         email: 'email@example.com',
         password: '12345678',
-        age: 10,
         username: 'user1',
       };
       const user = await controller.signup(dto, res);

@@ -24,13 +24,11 @@ describe('authController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   const dto: CreateUserDto = {
-    age: 12,
     email: 'email@example.com',
     password: '12345678',
     username: 'username',
   };
   const dto1: CreateUserDto = {
-    age: 12,
     email: 'email1@example.com',
     password: '12345678',
     username: 'username1',
@@ -95,7 +93,6 @@ describe('authController (e2e)', () => {
         expect.objectContaining({
           username: dto.username,
           email: dto.email,
-          age: dto.age,
         }),
       );
     });
@@ -113,7 +110,6 @@ describe('authController (e2e)', () => {
           expect(res.body).toEqual(
             expect.objectContaining({
               username: dto.username,
-              age: dto.age,
               email: dto.email,
             }),
           );
