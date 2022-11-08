@@ -76,7 +76,7 @@ export class SubredditService {
   }
 
   async uploadIcon(subreddit: string, file) {
-    const saveDir = `statics/subreddit_icons/${subreddit}.jpeg`;
+    const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
     throwIfNullObject(
       await this.subredditModel.findById(subreddit).select('_id'),
       'No subreddit with such id',
@@ -95,7 +95,7 @@ export class SubredditService {
   }
 
   async removeIcon(subreddit: string) {
-    const saveDir = `statics/subreddit_icons/${subreddit}.jpeg`;
+    const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
     throwIfNullObject(
       await this.subredditModel
         .findByIdAndUpdate(subreddit, {

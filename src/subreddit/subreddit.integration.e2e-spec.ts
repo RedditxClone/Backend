@@ -197,7 +197,7 @@ describe('subredditController (e2e)', () => {
 
   describe('/POST /subreddit/:subreddit/icon', () => {
     it('must upload a photo successfully', async () => {
-      const saveDir = `statics/subreddit_icons/${sr._id}.jpeg`;
+      const saveDir = `src/statics/subreddit_icons/${sr._id}.jpeg`;
       const res = await request(server)
         .post(`/subreddit/${sr._id}/icon`)
         .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
