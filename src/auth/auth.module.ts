@@ -6,6 +6,7 @@ import { UserSchema } from '../user/user.schema';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../user/user.module';
+import { ForgetPasswordStrategy } from './stratigies/forget-password.strategy';
 @Global()
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { UserModule } from '../user/user.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ForgetPasswordStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

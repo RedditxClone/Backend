@@ -113,7 +113,7 @@ describe('UserService', () => {
       }).rejects.toThrowError();
       await expect(async () => {
         await service.getUserById(new Types.ObjectId(10));
-      }).rejects.toThrow(/.*there is no user with id.*/);
+      }).rejects.toThrow(/.*there is no user.*/);
     });
   });
   describe('getUserByEmail', () => {
@@ -134,7 +134,32 @@ describe('UserService', () => {
     it('should pass an error', async () => {
       await expect(async () => {
         await service.getUserByEmail('wrong_email@gmail.com');
-      }).rejects.toThrow(`no user with email wrong_email@gmail.com`);
+      }).rejects.toThrow(
+        `no user with information {"email":"wrong_email@gmail.com"}`,
+      );
+    });
+  });
+  describe('getUserByUsername', () => {
+    it('should get user', async () => {
+      const user: UserDocument = await service.getUserByUsername(dto.username);
+      expect(user).toEqual(
+        expect.objectContaining({
+          email: dto.email,
+          username: dto.username,
+        }),
+      );
+      const validPassword: boolean = await service.validPassword(
+        dto.password,
+        user.hashPassword,
+      );
+      expect(validPassword).toBe(true);
+    });
+    it('should pass an error', async () => {
+      await expect(async () => {
+        await service.getUserByUsername('wrong_username');
+      }).rejects.toThrow(
+        `no user with information {"username":"wrong_username"}`,
+      );
     });
   });
   describe('checkAvailableUsername', () => {
@@ -280,6 +305,19 @@ describe('UserService', () => {
       await expect(async () => {
         await service.allowUserToBeModerator(wrong_id);
       }).rejects.toThrow(`there is no user with id ${wrong_id}`);
+    });
+  });
+  describe('change password', () => {
+    it('should change password successfully', async () => {
+      await expect(
+        service.changePassword(id, 'new password'),
+      ).resolves.not.toThrowError();
+    });
+    it('should throw error due to wrong id', async () => {
+      const wrong_id = new Types.ObjectId(10);
+      await expect(
+        service.changePassword(wrong_id, 'password'),
+      ).rejects.toThrow(`there is no user with id ${wrong_id}`);
     });
   });
   describe('Delete user by setting the accountClosed to true', () => {
