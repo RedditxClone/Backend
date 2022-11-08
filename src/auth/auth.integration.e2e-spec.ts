@@ -140,17 +140,15 @@ describe('authController (e2e)', () => {
         });
     });
     it("mustn't send successfully", async () => {
-      //TODO:
-      // applied white list
-      // await request(server)
-      //   .post('/auth/forget-username')
-      //   .send({ email: 'throw' })
-      //   .expect(HttpStatus.UNAUTHORIZED)
-      //   .then((res) => {
-      //     expect(res.body).toEqual(
-      //       expect.objectContaining({ status: "couldn't send message" }),
-      //     );
-      //   });
+      await request(server)
+        .post('/auth/forget-username')
+        .send({ email: 'throw@throw.throw' })
+        .expect(HttpStatus.UNAUTHORIZED)
+        .then((res) => {
+          expect(res.body).toEqual(
+            expect.objectContaining({ status: "couldn't send message" }),
+          );
+        });
     });
   });
   describe('/PATCH /auth/change-password', () => {
