@@ -104,7 +104,7 @@ describe('authController (e2e)', () => {
     it('must login successfully', async () => {
       await request(server)
         .post('/auth/login')
-        .send(dto)
+        .send({ username: dto.username, password: dto.password })
         .expect(HttpStatus.CREATED)
         .then((res) => {
           expect(res.body).toEqual(
@@ -118,7 +118,7 @@ describe('authController (e2e)', () => {
     it("mustn't login successfully", async () => {
       await request(server)
         .post('/auth/login')
-        .send({ email: dto.email, password: 'wrong_password' })
+        .send({ username: dto.username, password: 'wrong_password' })
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
@@ -207,7 +207,7 @@ describe('authController (e2e)', () => {
       //login to make sure that it has been changed successfully
       await request(server)
         .post('/auth/login')
-        .send({ email: dto.email, password: newPassword })
+        .send({ username: dto.username, password: newPassword })
         .expect(HttpStatus.CREATED);
     });
     it('must throw an error due to unauthorized', async () => {

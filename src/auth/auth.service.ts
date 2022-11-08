@@ -80,8 +80,8 @@ export class AuthService {
    */
   login = async (dto: LoginDto, res: Response) => {
     try {
-      const user: UserDocument = await this.userService.getUserByEmail(
-        dto.email,
+      const user: UserDocument = await this.userService.getUserByUsername(
+        dto.username,
       );
       const userExist: boolean = await this.isValidUser(user, dto.password);
       if (!userExist)
