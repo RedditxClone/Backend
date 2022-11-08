@@ -146,7 +146,6 @@ describe('UserService', () => {
         expect.objectContaining({
           email: dto.email,
           username: dto.username,
-          age: dto.age,
         }),
       );
       const validPassword: boolean = await service.validPassword(
