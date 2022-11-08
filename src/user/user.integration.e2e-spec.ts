@@ -397,6 +397,23 @@ describe('userController (e2e)', () => {
       });
     });
   });
+
+  describe('/DELETE /user', () => {
+    it('should delete the account successfully', async () => {
+      const res = await request(server)
+        .delete(`/user`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('should throw an error', async () => {
+      const res = await request(server)
+        .post(`/user/${id2.toString()}/unfollow`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await app.close();

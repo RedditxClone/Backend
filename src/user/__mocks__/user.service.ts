@@ -16,4 +16,5 @@ export const UserService = jest.fn().mockReturnValue({
     .fn()
     .mockResolvedValue({ ...stubUser(), authType: 'moderator' }),
   makeAdmin: jest.fn().mockResolvedValue({ ...stubUser(), authType: 'admin' }),
+  deleteAccount: jest.fn().mockResolvedValue({ status: 'success' }),
 });

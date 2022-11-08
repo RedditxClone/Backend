@@ -256,4 +256,12 @@ export class UserService {
       throwGeneralException(err);
     }
   }
+  async deleteAccount(user: any) {
+    await this.userModel
+      .findByIdAndUpdate(user._id, {
+        accountClosed: true,
+      })
+      .select('');
+    return { status: 'success' };
+  }
 }

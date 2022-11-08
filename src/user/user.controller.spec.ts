@@ -101,6 +101,7 @@ describe('UserControllerSpec', () => {
       delete usr['hashPassword'];
       delete usr['email'];
       delete usr['authType'];
+      delete usr['accountClosed'];
       expect(res).toEqual(usr);
     });
   });
@@ -113,6 +114,15 @@ describe('UserControllerSpec', () => {
         req,
         new PrefsDto(),
       );
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('Delete user', () => {
+    it('must be deleted successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { id };
+      const res: any = await userController.deleteAccount(req);
       expect(res).toEqual({ status: 'success' });
     });
   });

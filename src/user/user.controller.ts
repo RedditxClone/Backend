@@ -298,4 +298,17 @@ export class UserController {
   ) {
     return await this.userService.makeAdmin(user_id);
   }
+
+  @ApiOperation({
+    description: 'Delete the user account by sitting the accountClosed to true',
+  })
+  @ApiOkResponse({ description: 'Account deleted successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTUserGuard)
+  @Delete('/')
+  async deleteAccount(@Req() request) {
+    return await this.userService.deleteAccount(request.user);
+  }
 }

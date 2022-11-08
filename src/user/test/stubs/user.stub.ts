@@ -8,6 +8,7 @@ export const stubUser = (): User => {
     hashPassword: 'thisIsHashedPassword',
     suggestedSort: '',
     authType: 'user',
+    accountClosed: false,
     countryCode: '',
     gender: 'male',
     profilePhoto:
@@ -67,6 +68,7 @@ export const stubUserFresh = (): User => {
     gender: '',
     profilePhoto: '',
     coverPhoto: '',
+    accountClosed: false,
     //profile
     displayName: '',
     about: '',

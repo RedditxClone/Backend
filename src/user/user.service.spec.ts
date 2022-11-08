@@ -282,6 +282,14 @@ describe('UserService', () => {
       }).rejects.toThrow(`there is no user with id ${wrong_id}`);
     });
   });
+  describe('Delete user by setting the accountClosed to true', () => {
+    it('should close the acount successfully', async () => {
+      const user = { _id: id };
+      expect(await service.deleteAccount(user)).toEqual({
+        status: 'success',
+      });
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

@@ -24,6 +24,8 @@ export class User {
   countryCode: string;
   @Prop({ enum: [`male`, `female`, ``], default: '' })
   gender: string;
+  @Prop({ default: false })
+  accountClosed: boolean;
   //profile
   @Prop({ default: '' })
   displayName: string;
