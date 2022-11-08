@@ -55,7 +55,7 @@ describe('SubredditService', () => {
     flairList: [],
   };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
