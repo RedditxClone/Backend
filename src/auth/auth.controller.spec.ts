@@ -30,7 +30,7 @@ describe('AuthController', () => {
     it('should login successfully', async () => {
       const res: Response = createResponse();
       const dto: LoginDto = {
-        email: 'email@example.com',
+        username: 'username',
         password: '12345678',
       };
       const user = await controller.login(dto, res);

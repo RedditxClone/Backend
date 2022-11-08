@@ -88,7 +88,7 @@ describe('AuthService', () => {
     it('should login successfully', async () => {
       const res = createResponse();
       await authService.login(
-        { email: user1.email, password: user1.password },
+        { username: user1.username, password: user1.password },
         res,
       );
       expect(res.cookies.authorization).toBeDefined();
@@ -107,7 +107,7 @@ describe('AuthService', () => {
       await expect(async () => {
         await authService.login(
           {
-            email: user1.email,
+            username: user1.username,
             password: `${user1.password} `,
           },
           res,
