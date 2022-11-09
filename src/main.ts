@@ -10,8 +10,8 @@ async function bootstrap() {
     rawBody: true,
   });
 
-  // Prefix all endpoinds with api/
-  app.setGlobalPrefix('api');
+  // Prefix api endpoinds with api/
+  app.setGlobalPrefix('api', { exclude: ['health'] });
 
   // Catch general exceptions
   app.useGlobalFilters(new AllExceptionsFilter());
