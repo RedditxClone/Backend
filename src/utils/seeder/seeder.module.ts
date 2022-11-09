@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserModule } from 'src/user/user.module';
+
+import { UserModule } from './../../user/user.module';
 import { SeederService } from './seeder.service.';
 
 /**
@@ -12,7 +13,7 @@ import { SeederService } from './seeder.service.';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.DB_CONNECTION_STRING),
+    MongooseModule.forRoot(process.env.DB_CONNECTION_STRING || ''),
     UserModule,
   ],
   controllers: [],

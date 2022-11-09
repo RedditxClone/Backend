@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from 'src/user/dto';
-import { UserService } from 'src/user/user.service';
+import type { CreateUserDto } from 'src/user/dto';
+
+import { UserService } from './../../user/user.service';
 
 @Injectable()
 export class SeederService {
   constructor(private readonly userService: UserService) {}
+
   async seed() {
-    const usr = await this.seedUsers();
-    console.log(usr);
+    await this.seedUsers();
   }
 
   private async seedUsers() {
@@ -17,6 +18,7 @@ export class SeederService {
       password: process.env.SU_PASS,
       age: 30,
     };
+
     return this.userService.createUser(createSuperUserDto);
   }
 }
