@@ -242,8 +242,8 @@ describe('UserService', () => {
       adminId = admin._id;
     });
     it('should be admin', async () => {
-      const user: UserDocument = await service.makeAdmin(adminId);
-      expect(user.authType).toEqual('admin');
+      const res: any = await service.makeAdmin(adminId);
+      expect(res).toEqual({ status: 'success' });
     });
     // to make sure that it has been changed inside database
     it('must be changed inside database', async () => {
@@ -268,10 +268,8 @@ describe('UserService', () => {
       moderatorId = moderator._id;
     });
     it('should be a moderator', async () => {
-      const user: UserDocument = await service.allowUserToBeModerator(
-        moderatorId,
-      );
-      expect(user.authType).toEqual('moderator');
+      const res: any = await service.allowUserToBeModerator(moderatorId);
+      expect(res).toEqual({ status: 'success' });
     });
     it('must be changed inside database', async () => {
       const user: UserDocument = await service.getUserById(moderatorId);

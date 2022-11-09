@@ -139,7 +139,7 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/mark_nsfw')
+  @Post(':id/mark-nsfw')
   //todo
   markNsfw(@Param('id') id: string) {
     return id;
@@ -149,7 +149,7 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/unmark_nsfw')
+  @Post(':id/unmark-nsfw')
   //todo
   unMarkNsfw(@Param('id') id: string) {
     return id;
@@ -171,7 +171,7 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post replies set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/send_replies')
+  @Post(':id/send-replies')
   //todo
   sendReplies(@Param('id') id, @Body() sendRepliesPostDto: SendRepliesPostDto) {
     return sendRepliesPostDto;
@@ -247,7 +247,7 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post suggested sort set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/set_suggested_sort')
+  @Post(':id/set-suggested-sort')
   //todo
   setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
     return defaultSortPostDto;
@@ -263,7 +263,7 @@ export class PostController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   //todo
-  @Get(':id/insights_counts')
+  @Get(':id/insights-counts')
   viewInsights(@Param('id') _id: string) {
     // TODO implement service
 

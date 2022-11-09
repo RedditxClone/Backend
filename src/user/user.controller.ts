@@ -56,7 +56,7 @@ export class UserController {
   @ApiOkResponse({ description: 'The friend request accepted successfully' })
   @ApiBadRequestResponse({ description: 'invalid user id' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  @Post('/:user_id/frined/accept')
+  @Post('/:user_id/friend/accept')
   acceptFriendRequest() {
     return this.userService.acceptFriendRequest();
   }
@@ -296,9 +296,12 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
-  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
+  })
+  @ApiBadRequestResponse({
+    description: 'you are trying to change admin type to moderator',
   })
   @UseGuards(JWTAdminGuard)
   @Post('/:user_id/make-moderator')
@@ -312,7 +315,7 @@ export class UserController {
     description:
       'give an admin role to the ordinary user (for testing purpose and will be deleted)',
   })
-  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
   })
