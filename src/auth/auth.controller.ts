@@ -8,18 +8,20 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProperty,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { CreateUserDto } from '../user/dto';
+import { CreateUserDto, ReturnedUserDto } from '../user/dto';
 import { AuthService } from './auth.service';
-import { ForgetUsernameDto, SigninDto } from './dto';
+import { ForgetUsernameDto } from './dto';
 import {
   ChangeForgottenPasswordDto,
   ChangePasswordDto,
@@ -37,9 +39,10 @@ export class AuthController {
   @ApiOperation({ description: 'Login user to his account' })
   @ApiCreatedResponse({
     description: 'Autherized Successfully',
-    type: SigninDto,
+    type: ReturnedUserDto,
   })
   @ApiUnauthorizedResponse({ description: 'Wrong email or password' })
+  @ApiCookieAuth('authorization')
   @Post('login')
   async login(@Body() dto: LoginDto, @Res() res: Response) {
     return this.authService.login(dto, res);
@@ -48,8 +51,9 @@ export class AuthController {
   @ApiOperation({ description: 'Create a new user account' })
   @ApiCreatedResponse({
     description: 'Account created successfully',
-    type: SigninDto,
+    type: ReturnedUserDto,
   })
+  @ApiCookieAuth('authorization')
   @ApiForbiddenResponse({ description: 'The email is used' })
   @Post('signup')
   async signup(@Body() dto: CreateUserDto, @Res() res: Response) {
@@ -80,6 +84,8 @@ export class AuthController {
     await this.authService.forgetUsername(forgetUsernameDto, res);
   }
 
+  @ApiProperty({ description: 'after sending token to the user in email' })
+  @ApiCreatedResponse({ description: 'password changed successfully' })
   @UseGuards(JWTForgetPasswordGuard)
   @Post('change-forgotten-password')
   async changeForgottenPassword(

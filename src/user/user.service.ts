@@ -15,10 +15,8 @@ import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
-import type { AvailableUsernameDto } from './dto';
+import type { AvailableUsernameDto, CreateUserDto, FilterUserDto } from './dto';
 import { PrefsDto } from './dto';
-import type { CreateUserDto } from './dto/user.dto';
-import type { FilterUserDto } from './dto/user-filter.dto';
 import type { User, UserDocument } from './user.schema';
 
 @Global()

@@ -128,7 +128,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'Update user preferences' })
-  @ApiOkResponse({ description: 'The preferences updated successfully' })
+  @ApiCreatedResponse({ description: 'The preferences updated successfully' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
@@ -226,6 +226,16 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'follow specific user' })
+  @ApiCreatedResponse({
+    description: 'you have followed the user successfully',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'either you are following the user or there is a block between you and the user',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'user is not logged in',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/follow')
   async followUser(
@@ -235,6 +245,17 @@ export class UserController {
     return this.userService.follow(request.user._id, user_id);
   }
 
+  @ApiOperation({ description: 'unfollow specific user' })
+  @ApiCreatedResponse({
+    description: 'you have unfollowed the user successfully',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'either you are not following the user or there is a block between you and the user or wrong user id',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'user is not logged in',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unfollow')
   async unfollowUser(
@@ -246,7 +267,9 @@ export class UserController {
 
   @ApiOperation({ description: 'User block another user' })
   @ApiOkResponse({ description: 'User blocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiBadRequestResponse({
+    description: 'invalid user id or there is block between you and the user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/block')
@@ -259,7 +282,9 @@ export class UserController {
 
   @ApiOperation({ description: 'User unblock another user' })
   @ApiOkResponse({ description: 'User unblocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiBadRequestResponse({
+    description: "invalid user id or you haven't blocked the user",
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unblock')
