@@ -141,7 +141,6 @@ module.exports = {
     '@typescript-eslint/no-duplicate-enum-values': 'error',
     '@typescript-eslint/no-empty-interface': 'error',
     '@typescript-eslint/no-unnecessary-type-assertion': 'error',
-    '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-inferrable-types': 'error',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/ban-ts-comment': 'error',
@@ -159,6 +158,8 @@ module.exports = {
     '@typescript-eslint/no-unsafe-return': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',
     '@typescript-eslint/no-require-imports': 'error',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
     'keyword-spacing': 'off',
     '@typescript-eslint/keyword-spacing': 'error',
     '@typescript-eslint/no-namespace': 'error',
@@ -190,7 +191,43 @@ module.exports = {
       },
       {
         selector: 'variable',
+        format: ['PascalCase', 'camelCase'],
+        filter: {
+          regex: '^.*Schema$',
+          match: true,
+        },
+      },
+      {
+        selector: 'variable',
+        format: ['PascalCase', 'camelCase'],
+        filter: {
+          regex: '^.*Mock$',
+          match: true,
+        },
+      },
+      {
+        selector: 'variable',
+        format: ['PascalCase', 'camelCase'],
+        filter: {
+          regex: '^.*Service$',
+          match: true,
+        },
+      },
+      {
+        selector: 'property',
         format: ['camelCase', 'UPPER_CASE'],
+        filter: {
+          regex: '^_.*$',
+          match: false,
+        },
+      },
+      {
+        selector: 'variable',
+        format: ['camelCase', 'UPPER_CASE'],
+        filter: {
+          regex: '^_.*$',
+          match: false,
+        },
       },
       {
         selector: 'interface',
@@ -200,12 +237,20 @@ module.exports = {
       {
         selector: 'typeLike',
         format: ['PascalCase'],
+        filter: {
+          regex: '^_.*$',
+          match: false,
+        },
       },
       {
         selector: 'memberLike',
         modifiers: ['private'],
         format: ['camelCase'],
         leadingUnderscore: 'forbid',
+        filter: {
+          regex: '^_.*$',
+          match: false,
+        },
       },
       {
         selector: 'variable',
