@@ -98,7 +98,6 @@ describe('UserControllerSpec', () => {
       const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
       req.user = { id };
       const res: any = await userController.getUserPrefs(req);
-      res['accountClosed'] = false;
       const {
         username: _username,
         email: _email,
