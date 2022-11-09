@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UserModule } from './../../user/user.module';
-import { SeederService } from './seeder.service.';
+import { SeederService } from './seeder.service';
 
 /**
  * Import and provide seeder classes.
@@ -17,7 +17,7 @@ import { SeederService } from './seeder.service.';
     UserModule,
   ],
   controllers: [],
-  providers: [SeederService],
+  providers: [SeederService, Logger],
   exports: [SeederService],
 })
 export class SeederModule {}
