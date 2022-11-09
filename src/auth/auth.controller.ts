@@ -8,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -42,7 +41,6 @@ export class AuthController {
     type: ReturnedUserDto,
   })
   @ApiUnauthorizedResponse({ description: 'Wrong email or password' })
-  @ApiCookieAuth('authorization')
   @Post('login')
   async login(@Body() dto: LoginDto, @Res() res: Response) {
     return this.authService.login(dto, res);
@@ -53,7 +51,6 @@ export class AuthController {
     description: 'Account created successfully',
     type: ReturnedUserDto,
   })
-  @ApiCookieAuth('authorization')
   @ApiForbiddenResponse({ description: 'The email is used' })
   @Post('signup')
   async signup(@Body() dto: CreateUserDto, @Res() res: Response) {
