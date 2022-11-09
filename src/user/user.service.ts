@@ -15,10 +15,8 @@ import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
-import type { AvailableUsernameDto } from './dto';
+import type { AvailableUsernameDto, CreateUserDto, FilterUserDto } from './dto';
 import { PrefsDto } from './dto';
-import type { CreateUserDto } from './dto/user.dto';
-import type { FilterUserDto } from './dto/user-filter.dto';
 import type { User, UserDocument } from './user.schema';
 
 @Global()
@@ -263,7 +261,7 @@ export class UserService {
    * @param user_id id of the user to be moderator
    * @returns returns a user with edited authType
    */
-  async allowUserToBeModerator(user_id: Types.ObjectId): Promise<UserDocument> {
+  async allowUserToBeModerator(user_id: Types.ObjectId): Promise<any> {
     const user = await this.userModel.findById(user_id);
 
     if (!user) {
@@ -279,7 +277,7 @@ export class UserService {
     user.authType = 'moderator';
     await user.save();
 
-    return user;
+    return { status: 'success' };
   }
 
   /**
@@ -287,7 +285,7 @@ export class UserService {
    * @param user_id id of the user to be an admin
    * @returns returns the user with new type
    */
-  async makeAdmin(user_id: Types.ObjectId): Promise<UserDocument> {
+  async makeAdmin(user_id: Types.ObjectId): Promise<any> {
     const user = await this.userModel
       .findByIdAndUpdate(
         user_id,
@@ -302,6 +300,6 @@ export class UserService {
       throw new BadRequestException(`there is no user with id ${user_id}`);
     }
 
-    return user;
+    return { status: 'success' };
   }
 }
