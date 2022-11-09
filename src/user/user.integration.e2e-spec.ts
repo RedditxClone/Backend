@@ -424,8 +424,10 @@ describe('userController (e2e)', () => {
       const res = await request(server)
         .delete(`/user`)
         .set('authorization', token1)
-        .expect(HttpStatus.BAD_REQUEST);
-      expect(res.body.message).toEqual('user already deleted');
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toEqual(
+        `there is no user with information {"_id":"${id1}"}`,
+      );
     });
   });
 

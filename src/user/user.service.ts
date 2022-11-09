@@ -304,8 +304,9 @@ export class UserService {
 
     return user;
   }
+
   async deleteAccount(user: any) {
-    const deletedUser = await this.userModel
+    await this.userModel
       .updateOne(
         { _id: user._id },
         {
@@ -313,8 +314,7 @@ export class UserService {
         },
       )
       .select('');
-    if (deletedUser.modifiedCount == 0)
-      throw new BadRequestException('user already deleted');
+
     return { status: 'success' };
   }
 }

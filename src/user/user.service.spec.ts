@@ -311,12 +311,6 @@ describe('UserService', () => {
         status: 'success',
       });
     });
-    it('should throw exception', async () => {
-      const user = { _id: id };
-      await expect(service.deleteAccount(user)).rejects.toThrow(
-        'user already deleted',
-      );
-    });
   });
   afterAll(async () => {
     await closeInMongodConnection();

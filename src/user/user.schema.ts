@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { Document } from 'mongoose';
 
@@ -29,8 +30,10 @@ export class User {
 
   @Prop({ enum: [`male`, `female`, ``], default: '' })
   gender: string;
+
   @Prop({ default: false })
   accountClosed: boolean;
+
   //profile
   @Prop({ default: '' })
   displayName: string;
@@ -148,3 +151,11 @@ export class User {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.pre(/^find/, function (next) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line no-invalid-this
+  this.where({ accountClosed: false });
+
+  next();
+});
