@@ -98,12 +98,14 @@ describe('UserControllerSpec', () => {
       const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
       req.user = { id };
       const res: any = await userController.getUserPrefs(req);
-      const usr = stubUser();
-      // delete usr.username;
-      // delete usr.hashPassword;
-      // delete usr.email;
-      // delete usr.authType;
-      expect(res).toEqual(usr);
+      const {
+        username: _username,
+        email: _email,
+        authType: _authType,
+        hashPassword: _hashPassword,
+        ...user
+      } = stubUser();
+      expect(res).toEqual(user);
     });
   });
   describe('patch prefs', () => {

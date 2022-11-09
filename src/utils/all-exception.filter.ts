@@ -4,7 +4,7 @@ import type { Response } from 'express';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: any, host: ArgumentsHost) {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
@@ -16,14 +16,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const httpResponse =
       exception instanceof HttpException ? exception.getResponse() : null;
 
-    let responeseBody;
-
-    if (httpResponse instanceof Object) {
-      responeseBody = httpResponse;
-    }
+    const responseBody =
+      httpResponse instanceof Object
+        ? httpResponse
+        : { message: exception.message };
 
     response.status(status).json({
-      ...responeseBody,
+      ...responseBody,
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,

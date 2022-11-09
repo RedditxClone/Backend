@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
@@ -22,12 +22,12 @@ export class AdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
   async validate(payload: any): Promise<UserDocument> {
     const user = await this.userService.getUserById(payload.id);
 
-    if (user.authType === 'admin') {
-      return user;
+    if (user.authType !== 'admin') {
+      throw new UnauthorizedException(
+        'you must be an admin to make this action',
+      );
     }
 
-    throw new ForbiddenException({
-      description: 'you must be an admin to make this action',
-    });
+    return user;
   }
 }

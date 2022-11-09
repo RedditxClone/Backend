@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { readFile, unlink } from 'fs/promises';
 import request from 'supertest';
 
+import { AllExceptionsFilter } from '../utils/all-exception.filter';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -81,6 +82,7 @@ describe('subredditController (e2e)', () => {
       providers: [SubredditService],
     }).compile();
     app = moduleFixture.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
     server = app.getHttpServer();
     sr = await createDummySubreddit();

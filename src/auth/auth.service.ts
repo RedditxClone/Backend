@@ -80,6 +80,7 @@ export class AuthService {
   login = async (dto: LoginDto, res: Response) => {
     const user: UserDocument = await this.userService.getUserByUsername(
       dto.username,
+      true,
     );
     const isValidUser: boolean = await this.isValidUser(user, dto.password);
 
@@ -139,7 +140,7 @@ export class AuthService {
     changePasswordDto: ChangePasswordDto,
     res: Response,
   ) => {
-    const user: UserDocument = await this.userService.getUserById(id);
+    const user: UserDocument = await this.userService.getUserById(id, true);
     const userExist: boolean = await this.isValidUser(
       user,
       changePasswordDto.oldPassword,

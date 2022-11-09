@@ -18,6 +18,7 @@ import { BlockSchema } from '../block/block.schema';
 import { FollowModule } from '../follow/follow.module';
 import { FollowSchema } from '../follow/follow.schema';
 import { EmailService } from '../utils';
+import { AllExceptionsFilter } from '../utils/all-exception.filter';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -106,6 +107,7 @@ describe('userController (e2e)', () => {
       ],
     }).compile();
     app = moduleFixture.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
     userService = app.get<UserService>(UserService);
     server = app.getHttpServer();

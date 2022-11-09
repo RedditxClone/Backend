@@ -98,7 +98,7 @@ describe('UserService', () => {
   });
   describe('getUserById', () => {
     test('should get a user', async () => {
-      const user: UserDocument = await service.getUserById(id);
+      const user: UserDocument = await service.getUserById(id, true);
       expect(user).toEqual(
         expect.objectContaining({
           username: userDto.username,
@@ -120,33 +120,11 @@ describe('UserService', () => {
       }).rejects.toThrow(/.*there is no user.*/);
     });
   });
-  describe('getUserByEmail', () => {
-    it('should get user', async () => {
-      const user: UserDocument = await service.getUserByEmail(userDto.email);
-      expect(user).toEqual(
-        expect.objectContaining({
-          email: userDto.email,
-          username: userDto.username,
-        }),
-      );
-      const validPassword: boolean = await service.validPassword(
-        userDto.password,
-        user.hashPassword,
-      );
-      expect(validPassword).toBe(true);
-    });
-    it('should pass an error', async () => {
-      await expect(async () => {
-        await service.getUserByEmail('wrong_email@gmail.com');
-      }).rejects.toThrow(
-        `no user with information {"email":"wrong_email@gmail.com"}`,
-      );
-    });
-  });
   describe('getUserByUsername', () => {
     it('should get user', async () => {
       const user: UserDocument = await service.getUserByUsername(
         userDto.username,
+        true,
       );
       expect(user).toEqual(
         expect.objectContaining({

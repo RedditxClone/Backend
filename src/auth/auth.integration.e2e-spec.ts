@@ -13,6 +13,7 @@ import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService, EmailServiceMock } from '../utils';
+import { AllExceptionsFilter } from '../utils/all-exception.filter';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -82,6 +83,7 @@ describe('authController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalFilters(new AllExceptionsFilter());
     authService = app.get<AuthService>(AuthService);
     await app.init();
     server = app.getHttpServer();

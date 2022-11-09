@@ -72,10 +72,13 @@ export class UserService {
     }
   };
 
-  private async getOneUser(filter: FilterUserDto): Promise<UserDocument> {
-    const user: UserDocument | null | undefined = await this.userModel.findOne(
-      filter,
-    );
+  private async getOneUser(
+    filter: FilterUserDto,
+    selectPassword = false,
+  ): Promise<UserDocument> {
+    const user: UserDocument | null | undefined = await this.userModel
+      .findOne(filter)
+      .select(selectPassword ? '+hashPassword' : '');
 
     if (!user) {
       throw new NotFoundException(
@@ -91,16 +94,18 @@ export class UserService {
    * @param id id of the user
    * @returns the user
    */
-  async getUserById(id: Types.ObjectId): Promise<UserDocument> {
-    return this.getOneUser({ _id: id });
+  async getUserById(
+    id: Types.ObjectId,
+    selectPassword = false,
+  ): Promise<UserDocument> {
+    return this.getOneUser({ _id: id }, selectPassword);
   }
 
-  async getUserByEmail(email: string): Promise<UserDocument> {
-    return this.getOneUser({ email });
-  }
-
-  async getUserByUsername(username: string): Promise<UserDocument> {
-    return this.getOneUser({ username });
+  async getUserByUsername(
+    username: string,
+    selectPassword = false,
+  ): Promise<UserDocument> {
+    return this.getOneUser({ username }, selectPassword);
   }
 
   private async createHashedPassword(password: string): Promise<string> {
