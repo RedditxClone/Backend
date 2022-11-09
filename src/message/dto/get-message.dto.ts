@@ -6,5 +6,5 @@ export class GetMessagesDto {
   @ApiProperty({
     description: 'if you want only common messages with user with user_id',
   })
-  user_id?: string;
+  userId?: string;
 }

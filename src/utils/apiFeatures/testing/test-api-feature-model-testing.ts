@@ -4,8 +4,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class TestApiFeature {
   @Prop()
   name: string;
+
   @Prop()
   age: number;
+
   @Prop()
   birthDate: Date;
 }

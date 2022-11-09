@@ -1,15 +1,17 @@
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
 import mongoose from 'mongoose';
+
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
-import { CreateSubredditDto } from './dto/create-subreddit.dto';
-import { FlairDto } from './dto/flair.dto';
-import { UpdateSubredditDto } from './dto/update-subreddit.dto';
+} from '../utils/mongoose-in-memory';
+import type { CreateSubredditDto } from './dto/create-subreddit.dto';
+import type { FlairDto } from './dto/flair.dto';
+import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
@@ -67,7 +69,8 @@ describe('SubredditService', () => {
       providers: [SubredditService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
-    id = (await subredditService.create(subredditDefault))._id.toString();
+    const subredditDocument = await subredditService.create(subredditDefault);
+    id = subredditDocument._id.toString();
   });
 
   it('should be defined', () => {
@@ -206,19 +209,23 @@ describe('SubredditService', () => {
         id,
         flair,
       );
-      const newFlair2: FlairDto = {
-        ...flair,
-        _id: new mongoose.Types.ObjectId(
-          subredditWithFlairs2.flairList[1]._id.toString(),
-        ),
-      };
-      const newSubreddit = await subredditService.deleteFlairById(
-        id,
-        newFlair1._id.toString(),
+
+      // flair object was unused here
+      new mongoose.Types.ObjectId(
+        subredditWithFlairs2.flairList[1]._id.toString(),
       );
-      expect(newSubreddit).toEqual({
-        status: 'success',
-      });
+
+      if (newFlair1._id) {
+        const newSubreddit = await subredditService.deleteFlairById(
+          id,
+          newFlair1._id.toString(),
+        );
+        expect(newSubreddit).toEqual({
+          status: 'success',
+        });
+      } else {
+        expect(newFlair1._id).toBeDefined();
+      }
     });
   });
 
@@ -226,7 +233,7 @@ describe('SubredditService', () => {
     it('The Icon uploaded successfully', async () => {
       const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
       await subredditService.uploadIcon(id, { buffer: file });
-      await expect(
+      expect(
         typeof (await readFile(`src/statics/subreddit_icons/${id}.jpeg`)),
       ).toBe('object');
       await subredditService.removeIcon(id);
@@ -247,6 +254,6 @@ describe('SubredditService', () => {
 
   afterAll(async () => {
     await closeInMongodConnection();
-    module.close();
+    await module.close();
   });
 });

@@ -1,17 +1,17 @@
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
-import mongoose from 'mongoose';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../mongooseInMemory';
-import { ApiFeaturesService } from './apiFeatures.service';
-import { ReturnModelTest } from './testing/returnModelTesting';
-import { TestApiFeatureSchema } from './testing/testApiFeatureModelTesting';
-
+} from '../mongoose-in-memory';
+import { ApiFeaturesService } from './api-features.service';
+import { ReturnModelTest } from './testing/return-model-testing';
+import { TestApiFeatureSchema } from './testing/test-api-feature-model-testing';
 describe('apiFeaturesService', () => {
-  let ModelTestService: ReturnModelTest;
+  let modelTestService: ReturnModelTest;
   let apiFeaturesService: ApiFeaturesService;
   let module: TestingModule;
   beforeAll(async () => {
@@ -26,12 +26,13 @@ describe('apiFeaturesService', () => {
       providers: [ApiFeaturesService, ReturnModelTest],
     }).compile();
 
-    ModelTestService = module.get<ReturnModelTest>(ReturnModelTest);
+    modelTestService = module.get<ReturnModelTest>(ReturnModelTest);
     apiFeaturesService = module.get<ApiFeaturesService>(ApiFeaturesService);
 
-    const model = ModelTestService.getTestApiFeatureModel();
+    const model = modelTestService.getTestApiFeatureModel();
     const date = Date.now();
-    const promises = [];
+    const promises: any[] = [];
+
     for (let i = 10; i < 100; i++) {
       promises.push(
         model.create({
@@ -41,16 +42,17 @@ describe('apiFeaturesService', () => {
         }),
       );
     }
+
     await Promise.all(promises);
   });
 
   it('should be defined', () => {
-    expect(ModelTestService).toBeDefined();
+    expect(modelTestService).toBeDefined();
     expect(apiFeaturesService).toBeDefined();
   });
   describe('test api Features', () => {
     it('should return one object', async () => {
-      const model = ModelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestApiFeatureModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { age: 10 },
@@ -68,7 +70,7 @@ describe('apiFeaturesService', () => {
       );
     });
     it('should return 18 objects', async () => {
-      const model = ModelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestApiFeatureModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { page: 2, limit: 18 },
@@ -77,7 +79,7 @@ describe('apiFeaturesService', () => {
       expect(data.length).toEqual(18);
     });
     it('should return 15 objects', async () => {
-      const model = ModelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestApiFeatureModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { page: 3 },
@@ -87,7 +89,7 @@ describe('apiFeaturesService', () => {
     });
 
     it('should not return any objects', async () => {
-      const model = ModelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestApiFeatureModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { age: 5 },
@@ -97,19 +99,20 @@ describe('apiFeaturesService', () => {
     });
 
     it('should return objects sorted by data', async () => {
-      const model = ModelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestApiFeatureModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { sort: 'age' },
         { sort: true },
       );
+
       for (let i = 1; i < data.length; i++) {
         expect(data[i].age).toBeGreaterThan(data[i - 1].age);
       }
     });
 
     it('should return only the id and the name', async () => {
-      const model = ModelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestApiFeatureModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { fields: '-_id,age,name', limit: 1 },
@@ -127,6 +130,6 @@ describe('apiFeaturesService', () => {
 
   afterAll(async () => {
     await closeInMongodConnection();
-    module.close();
+    await module.close();
   });
 });

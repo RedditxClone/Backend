@@ -1,24 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import type { INestApplication } from '@nestjs/common';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import request from 'supertest';
+
+import { BlockModule } from '../block/block.module';
+import { FollowModule } from '../follow/follow.module';
+import type { CreateUserDto } from '../user/dto';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
+import { EmailService, EmailServiceMock } from '../utils';
+import { AllExceptionsFilter } from '../utils/all-exception.filter';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
-import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
-import { UserSchema } from '../user/user.schema';
+} from '../utils/mongoose-in-memory';
 import { AuthController } from './auth.controller';
-import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from '../user/dto';
-import { FollowModule } from '../follow/follow.module';
-import { EmailService, EmailServiceMock } from '../utils';
-import { Types } from 'mongoose';
-import { UserStrategy } from './stratigies/user.strategy';
-import { BlockModule } from '../block/block.module';
 import { ForgetPasswordStrategy } from './stratigies/forget-password.strategy';
+import { UserStrategy } from './stratigies/user.strategy';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;
@@ -35,21 +38,23 @@ describe('authController (e2e)', () => {
   };
   let authService: AuthService;
   let token1: string;
-  let token2: string;
-  let id1: Types.ObjectId;
-  let id2: Types.ObjectId;
+  // let token2: string;
+  // let id1: Types.ObjectId;
+  // let id2: Types.ObjectId;
+
   const createDummyUsers = async () => {
     const authRes1 = await request(server).post('/auth/signup').send(dto1);
-    id1 = authRes1.body._id;
+    // id1 = authRes1.body._id;
     const cookie1 = authRes1.headers['set-cookie'];
     const authRes2 = await request(server)
       .post('/auth/signup')
       .send({ ...dto, email: `a${dto.email}`, username: `a${dto.username}` });
-    id2 = authRes2.body._id;
-    const cookie2 = authRes2.get('Set-Cookie');
+    // id2 = authRes2.body._id;
+    authRes2.get('Set-Cookie');
     token1 = cookie1[0].split('; ')[0].split('=')[1].replace('%20', ' ');
-    token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
+    // token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
   };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -78,6 +83,7 @@ describe('authController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalFilters(new AllExceptionsFilter());
     authService = app.get<AuthService>(AuthService);
     await app.init();
     server = app.getHttpServer();

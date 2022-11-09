@@ -1,11 +1,12 @@
 import { Global, Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from '../user/user.schema';
-import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
+
 import { UserModule } from '../user/user.module';
+import { UserSchema } from '../user/user.schema';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { ForgetPasswordStrategy } from './stratigies/forget-password.strategy';
 @Global()
 @Module({

@@ -4,7 +4,6 @@ import {
   IsBoolean,
   IsDefined,
   IsIn,
-  IsOptional,
   IsString,
   IsUrl,
   ValidateIf,
@@ -19,23 +18,27 @@ export class PrefsDto {
   @IsString()
   @IsUrl()
   coverPhoto?: string;
+
   @ValidateIf((o) => o.profilePhoto !== undefined)
   @Expose()
   @ApiProperty({ description: "Users's profile photo location" })
   @IsString()
   @IsUrl()
   profilePhoto?: string;
+
   @ValidateIf((o) => o.countryCode !== undefined)
   @Expose()
   @ApiProperty({ description: 'Country Code ex: eg for Egypt' })
   @IsString()
   countryCode?: string;
+
   @ValidateIf((o) => o.gender !== undefined)
   @Expose()
   @ApiProperty({ description: 'gender male or female' })
   @IsString()
   @IsIn(['male', 'female'])
   gender?: string;
+
   @Expose()
   //profile
   @ApiProperty({ description: 'display name of user' })
@@ -43,16 +46,19 @@ export class PrefsDto {
   @IsDefined()
   @ValidateIf((o) => o.displayName !== undefined)
   displayName?: string;
+
   @ValidateIf((o) => o.about !== undefined)
   @Expose()
   @ApiProperty({ description: "user's about" })
   @IsString()
   about?: string;
+
   @ValidateIf((o) => o.socialLinks !== undefined)
   @Expose()
   @ApiProperty({ description: 'social links like twitter' })
   @IsString({ each: true })
   socialLinks?: string[];
+
   @ValidateIf((o) => o.nsfw !== undefined)
   @Expose()
   @ApiProperty({
@@ -61,6 +67,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   nsfw?: boolean;
+
   @ValidateIf((o) => o.allowFollow !== undefined)
   @Expose()
   @ApiProperty({
@@ -69,6 +76,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   allowFollow?: boolean;
+
   @ValidateIf((o) => o.contentVisibility !== undefined)
   @Expose()
   @ApiProperty({
@@ -76,6 +84,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   contentVisibility?: boolean;
+
   @ValidateIf((o) => o.activeInCommunitiesVisibility !== undefined)
   @Expose()
   @ApiProperty({
@@ -83,6 +92,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   activeInCommunitiesVisibility?: boolean;
+
   @ValidateIf((o) => o.badCommentAutoCollapse !== undefined)
   @Expose()
   //safety
@@ -92,6 +102,7 @@ export class PrefsDto {
   @IsString()
   @IsIn([`off`, `low`, `medium`, `high`])
   badCommentAutoCollapse?: string;
+
   @ValidateIf((o) => o.showInSearch !== undefined)
   @Expose()
   @ApiProperty({
@@ -99,6 +110,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   showInSearch?: boolean;
+
   @ValidateIf((o) => o.adultContent !== undefined)
   @Expose()
   //feed
@@ -107,6 +119,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   adultContent?: boolean;
+
   @ValidateIf((o) => o.autoPlayMedia !== undefined)
   @Expose()
   @ApiProperty({
@@ -114,6 +127,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   autoPlayMedia?: boolean;
+
   @ValidateIf((o) => o.suggestedSort !== undefined)
   @Expose()
   @ApiProperty({
@@ -122,13 +136,18 @@ export class PrefsDto {
   @IsIn([`hot`, `new`, `top`, `rising`])
   @IsString()
   suggestedSort?: string;
+
   @ValidateIf((o) => o.personalizeAllOfReddit !== undefined)
   @Expose()
   @IsBoolean()
   @ApiProperty({
-    description: `Allow us to use the links to other sites you click on for operational purposes (that help us better understand how you and others use Reddit) and to show you better ads and recommendations.`,
+    description:
+      'Allow us to use the links to other sites you click on for operational purposes' +
+      '(that help us better understand how you and others use Reddit) ' +
+      'and to show you better ads and recommendations.',
   })
   personalizeAllOfReddit?: boolean;
+
   @ValidateIf((o) => o.personalizeAdsInformation !== undefined)
   @Expose()
   @IsBoolean()
@@ -136,6 +155,7 @@ export class PrefsDto {
     description: `Allow us to use information that our advertising partners send us to show you better ads.`,
   })
   personalizeAdsInformation?: boolean;
+
   @ValidateIf((o) => o.personalizeAdsYourActivity !== undefined)
   @Expose()
   @IsBoolean()
@@ -143,6 +163,7 @@ export class PrefsDto {
     description: `Allow us to use your interactions with sites and apps we partner with to show you better ads.`,
   })
   personalizeAdsYourActivity?: boolean;
+
   @ValidateIf((o) => o.personalizeRecGeneralLocation !== undefined)
   @Expose()
   @IsBoolean()
@@ -150,6 +171,7 @@ export class PrefsDto {
     description: `Allow us to use your city, state, or country (based on your IP) to recommend better posts and communities.`,
   })
   personalizeRecGeneralLocation?: boolean;
+
   @ValidateIf((o) => o.personalizeRecOurPartners !== undefined)
   @Expose()
   @IsBoolean()
@@ -157,6 +179,7 @@ export class PrefsDto {
     description: `Allow us to use your interactions with sites and apps we partner with to recommend better posts and communities.`,
   })
   personalizeRecOurPartners?: boolean;
+
   @ValidateIf((o) => o.useTwoFactorAuthentication !== undefined)
   @Expose()
   @IsBoolean()
@@ -164,6 +187,7 @@ export class PrefsDto {
     description: `Help protect your account (even if someone gets your password) by requiring a verification code and a password to log in.`,
   })
   useTwoFactorAuthentication?: boolean;
+
   //notifications
   @ValidateIf((o) => o.inboxMessages !== undefined)
   @Expose()
@@ -172,6 +196,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   inboxMessages?: boolean;
+
   @ValidateIf((o) => o.mentions !== undefined)
   @Expose()
   @ApiProperty({
@@ -179,6 +204,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   mentions?: boolean;
+
   @ValidateIf((o) => o.commentsOnPost !== undefined)
   @Expose()
   @ApiProperty({
@@ -186,6 +212,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   commentsOnPost?: boolean;
+
   @ValidateIf((o) => o.upvotePosts !== undefined)
   @Expose()
   @ApiProperty({
@@ -193,6 +220,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   upvotePosts?: boolean;
+
   @ValidateIf((o) => o.upvoteComments !== undefined)
   @Expose()
   @ApiProperty({
@@ -200,6 +228,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   upvoteComments?: boolean;
+
   @ValidateIf((o) => o.repliesComments !== undefined)
   @Expose()
   @IsBoolean()
@@ -207,6 +236,7 @@ export class PrefsDto {
     description: `notify on reply comment`,
   })
   repliesComments?: boolean;
+
   @ValidateIf((o) => o.activityComments !== undefined)
   @Expose()
   @ApiProperty({
@@ -214,6 +244,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   activityComments?: boolean;
+
   @ValidateIf((o) => o.activityOnThreads !== undefined)
   @Expose()
   @ApiProperty({
@@ -221,6 +252,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   activityOnThreads?: boolean;
+
   @ValidateIf((o) => o.newFollowers !== undefined)
   @Expose()
   @ApiProperty({
@@ -228,6 +260,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   newFollowers?: boolean;
+
   @ValidateIf((o) => o.newPostFlair !== undefined)
   @Expose()
   @ApiProperty({
@@ -235,6 +268,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   newPostFlair?: boolean;
+
   @ValidateIf((o) => o.newUserFlair !== undefined)
   @Expose()
   @ApiProperty({
@@ -242,6 +276,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   newUserFlair?: boolean;
+
   @ValidateIf((o) => o.pinnedPosts !== undefined)
   @Expose()
   @ApiProperty({
@@ -249,6 +284,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   pinnedPosts?: boolean;
+
   @ValidateIf((o) => o.postsYouFollow !== undefined)
   @Expose()
   @ApiProperty({
@@ -256,6 +292,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   postsYouFollow?: boolean;
+
   @ValidateIf((o) => o.commentsYouFollow !== undefined)
   @Expose()
   @ApiProperty({
@@ -263,6 +300,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   commentsYouFollow?: boolean;
+
   @ValidateIf((o) => o.redditAnnouncements !== undefined)
   @Expose()
   @ApiProperty({
@@ -270,6 +308,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   redditAnnouncements?: boolean;
+
   @ValidateIf((o) => o.cakeDay !== undefined)
   @Expose()
   @ApiProperty({
@@ -277,6 +316,7 @@ export class PrefsDto {
   })
   @IsBoolean()
   cakeDay?: boolean;
+
   @ValidateIf((o) => o.acceptPms !== undefined)
   @Expose()
   //messages
@@ -286,6 +326,7 @@ export class PrefsDto {
   @IsString()
   @IsIn(['everyone', 'whitelisted'])
   acceptPms?: string;
+
   @ValidateIf((o) => o.whitelisted !== undefined)
   @Expose()
   @ApiProperty({

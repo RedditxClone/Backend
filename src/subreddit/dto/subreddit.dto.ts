@@ -1,4 +1,4 @@
-import { FlairDto } from './flair.dto';
+import type { FlairDto } from './flair.dto';
 
 export class SubredditDto {
   name: string;
@@ -60,5 +60,6 @@ export class SubredditDto {
   welcomeMessageText: string;
 
   flairList: FlairDto[];
+
   icon: string;
 }
