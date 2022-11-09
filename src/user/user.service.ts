@@ -305,11 +305,16 @@ export class UserService {
     return user;
   }
   async deleteAccount(user: any) {
-    await this.userModel
-      .findByIdAndUpdate(user._id, {
-        accountClosed: true,
-      })
+    const deletedUser = await this.userModel
+      .updateOne(
+        { _id: user._id },
+        {
+          accountClosed: true,
+        },
+      )
       .select('');
+    if (deletedUser.modifiedCount == 0)
+      throw new BadRequestException('user already deleted');
     return { status: 'success' };
   }
 }

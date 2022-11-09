@@ -422,9 +422,10 @@ describe('userController (e2e)', () => {
     });
     it('should throw an error', async () => {
       const res = await request(server)
-        .post(`/user/${id2.toString()}/unfollow`)
-        .expect(HttpStatus.UNAUTHORIZED);
-      expect(res.body.message).toEqual('Unauthorized');
+        .delete(`/user`)
+        .set('authorization', token1)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.body.message).toEqual('user already deleted');
     });
   });
 

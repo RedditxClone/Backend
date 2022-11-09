@@ -309,6 +309,6 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Delete('/')
   async deleteAccount(@Req() request) {
-    return await this.userService.deleteAccount(request.user);
+    return this.userService.deleteAccount(request.user);
   }
 }
