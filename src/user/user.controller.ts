@@ -6,8 +6,8 @@ import {
   Param,
   Patch,
   Post,
-  Res,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,13 +19,15 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { Types } from 'mongoose';
+
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
-  getFriendsDto,
-  getUserInfoDto,
+  GetFriendsDto,
+  GetUserInfoDto,
   PrefsDto,
   UserAccountDto,
   UserCommentsDto,
@@ -33,7 +35,6 @@ import {
   UserPostsDto,
 } from './dto';
 import { UserService } from './user.service';
-import { Response } from 'express';
 
 @ApiTags('User')
 @Controller('user')
@@ -43,7 +44,7 @@ export class UserController {
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
     description: 'The account friends is returned successfully',
-    type: getFriendsDto,
+    type: GetFriendsDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('friend')
@@ -99,8 +100,8 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Post('/:user_id/spam')
-  spamUser(@Param('user_id') user_id: string) {
-    return;
+  spamUser(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get user data if logged in' })
@@ -111,7 +112,7 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   getUser() {
-    return;
+    // TODO
   }
 
   @ApiOperation({ description: 'Get user preferences' })
@@ -123,7 +124,7 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
   async getUserPrefs(@Req() request) {
-    return await this.userService.getUserPrefs(request.user._id);
+    return this.userService.getUserPrefs(request.user._id);
   }
 
   @ApiOperation({ description: 'Update user preferences' })
@@ -132,18 +133,18 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
   async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
-    return await this.userService.updateUserPrefs(request.user._id, prefsDto);
+    return this.userService.updateUserPrefs(request.user._id, prefsDto);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
     description: 'The user info returned successfully',
-    type: getUserInfoDto,
+    type: GetUserInfoDto,
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/about')
-  getUserInfo(@Param('user_id') user_id: string) {
-    return;
+  getUserInfo(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -153,8 +154,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/overview')
-  getUserOverview(@Param('user_id') user_id: string) {
-    return;
+  getUserOverview(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -164,8 +165,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/submitted')
-  getUserPosts(@Param('user_id') user_id: string) {
-    return;
+  getUserPosts(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'get user info by user id' })
@@ -175,7 +176,7 @@ export class UserController {
   async getUserById(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
-    return await this.userService.getUserById(user_id);
+    return this.userService.getUserById(user_id);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -185,8 +186,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/comments')
-  getUserComments(@Param('user_id') user_id: string) {
-    return;
+  getUserComments(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -196,8 +197,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/upvoted')
-  getUserUpvoted(@Param('user_id') user_id: string) {
-    return;
+  getUserUpvoted(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -207,8 +208,8 @@ export class UserController {
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:user_id/upvoted')
-  getUserDownvoted(@Param('user_id') user_id: string) {
-    return;
+  getUserDownvoted(@Param('user_id') _userId: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Check if username is available' })
@@ -221,11 +222,9 @@ export class UserController {
     @Body() availableUsernameDto: AvailableUsernameDto,
     @Res() res: Response,
   ) {
-    return await this.userService.checkAvailableUsername(
-      availableUsernameDto,
-      res,
-    );
+    return this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
+
   @ApiOperation({ description: 'follow specific user' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/follow')
@@ -233,15 +232,16 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ) {
-    return await this.userService.follow(request.user._id, user_id);
+    return this.userService.follow(request.user._id, user_id);
   }
+
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unfollow')
   async unfollowUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ) {
-    return await this.userService.unfollow(request.user._id, user_id);
+    return this.userService.unfollow(request.user._id, user_id);
   }
 
   @ApiOperation({ description: 'User block another user' })
@@ -254,7 +254,7 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ): Promise<any> {
-    return await this.userService.block(request.user._id, user_id);
+    return this.userService.block(request.user._id, user_id);
   }
 
   @ApiOperation({ description: 'User unblock another user' })
@@ -267,7 +267,7 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
     @Req() request,
   ): Promise<any> {
-    return await this.userService.unblock(request.user._id, user_id);
+    return this.userService.unblock(request.user._id, user_id);
   }
 
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
@@ -280,7 +280,7 @@ export class UserController {
   async makeModeration(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
-    return await this.userService.allowUserToBeModerator(user_id);
+    return this.userService.allowUserToBeModerator(user_id);
   }
 
   @ApiOperation({
@@ -296,6 +296,6 @@ export class UserController {
   async makeAdmin(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
-    return await this.userService.makeAdmin(user_id);
+    return this.userService.makeAdmin(user_id);
   }
 }

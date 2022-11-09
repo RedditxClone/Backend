@@ -5,10 +5,13 @@ import mongoose from 'mongoose';
 export class FlairDto {
   @Optional()
   _id?: mongoose.Types.ObjectId;
+
   @IsNotEmpty()
   text: string;
+
   @IsNotEmpty()
   backgroundColor: string;
+
   @IsNotEmpty()
   textColor: string;
 }

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from './user.schema';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { UserStrategy } from '../auth/stratigies/user.strategy';
-import { FollowModule } from '../follow/follow.module';
-import { BlockModule } from '../block/block.module';
+
 import { AdminStrategy } from '../auth/stratigies/admin.startegy';
+import { UserStrategy } from '../auth/stratigies/user.strategy';
+import { BlockModule } from '../block/block.module';
+import { FollowModule } from '../follow/follow.module';
+import { UserController } from './user.controller';
+import { UserSchema } from './user.schema';
+import { UserService } from './user.service';
 @Module({
   imports: [
     FollowModule,

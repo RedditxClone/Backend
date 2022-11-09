@@ -7,7 +7,7 @@ class UserPosts {
   @ApiProperty({
     description: 'The id of subreddit the post belongs to',
   })
-  subreddit_id: string;
+  subredditId: string;
 
   @ApiPropertyOptional({
     description: 'Posts can belong to a subreddit',
@@ -15,7 +15,7 @@ class UserPosts {
   @ApiProperty({
     description: 'The name of subreddit the post belongs to',
   })
-  subreddit_name?: string;
+  subredditName?: string;
 
   @ApiProperty({ description: 'The id of the post' })
   postId: Date;

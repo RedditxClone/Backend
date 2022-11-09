@@ -1,15 +1,17 @@
-import { BadRequestException, Injectable, Type } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { throwGeneralException } from '../utils/throwException';
-import { BlockDto } from './dto/block.dto';
-import { Block } from './block.schema';
+import type { Types } from 'mongoose';
+import { Model } from 'mongoose';
+
+import type { Block } from './block.schema';
+import type { BlockDto } from './dto/block.dto';
 
 @Injectable()
 export class BlockService {
   constructor(
     @InjectModel('Block') private readonly blockModel: Model<Block>,
   ) {}
+
   /**
    *  block user
    * @param dto see block DTO
@@ -17,36 +19,39 @@ export class BlockService {
    */
   async block(dto: BlockDto): Promise<any> {
     try {
-      if (dto.blocker.toString() == dto.blocked.toString())
+      if (dto.blocker.toString() === dto.blocked.toString()) {
         throw new BadRequestException('you are not allowed to block yourself');
+      }
+
       await this.blockModel.create(dto);
+
       return { status: 'success' };
-    } catch (err) {
-      if (err?.message?.startsWith('E11000'))
-        err.message = `user with id : ${dto.blocker.toString()} is already blocking user with id : ${dto.blocked.toString()}`;
-      throwGeneralException(err);
+    } catch (error) {
+      if (error?.message?.startsWith('E11000')) {
+        error.message = `user with id : ${dto.blocker.toString()} is already blocking user with id : ${dto.blocked.toString()}`;
+      }
+
+      throw error;
     }
   }
+
   /**
    * unblock user
    * @param dto see blockDto
    * @returns {status : 'success'}
    */
   async unblock(dto: BlockDto): Promise<any> {
-    try {
-      const { acknowledged, deletedCount } = await this.blockModel.deleteOne(
-        dto,
+    const { acknowledged, deletedCount } = await this.blockModel.deleteOne(dto);
+
+    if (!acknowledged || deletedCount !== 1) {
+      throw new BadRequestException(
+        `user with id : ${dto.blocker.toString()} is not blocking user with id : ${dto.blocked.toString()}`,
       );
-      if (!acknowledged || deletedCount !== 1) {
-        throw new BadRequestException(
-          `user with id : ${dto.blocker.toString()} is not blocking user with id : ${dto.blocked.toString()}`,
-        );
-      }
-      return { status: 'success' };
-    } catch (err) {
-      throwGeneralException(err);
     }
+
+    return { status: 'success' };
   }
+
   async existBlockBetween(
     user1: Types.ObjectId,
     user2: Types.ObjectId,

@@ -1,5 +1,5 @@
-import { MailerService } from '@nestjs-modules/mailer';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 /**
@@ -7,6 +7,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
  */
 export class EmailService {
   constructor(private mailService: MailerService) {}
+
   /**
    * A utility function to send emails with variable user email, subject, and body.
    *
@@ -20,12 +21,12 @@ export class EmailService {
       return await this.mailService.sendMail({
         to: toMail,
         from: process.env.EMAIL_USER,
-        subject: subject,
+        subject,
         text: body,
       });
-    } catch (err) {
+    } catch (error) {
       throw new HttpException(
-        err.message || 'Failed to send mail',
+        error.message || 'Failed to send mail',
         HttpStatus.UNAUTHORIZED,
       );
     }

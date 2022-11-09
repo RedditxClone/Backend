@@ -1,17 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { Response, Request } from 'express';
-import { Types } from 'mongoose';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { Request, Response } from 'express';
 import { createRequest, createResponse } from 'node-mocks-http';
-import { CreateUserDto } from '../user/dto';
+
+import type { CreateUserDto } from '../user/dto';
 import { stubUser } from '../user/test/stubs/user.stub';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import {
-  ForgetUsernameDto,
-  LoginDto,
+import type {
+  ChangeForgottenPasswordDto,
   ChangePasswordDto,
   ForgetPasswordDto,
-  ChangeForgottenPasswordDto,
+  ForgetUsernameDto,
+  LoginDto,
 } from './dto';
 
 jest.mock('./auth.service');
