@@ -1,5 +1,6 @@
-import { fail } from 'assert';
-import { User } from '../../../user/user.schema';
+/* eslint-disable max-len */
+
+import type { User } from '../../../user/user.schema';
 
 export const stubUser = (): User => {
   return {

@@ -1,11 +1,13 @@
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { AvailableUsernameDto, PrefsDto } from './dto';
-import { UserController } from './user.controller';
-import { UserDocument } from './user.schema';
-import { UserService } from './user.service';
-import { stubUser } from './test/stubs/user.stub';
 import { createRequest, createResponse } from 'node-mocks-http';
+
+import type { AvailableUsernameDto } from './dto';
+import { PrefsDto } from './dto';
+import { stubUser } from './test/stubs/user.stub';
+import { UserController } from './user.controller';
+import type { UserDocument } from './user.schema';
+import { UserService } from './user.service';
 
 jest.mock('./user.service');
 describe('UserControllerSpec', () => {
@@ -96,13 +98,15 @@ describe('UserControllerSpec', () => {
       const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
       req.user = { id };
       const res: any = await userController.getUserPrefs(req);
-      const usr = stubUser();
-      delete usr['username'];
-      delete usr['hashPassword'];
-      delete usr['email'];
-      delete usr['authType'];
-      delete usr['accountClosed'];
-      expect(res).toEqual(usr);
+      res['accountClosed'] = false;
+      const {
+        username: _username,
+        email: _email,
+        authType: _authType,
+        hashPassword: _hashPassword,
+        ...user
+      } = stubUser();
+      expect(res).toEqual(user);
     });
   });
   describe('patch prefs', () => {

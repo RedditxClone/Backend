@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { throwGeneralException } from '../../utils/throwException';
-import { UserDocument } from '../../user/user.schema';
+
+import type { UserDocument } from '../../user/user.schema';
 import { UserService } from '../../user/user.service';
 
 @Injectable()
@@ -13,6 +13,7 @@ export class AdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
       secretOrKey: process.env.JWT_SECRET,
     });
   }
+
   /**
    * it's called automatically using a guard super class to validate user using token
    * @param payload object get from jwt token
@@ -20,10 +21,13 @@ export class AdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
    */
   async validate(payload: any): Promise<UserDocument> {
     const user = await this.userService.getUserById(payload.id);
-    if (user.authType == 'admin') return user;
-    throwGeneralException({
-      message: 'you must be an admin to make this action',
-      status: 401,
-    });
+
+    if (user.authType !== 'admin') {
+      throw new UnauthorizedException(
+        'you must be an admin to make this action',
+      );
+    }
+
+    return user;
   }
 }

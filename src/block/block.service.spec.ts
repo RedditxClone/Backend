@@ -1,16 +1,18 @@
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from '../user/user.service';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { Types } from 'mongoose';
+
+import { FollowSchema } from '../follow/follow.schema';
+import { FollowService } from '../follow/follow.service';
 import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
+} from '../utils/mongoose-in-memory';
 import { BlockSchema } from './block.schema';
 import { BlockService } from './block.service';
-import { Types } from 'mongoose';
-import { FollowService } from '../follow/follow.service';
-import { FollowSchema } from '../follow/follow.schema';
 
 describe('BlockService', () => {
   let service: BlockService;
@@ -31,20 +33,18 @@ describe('BlockService', () => {
     }).compile();
     service = module.get<BlockService>(BlockService);
     const userService: UserService = module.get<UserService>(UserService);
-    id1 = (
-      await userService.createUser({
-        email: 'email@example.com',
-        password: '12345678',
-        username: 'username',
-      })
-    )._id;
-    id2 = (
-      await userService.createUser({
-        email: 'email2@example.com',
-        password: '12345678',
-        username: 'username2',
-      })
-    )._id;
+    const user1 = await userService.createUser({
+      email: 'email@example.com',
+      password: '12345678',
+      username: 'username',
+    });
+    id1 = user1._id;
+    const user2 = await userService.createUser({
+      email: 'email2@example.com',
+      password: '12345678',
+      username: 'username2',
+    });
+    id2 = user2._id;
   });
 
   it('should be defined', () => {
@@ -98,6 +98,6 @@ describe('BlockService', () => {
   });
   afterAll(async () => {
     await closeInMongodConnection();
-    module.close();
+    await module.close();
   });
 });

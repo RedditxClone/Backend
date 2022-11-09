@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SubredditService } from './subreddit.service';
-import { SubredditController } from './subreddit.controller';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { SubredditController } from './subreddit.controller';
 import { SubredditSchema } from './subreddit.schema';
+import { SubredditService } from './subreddit.service';
 
 @Module({
   imports: [

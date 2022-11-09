@@ -7,18 +7,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { CreateUserDto } from './dto/user.dto';
-import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
-import { AvailableUsernameDto } from './dto';
-import { Response } from 'express';
-import { FollowService } from '../follow/follow.service';
-import { PrefsDto } from './dto';
-import { throwGeneralException } from '../utils/throwException';
-import { FilterUserDto } from './dto/user-filter.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import type { Response } from 'express';
+import type { Types } from 'mongoose';
+import { Model } from 'mongoose';
+
 import { BlockService } from '../block/block.service';
+import { FollowService } from '../follow/follow.service';
+import type { AvailableUsernameDto } from './dto';
+import { PrefsDto } from './dto';
+import type { CreateUserDto } from './dto/user.dto';
+import type { FilterUserDto } from './dto/user-filter.dto';
+import type { User, UserDocument } from './user.schema';
 
 @Global()
 @Injectable()
@@ -48,6 +49,7 @@ export class UserService {
   unFriend() {
     return 'delete a friend';
   }
+
   /**
    *
    * @param dto look at CreateUserDto
@@ -63,57 +65,78 @@ export class UserService {
         ...dto,
         hashPassword,
       });
+
       return user;
-    } catch (err) {
-      throw new BadRequestException(err.message);
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
   };
-  private async getOneUser(filter: FilterUserDto) {
-    try {
-      const user: UserDocument = await this.userModel.findOne(filter);
-      if (!user)
-        throw new NotFoundException(
-          `there is no user with information ${JSON.stringify(filter)}`,
-        );
-      return user;
-    } catch (err) {
-      throwGeneralException(err);
+
+  private async getOneUser(
+    filter: FilterUserDto,
+    selectPassword = false,
+  ): Promise<UserDocument> {
+    const user: UserDocument | null | undefined = await this.userModel
+      .findOne(filter)
+      .select(selectPassword ? '+hashPassword' : '');
+
+    if (!user) {
+      throw new NotFoundException(
+        `there is no user with information ${JSON.stringify(filter)}`,
+      );
     }
+
+    return user;
   }
+
   /**
    * get a user with specific id
    * @param id id of the user
    * @returns the user
    */
-  async getUserById(id: Types.ObjectId): Promise<UserDocument> {
-    return this.getOneUser({ _id: id });
+  async getUserById(
+    id: Types.ObjectId,
+    selectPassword = false,
+  ): Promise<UserDocument> {
+    return this.getOneUser({ _id: id }, selectPassword);
   }
-  async getUserByEmail(email: string): Promise<UserDocument> {
-    return this.getOneUser({ email });
+
+  async getUserByUsername(
+    username: string,
+    selectPassword = false,
+  ): Promise<UserDocument> {
+    return this.getOneUser({ username }, selectPassword);
   }
-  async getUserByUsername(username: string): Promise<UserDocument> {
-    return this.getOneUser({ username });
-  }
+
   private async createHashedPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, await bcrypt.genSalt(10));
+    return bcrypt.hash(password, await bcrypt.genSalt(10));
   }
+
   async changePassword(id: Types.ObjectId, password: string): Promise<void> {
     const hashPassword = await this.createHashedPassword(password);
-    const user: UserDocument = await this.userModel.findByIdAndUpdate(id, {
-      hashPassword,
-    });
-    if (!user)
+    const user: UserDocument | null = await this.userModel.findByIdAndUpdate(
+      id,
+      {
+        hashPassword,
+      },
+    );
+
+    if (!user) {
       throw new NotFoundException(`there is no user with id ${id.toString()}`);
+    }
   }
+
   async validPassword(
     userPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
-    return await bcrypt.compare(userPassword, hashedPassword);
+    return bcrypt.compare(userPassword, hashedPassword);
   }
+
   async userExist(filter: FilterUserDto): Promise<boolean> {
     return (await this.userModel.count(filter)) > 0;
   }
+
   /**
    * A function to check if username is taken before or not
    * @param availableUsernameDto encapsulates the data of the request username
@@ -123,13 +146,17 @@ export class UserService {
     availableUsernameDto: AvailableUsernameDto,
     res: Response,
   ) => {
-    const user: UserDocument = await this.userModel.findOne({
+    const user: UserDocument | null = await this.userModel.findOne({
       ...availableUsernameDto,
     });
+
     if (!user) {
       res.status(HttpStatus.CREATED).json({ status: true });
-    } else res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
+    } else {
+      res.status(HttpStatus.UNAUTHORIZED).json({ status: false });
+    }
   };
+
   /**
    * follow a user
    * @param follower id of the follower user
@@ -140,25 +167,28 @@ export class UserService {
     follower: Types.ObjectId,
     followed: Types.ObjectId,
   ): Promise<any> {
-    try {
-      const followedExist: boolean = await this.userExist({ _id: followed });
-      if (!followedExist)
-        throw new BadRequestException(
-          `there is no user with id : ${followed.toString()}`,
-        );
-      const blocked: boolean = await this.blockService.existBlockBetween(
-        follower,
-        followed,
+    const isFollowed: boolean = await this.userExist({ _id: followed });
+
+    if (!isFollowed) {
+      throw new BadRequestException(
+        `there is no user with id : ${followed.toString()}`,
       );
-      if (blocked)
-        throw new UnauthorizedException(
-          'there exist a block between you and this user',
-        );
-      return this.followService.follow({ follower, followed });
-    } catch (err) {
-      throwGeneralException(err);
     }
+
+    const isBlocked: boolean = await this.blockService.existBlockBetween(
+      follower,
+      followed,
+    );
+
+    if (isBlocked) {
+      throw new UnauthorizedException(
+        'there exist a block between you and this user',
+      );
+    }
+
+    return this.followService.follow({ follower, followed });
   }
+
   /**
    * unfollow a user
    * @param follower id of the follower
@@ -171,19 +201,18 @@ export class UserService {
   ): Promise<any> {
     return this.followService.unfollow({ follower, followed });
   }
+
   /**
    * returns all user's preferences
    * @param _id user's Id
    * @returns a promise of PrefsDto
    */
   getUserPrefs = async (_id: Types.ObjectId): Promise<PrefsDto> => {
-    try {
-      const user: UserDocument = await this.getUserById(_id);
-      return plainToClass(PrefsDto, user);
-    } catch (err) {
-      throwGeneralException(err);
-    }
+    const user: UserDocument = await this.getUserById(_id);
+
+    return plainToInstance(PrefsDto, user);
   };
+
   /**
    * update some or all user's preferences
    * @param _id user's Id
@@ -191,13 +220,11 @@ export class UserService {
    * @returns succuss status if Ok
    */
   updateUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
-    try {
-      await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
-      return { status: 'success' };
-    } catch (err) {
-      throwGeneralException(err);
-    }
+    await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
+
+    return { status: 'success' };
   };
+
   /**
    * block a user
    * @param blocker id of the blocker user
@@ -205,12 +232,16 @@ export class UserService {
    * @returns {status : 'success'}
    */
   async block(blocker: Types.ObjectId, blocked: Types.ObjectId): Promise<any> {
-    const blockedExist: boolean = await this.userExist({ _id: blocked });
-    if (!blockedExist)
+    const isBlocked: boolean = await this.userExist({ _id: blocked });
+
+    if (!isBlocked) {
       throw new BadRequestException(
         `there is no user with id : ${blocked.toString()}`,
       );
+    }
+
     await this.followService.removeFollowBetween(blocker, blocked);
+
     return this.blockService.block({ blocker, blocked });
   }
 
@@ -233,44 +264,45 @@ export class UserService {
    * @returns returns a user with edited authType
    */
   async allowUserToBeModerator(user_id: Types.ObjectId): Promise<UserDocument> {
-    try {
-      const user = await this.userModel.findById(user_id);
-      if (!user)
-        throw new BadRequestException(`there is no user with id ${user_id}`);
-      if (user.authType === 'admin')
-        throw new BadRequestException(
-          `you are not allowed to change the role of the admin through this endpoint`,
-        );
-      user.authType = 'moderator';
-      await user.save();
-      delete user.hashPassword;
-      return user;
-    } catch (err) {
-      throwGeneralException(err);
+    const user = await this.userModel.findById(user_id);
+
+    if (!user) {
+      throw new BadRequestException(`there is no user with id ${user_id}`);
     }
+
+    if (user.authType === 'admin') {
+      throw new BadRequestException(
+        `you are not allowed to change the role of the admin through this endpoint`,
+      );
+    }
+
+    user.authType = 'moderator';
+    await user.save();
+
+    return user;
   }
+
   /**
    * make a regular user admin
    * @param user_id id of the user to be an admin
    * @returns returns the user with new type
    */
   async makeAdmin(user_id: Types.ObjectId): Promise<UserDocument> {
-    try {
-      const user = await this.userModel
-        .findByIdAndUpdate(
-          user_id,
-          {
-            authType: 'admin',
-          },
-          { new: true },
-        )
-        .select('-hashPassword');
-      if (!user)
-        throw new BadRequestException(`there is no user with id ${user_id}`);
-      return user;
-    } catch (err) {
-      throwGeneralException(err);
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        user_id,
+        {
+          authType: 'admin',
+        },
+        { new: true },
+      )
+      .select('-hashPassword');
+
+    if (!user) {
+      throw new BadRequestException(`there is no user with id ${user_id}`);
     }
+
+    return user;
   }
   async deleteAccount(user: any) {
     await this.userModel

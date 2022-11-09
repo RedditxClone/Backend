@@ -1,14 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import type { Document } from 'mongoose';
 import { Schema as schemaType } from 'mongoose';
 
 class Flair {
   @Prop({ required: true })
   text: string;
+
   @Prop({ auto: true, required: true })
   _id: schemaType.Types.ObjectId;
+
   @Prop()
   backgroundColor: string;
+
   @Prop({ required: true })
   textColor: string;
 }
@@ -107,6 +110,7 @@ export class Subreddit {
 
   @Prop({ default: [] })
   flairList: Flair[];
+
   @Prop()
   icon: string;
 }
