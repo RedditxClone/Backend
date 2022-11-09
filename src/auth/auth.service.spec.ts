@@ -1,22 +1,24 @@
+import { HttpStatus } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
-import { CreateUserDto } from '../user/dto';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { Types } from 'mongoose';
+import { createResponse } from 'node-mocks-http';
+
+import { BlockModule } from '../block/block.module';
+import { FollowModule } from '../follow/follow.module';
+import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { EmailService, EmailServiceMock } from '../utils';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
+} from '../utils/mongoose-in-memory';
 import { AuthService } from './auth.service';
-import { createResponse } from 'node-mocks-http';
-import { ConfigModule } from '@nestjs/config';
-import { FollowModule } from '../follow/follow.module';
-import { EmailService, EmailServiceMock } from '../utils';
-import { HttpStatus } from '@nestjs/common';
-import { Types } from 'mongoose';
-import { BlockModule } from '../block/block.module';
-import { ForgetPasswordDto } from './dto';
+import type { ForgetPasswordDto } from './dto';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -43,7 +45,13 @@ describe('AuthService', () => {
       .compile();
     authService = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
-    id = (await userService.createUser(user2))._id;
+    const user2: CreateUserDto = {
+      email: 'example2@example.com',
+      password: '12345678',
+      username: 'test2',
+    };
+    const user = await userService.createUser(user2);
+    id = user._id;
   });
 
   it('should be defined', () => {
@@ -57,11 +65,6 @@ describe('AuthService', () => {
     username: 'test',
   };
 
-  const user2: CreateUserDto = {
-    email: 'example2@example.com',
-    password: '12345678',
-    username: 'test2',
-  };
   describe('signup', () => {
     it('should signup successfully', async () => {
       const res = createResponse();
@@ -185,10 +188,10 @@ describe('AuthService', () => {
       expect(res).toEqual({ status: 'success' });
     });
     it('should throw an error due to wrong id', async () => {
-      const wrong_id: Types.ObjectId = new Types.ObjectId(10);
+      const wrongId: Types.ObjectId = new Types.ObjectId(10);
       await expect(
-        authService.changePasswordUsingToken(wrong_id, 'new password'),
-      ).rejects.toThrow(`there is no user with id ${wrong_id}`);
+        authService.changePasswordUsingToken(wrongId, 'new password'),
+      ).rejects.toThrow(`there is no user with id ${wrongId}`);
     });
   });
   describe('forget password', () => {
@@ -208,6 +211,6 @@ describe('AuthService', () => {
   });
   afterAll(async () => {
     await closeInMongodConnection();
-    module.close();
+    await module.close();
   });
 });

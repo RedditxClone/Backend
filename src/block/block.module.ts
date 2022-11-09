@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { BlockService } from './block.service';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import { BlockSchema } from './block.schema';
+import { BlockService } from './block.service';
 
 @Module({
   imports: [
