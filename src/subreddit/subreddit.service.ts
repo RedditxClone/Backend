@@ -33,7 +33,7 @@ export class SubredditService {
       await this.subredditModel.findById(subreddit);
 
     if (!sr) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     return sr;
@@ -45,7 +45,7 @@ export class SubredditService {
       .select('_id');
 
     if (!sr) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     return {
@@ -69,7 +69,7 @@ export class SubredditService {
       .select('flairList');
 
     if (!sr) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     return sr;
@@ -81,7 +81,7 @@ export class SubredditService {
       .select('flairList');
 
     if (!sr) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     return sr;
@@ -92,7 +92,7 @@ export class SubredditService {
     const sr = await this.subredditModel.findById(subreddit).select('_id');
 
     if (!sr) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     await Promise.all([
@@ -118,7 +118,7 @@ export class SubredditService {
       .select('');
 
     if (!sr) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     try {
@@ -140,7 +140,7 @@ export class SubredditService {
     });
 
     if (!flair) {
-      throw new NotFoundException({ description: 'No subreddit with such id' });
+      throw new NotFoundException('No subreddit with such id');
     }
 
     return { status: 'success' };
