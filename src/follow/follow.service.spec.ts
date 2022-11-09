@@ -9,6 +9,8 @@ import {
 import { FollowSchema } from './follow.schema';
 import { FollowService } from './follow.service';
 import { Types } from 'mongoose';
+import { BlockSchema } from '../block/block.schema';
+import { BlockService } from '../block/block.service';
 
 describe('FollowService', () => {
   let service: FollowService;
@@ -22,15 +24,15 @@ describe('FollowService', () => {
         MongooseModule.forFeature([
           { name: 'Follow', schema: FollowSchema },
           { name: 'User', schema: UserSchema },
+          { name: 'Block', schema: BlockSchema },
         ]),
       ],
-      providers: [FollowService, UserService],
+      providers: [FollowService, UserService, BlockService],
     }).compile();
     service = module.get<FollowService>(FollowService);
     const userService: UserService = module.get<UserService>(UserService);
     id1 = (
       await userService.createUser({
-        age: 10,
         email: 'email@example.com',
         password: '12345678',
         username: 'username',
@@ -38,7 +40,6 @@ describe('FollowService', () => {
     )._id;
     id2 = (
       await userService.createUser({
-        age: 10,
         email: 'email2@example.com',
         password: '12345678',
         username: 'username2',

@@ -9,6 +9,7 @@ import {
   Query,
   UploadedFile,
   UseInterceptors,
+  ParseFilePipeBuilder,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -23,7 +24,9 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
+import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import { SubredditDocument } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
 @ApiTags('subreddit')
@@ -36,47 +39,62 @@ export class SubredditController {
   @ApiUnprocessableEntityResponse({ description: 'Bad Request' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post()
-  create(@Body() createSubredditDto: CreateSubredditDto) {
-    // TODO: implement service
+  createSubreddit(
+    @Body() createSubredditDto: CreateSubredditDto,
+  ): Promise<SubredditDocument> {
+    return this.subredditService.create(createSubredditDto);
   }
 
-  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ description: 'Get subreddit by name' })
+  @ApiCreatedResponse({ description: 'The subreddit returned succesfully' })
+  @ApiBadRequestResponse({ description: "The subreddit name doesn't exist" })
+  @Get('/:subreddit')
+  getSubreddit(
+    @Param('subreddit') subreddit: string,
+  ): Promise<SubredditDocument> {
+    return this.subredditService.findSubreddit(subreddit);
+  }
+
+  @UseInterceptors(FileInterceptor('icon'))
   @ApiOperation({ description: 'Add or edit a subreddit icon.' })
   @ApiCreatedResponse({ description: 'The resource was created successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Post(':subreddit/icon')
-  uploadIcon(@Param('subreddit') subreddit: string, @UploadedFile() file) {
-    // TODO: implement service
-    return;
+  uploadIcon(
+    @Param('subreddit') subreddit: string,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: 10485760,
+        })
+        .build(),
+    )
+    file,
+  ) {
+    return this.subredditService.uploadIcon(subreddit, file);
   }
 
-  @ApiOperation({ description: 'Add flair to a subreddit flairlist' })
-  @ApiOperation({ description: 'Add or edit a subreddit icon' })
-  @ApiCreatedResponse({ description: 'The resource was created successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':subreddit/flair')
-  createFlair(@Param('subreddit') subreddit: string) {
-    // TODO: implement service
-    return;
+  @ApiOperation({ description: 'create a post flair in a subreddit' })
+  @ApiCreatedResponse({ description: 'The flairs created successfully' })
+  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @Post('/:subreddit/flair')
+  createFlairlist(
+    @Param('subreddit') subreddit: string,
+    @Body() flairDto: FlairDto,
+  ) {
+    return this.subredditService.createFlair(subreddit, flairDto);
   }
 
-  @UseInterceptors(FileInterceptor('file'))
-  @ApiOperation({ description: 'Add or edit a subreddit banner.' })
-  @ApiCreatedResponse({ description: 'The resource was created successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':subreddit/banner')
-  uploadBanner(@Param('subreddit') subreddit: string, @UploadedFile() file) {
-    // TODO: implement service
-    return;
-  }
-
-  @ApiOperation({ description: 'Get a subreddit flairlist.' })
-  @ApiOkResponse({ description: 'The resource was returned successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Get(':subreddit/flairlist')
-  findFlairlist(@Param('subreddit') subreddit: string) {
-    // TODO: implement service
+  @ApiOperation({ description: 'Get the flairs of a post in a subreddit' })
+  @ApiOkResponse({ description: 'The flairs returned successfully' })
+  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
+  @ApiBadRequestResponse({ description: 'The post id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @Get('/:subreddit/flair')
+  getFlairlist(@Param('subreddit') subreddit: string) {
+    return this.subredditService.getFlairs(subreddit);
   }
 
   @ApiOperation({ description: 'Get the current settings of a subreddit.' })
@@ -131,118 +149,32 @@ export class SubredditController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Patch(':subreddit')
-  update(
+  updateSubreddit(
     @Param('subreddit') subreddit: string,
-    @Body() UpdateSubredditDto: UpdateSubredditDto,
+    @Body() updateSubredditDto: UpdateSubredditDto,
   ) {
-    // TODO: implement service
+    return this.subredditService.update(subreddit, updateSubredditDto);
   }
 
   @ApiOperation({ description: 'Delete a subreddit icon' })
-  @ApiOkResponse({ description: 'The resource was deleted successfully' })
+  @ApiOkResponse({ description: 'The icon was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @ApiNotFoundResponse({ description: 'The subreddit not found' })
   @Delete(':subreddit/icon')
   removeIcon(@Param('subreddit') subreddit: string) {
-    // TODO: implement service
-    return;
+    return this.subredditService.removeIcon(subreddit);
   }
 
   @ApiOperation({ description: 'Delete flair from subreddit flairlist' })
   @ApiOkResponse({ description: 'The resource was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Delete(':subreddit/flair')
-  removeFlair(@Param('subreddit') subreddit: string) {
-    // TODO: implement service
-    return;
-  }
-
-  @ApiOkResponse({ description: 'The resource was deleted successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Delete(':subreddit/banner')
-  removeBanner(@Param('subreddit') subreddit: string) {
-    // TODO: implement service
-    return;
-  }
-
-  @ApiOperation({ description: 'Get the flairs of a user in a subreddit' })
-  @ApiOkResponse({ description: 'The flairs returned successfully' })
-  @ApiForbiddenResponse({ description: 'Only moderators are allowed' })
-  @ApiBadRequestResponse({ description: 'The user id is not valid' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Get('/:subreddit/user/:user_id/flair')
-  getUserFlairs(
+  @Delete(':subreddit/flair/:flair_id')
+  removeFlair(
     @Param('subreddit') subreddit: string,
-    @Param('user_id') user_id: string,
+    @Param('flair_id') flair_id: string,
   ) {
-    return `${user_id}, ${subreddit}`;
-  }
-
-  @ApiOperation({ description: 'create a flair for a user in a subreddit' })
-  @ApiCreatedResponse({ description: 'The flairs created successfully' })
-  @ApiForbiddenResponse({ description: 'Only moderators are allowed' })
-  @ApiBadRequestResponse({ description: 'The user id is not valid' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Post('/:subreddit/user/:user_id/flair')
-  createUserFlair(
-    @Param('subreddit') subreddit: string,
-    @Param('user_id') user_id: string,
-  ) {
-    return;
-  }
-
-  @ApiOperation({ description: 'Remove flairs from user in a subreddit' })
-  @ApiOkResponse({ description: 'The flairs deleted successfully' })
-  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
-  @ApiBadRequestResponse({ description: 'The user id is not valid' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Delete('/:subreddit/user/:user_id/flair')
-  deleteUserFlair(
-    @Param('subreddit') subreddit: string,
-    @Param('user_id') user_id: string,
-  ) {
-    return;
-  }
-
-  @ApiOperation({ description: 'Get the flairs of a post in a subreddit' })
-  @ApiOkResponse({ description: 'The flairs returned successfully' })
-  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
-  @ApiBadRequestResponse({ description: 'The post id is not valid' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Get('/:subreddit/post/:post_id/flair')
-  getPostFlairs(
-    @Param('subreddit') subreddit: string,
-    @Param('post_id') post_id: string,
-  ) {
-    return;
-  }
-
-  @ApiOperation({ description: 'create a flair for a post in a subreddit' })
-  @ApiCreatedResponse({ description: 'The flairs created successfully' })
-  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
-  @ApiBadRequestResponse({ description: 'The post id is not valid' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Post('/:subreddit/post/:post_id/flair')
-  createPostFlair(
-    @Param('subreddit') subreddit: string,
-    @Param('post_id') post_id: string,
-  ) {
-    return;
-  }
-
-  @ApiOperation({ description: 'Remove flairs from post in a subreddit' })
-  @ApiOkResponse({ description: 'The flairs deleted successfully' })
-  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
-  @ApiBadRequestResponse({ description: 'The post id is not valid' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Delete('/:subreddit/post/:post_id/flair')
-  deletePostFlair(
-    @Param('subreddit') subreddit: string,
-    @Param('post_id') post_id: string,
-  ) {
-    return;
+    return this.subredditService.deleteFlairById(subreddit, flair_id);
   }
 
   @ApiOperation({ description: 'Get the flairs of the user in a subreddit' })
@@ -254,12 +186,11 @@ export class SubredditController {
     return;
   }
 
-  // GET /api/subreddit/:subreddit/{hot,new,top,random}
   @ApiOperation({ description: 'Get the hottest subreddits' })
   @ApiOkResponse({ description: 'The hottest subreddits returned' })
   @Get('/:subreddit/hot')
   getHotSubreddits(@Param('subreddit') subreddit: string) {
-    return;
+    return this.subredditService.getHotSubreddits(subreddit);
   }
 
   @ApiOperation({ description: 'Get the newest subreddits' })
@@ -282,10 +213,4 @@ export class SubredditController {
   getRandomSubreddits(@Param('subreddit') subreddit: string) {
     return;
   }
-  // TODO
-  // - DELETE /api/subreddit/:subreddit/me/flair*
-  // - POST /api/subreddit/:subreddit/me/flair*
-  // - GET /api/subreddit/:subreddit/flair*
-  // - POST /api/subreddit/:subreddit/flair*
-  // - UPDATE /api/subreddit/:subreddit/flair*
 }

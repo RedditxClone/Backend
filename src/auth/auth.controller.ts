@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Res, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Patch,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -8,12 +16,17 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { ChangePasswordDto } from './dto/changePassword.dto';
+import {
+  ChangeForgottenPasswordDto,
+  ChangePasswordDto,
+} from './dto/changePassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto';
 import { Response } from 'express';
 import { ForgetUsernameDto, SigninDto } from './dto';
+import { JWTUserGuard } from './guards';
+import { JWTForgetPasswordGuard } from './guards/forget-password.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -45,9 +58,9 @@ export class AuthController {
   @ApiCreatedResponse({
     description: 'An email will be sent if the user exists in the database',
   })
-  @Post('forget_password')
-  forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
-    return this.authService.forgetPassword(forgetPasswordDto);
+  @Post('forget-password')
+  async forgetPassword(@Body() dto: ForgetPasswordDto) {
+    return await this.authService.forgetPassword(dto);
   }
 
   @ApiOperation({ description: 'Recover the password of an account' })
@@ -65,12 +78,33 @@ export class AuthController {
     await this.authService.forgetUsername(forgetUsernameDto, res);
   }
 
+  @UseGuards(JWTForgetPasswordGuard)
+  @Post('change-forgotten-password')
+  async changeForgottenPassword(
+    @Body() dto: ChangeForgottenPasswordDto,
+    @Req() req: any,
+  ) {
+    return await this.authService.changePasswordUsingToken(
+      req.user._id,
+      dto.password,
+    );
+  }
+
   @ApiOperation({ description: 'Change the password of an account' })
   @ApiOkResponse({ description: 'The password changed successfully' })
   @ApiUnauthorizedResponse({ description: 'UnAuthorized' })
   @ApiForbiddenResponse({ description: 'Wrong password' })
-  @Patch('change_password')
-  changePassword(@Body() changePasswordDto: ChangePasswordDto) {
-    return this.authService.changePassword(changePasswordDto);
+  @Patch('change-password')
+  @UseGuards(JWTUserGuard)
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    return await this.authService.changePassword(
+      req.user._id,
+      changePasswordDto,
+      res,
+    );
   }
 }

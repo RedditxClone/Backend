@@ -14,11 +14,15 @@ import { ConfigModule } from '@nestjs/config';
 import { FollowModule } from '../follow/follow.module';
 import { EmailService, EmailServiceMock } from '../utils';
 import { HttpStatus } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { BlockModule } from '../block/block.module';
+import { ForgetPasswordDto } from './dto';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userService: UserService;
   let module: TestingModule;
+  let id: Types.ObjectId;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -30,6 +34,7 @@ describe('AuthService', () => {
           signOptions: { expiresIn: '15d' },
         }),
         FollowModule,
+        BlockModule,
       ],
       providers: [AuthService, UserService, EmailService],
     })
@@ -38,6 +43,7 @@ describe('AuthService', () => {
       .compile();
     authService = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
+    id = (await userService.createUser(user2))._id;
   });
 
   it('should be defined', () => {
@@ -46,10 +52,15 @@ describe('AuthService', () => {
   });
 
   const user1: CreateUserDto = {
-    age: 12,
     email: 'example@example.com',
     password: '12345678',
     username: 'test',
+  };
+
+  const user2: CreateUserDto = {
+    email: 'example2@example.com',
+    password: '12345678',
+    username: 'test2',
   };
   describe('signup', () => {
     it('should signup successfully', async () => {
@@ -60,7 +71,10 @@ describe('AuthService', () => {
         expect.stringMatching(/^Bearer /),
       );
       expect(JSON.parse(res._getData())).toEqual(
-        expect.objectContaining({ status: 'success' }),
+        expect.objectContaining({
+          email: user1.email,
+          username: user1.username,
+        }),
       );
     });
     it('should throw an error', async () => {
@@ -74,7 +88,7 @@ describe('AuthService', () => {
     it('should login successfully', async () => {
       const res = createResponse();
       await authService.login(
-        { email: user1.email, password: user1.password },
+        { username: user1.username, password: user1.password },
         res,
       );
       expect(res.cookies.authorization).toBeDefined();
@@ -82,7 +96,10 @@ describe('AuthService', () => {
         expect.stringMatching(/^Bearer /),
       );
       expect(JSON.parse(res._getData())).toEqual(
-        expect.objectContaining({ status: 'success' }),
+        expect.objectContaining({
+          email: user1.email,
+          username: user1.username,
+        }),
       );
     });
     it("shouldn't login successfully", async () => {
@@ -90,7 +107,7 @@ describe('AuthService', () => {
       await expect(async () => {
         await authService.login(
           {
-            email: user1.email,
+            username: user1.username,
             password: `${user1.password} `,
           },
           res,
@@ -127,7 +144,68 @@ describe('AuthService', () => {
       );
     });
   });
-
+  describe('changePassword', () => {
+    it('should change successfully', async () => {
+      const res = createResponse();
+      await authService.changePassword(
+        id,
+        {
+          oldPassword: '12345678',
+          newPassword: '123456789',
+        },
+        res,
+      );
+      expect(res._getStatusCode()).toEqual(HttpStatus.OK);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: true }),
+      );
+    });
+    it('should fail changing', async () => {
+      const res = createResponse();
+      await authService.changePassword(
+        id,
+        {
+          oldPassword: '12345678',
+          newPassword: '123456789',
+        },
+        res,
+      );
+      expect(res._getStatusCode()).toEqual(HttpStatus.FORBIDDEN);
+      expect(JSON.parse(res._getData())).toEqual(
+        expect.objectContaining({ status: false }),
+      );
+    });
+  });
+  describe('change password using token', () => {
+    it('should change password successfully', async () => {
+      const res: any = await authService.changePasswordUsingToken(
+        id,
+        'new password',
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should throw an error due to wrong id', async () => {
+      const wrong_id: Types.ObjectId = new Types.ObjectId(10);
+      await expect(
+        authService.changePasswordUsingToken(wrong_id, 'new password'),
+      ).rejects.toThrow(`there is no user with id ${wrong_id}`);
+    });
+  });
+  describe('forget password', () => {
+    it('should create and send token successfully', async () => {
+      const dto: ForgetPasswordDto = { username: user1.username };
+      const res: any = await authService.forgetPassword(dto);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should throw an error because wrong username', async () => {
+      const dto: ForgetPasswordDto = { username: 'wrong_username' };
+      await expect(async () => {
+        await authService.forgetPassword(dto);
+      }).rejects.toThrow(
+        `there is no user with information {"username":"wrong_username"}`,
+      );
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

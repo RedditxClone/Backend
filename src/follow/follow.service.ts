@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { throwGeneralException } from '../utils/throwException';
 import { FollowDto } from './dto/follow.dto';
 import { Follow } from './follow.schema';
@@ -15,9 +15,8 @@ export class FollowService {
    * @param dto see Follow DTO
    * @returns {status : 'success'}
    */
-  async follow(dto: FollowDto) {
+  async follow(dto: FollowDto): Promise<any> {
     try {
-      console.log(dto);
       if (dto.followed.toString() == dto.follower.toString())
         throw new BadRequestException('you are not allowed to follow yourself');
       await this.followModel.create(dto);
@@ -33,7 +32,7 @@ export class FollowService {
    * @param dto see FollowDto
    * @returns {status : 'success'}
    */
-  async unfollow(dto: FollowDto) {
+  async unfollow(dto: FollowDto): Promise<any> {
     try {
       const { acknowledged, deletedCount } = await this.followModel.deleteOne(
         dto,
@@ -44,6 +43,27 @@ export class FollowService {
         );
       }
       return { status: 'success' };
+    } catch (err) {
+      throwGeneralException(err);
+    }
+  }
+  /**
+   * force remove a follow (if the follow is not exist it doesn't do anything)
+   * @param dto see FollowDto
+   * @returns return true if the follow was exist else it returns false
+   */
+  async removeFollowBetween(
+    user1: Types.ObjectId,
+    user2: Types.ObjectId,
+  ): Promise<boolean> {
+    try {
+      const followRes = await this.followModel.deleteMany({
+        $or: [
+          { follower: user1, followed: user2 },
+          { follower: user2, followed: user1 },
+        ],
+      });
+      return followRes.deletedCount === 1;
     } catch (err) {
       throwGeneralException(err);
     }
