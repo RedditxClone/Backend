@@ -102,6 +102,7 @@ describe('UserControllerSpec', () => {
       delete usr['email'];
       delete usr['authType'];
       delete usr['accountClosed'];
+      delete usr['savedPosts'];
       expect(res).toEqual(usr);
     });
   });
@@ -124,6 +125,28 @@ describe('UserControllerSpec', () => {
       req.user = { id };
       const res: any = await userController.deleteAccount(req);
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('save post', () => {
+    it('must be saved successfully', async () => {
+      const id1: Types.ObjectId = new Types.ObjectId(1);
+      const id2: Types.ObjectId = new Types.ObjectId(2);
+      const user = { _id: id1 };
+      const params = { _id: id2 };
+      const res: any = await userController.savePost({ user, params });
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+
+  describe('get saved post', () => {
+    it('must be returned successfully', async () => {
+      const id1: Types.ObjectId = new Types.ObjectId(1);
+      const user = { _id: id1 };
+      const res: any = await userController.getSavedPosts({ user });
+      expect(res).toEqual({
+        _id: '6366f73606cdac163ace51b1',
+        savedPosts: ['636a7faa18454a10a4791426'],
+      });
     });
   });
 });

@@ -9,6 +9,7 @@ import {
   Res,
   Req,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -310,5 +311,32 @@ export class UserController {
   @Delete('/')
   async deleteAccount(@Req() request) {
     return await this.userService.deleteAccount(request.user);
+  }
+
+  @ApiOperation({
+    description: 'Save post',
+  })
+  @ApiOkResponse({ description: 'post saved successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @HttpCode(200)
+  @UseGuards(JWTUserGuard)
+  @Post('/post/:post_id/save')
+  async savePost(@Req() { user, params }) {
+    return await this.userService.savePost(user._id, params.post_id);
+  }
+
+  @ApiOperation({
+    description: 'get saved posts',
+  })
+  @ApiOkResponse({ description: 'saved posts returned successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/post/save')
+  async getSavedPosts(@Req() { user }) {
+    return await this.userService.getSavedPosts(user._id);
   }
 }

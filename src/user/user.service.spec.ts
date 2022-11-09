@@ -321,13 +321,40 @@ describe('UserService', () => {
     });
   });
   describe('Delete user by setting the accountClosed to true', () => {
-    it('should close the acount successfully', async () => {
+    it('should close the account successfully', async () => {
       const user = { _id: id };
       expect(await service.deleteAccount(user)).toEqual({
         status: 'success',
       });
     });
   });
+
+  describe('Save a post', () => {
+    it('should save the post successfully', async () => {
+      expect(await service.savePost(id, id)).toEqual({
+        status: 'success',
+      });
+    });
+    it('should save the post successfully', async () => {
+      try {
+        await service.savePost(id, id);
+      } catch (error) {
+        expect(error.message).toBe('the post already saved');
+      }
+    });
+  });
+
+  describe('get saved posts', () => {
+    it('should return saved posts successfully', async () => {
+      expect(await service.getSavedPosts(id)).toEqual(
+        expect.objectContaining({
+          _id: id,
+          savedPosts: [id],
+        }),
+      );
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     module.close();

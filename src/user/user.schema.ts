@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 @Schema()
@@ -102,6 +102,9 @@ export class User {
   acceptPms: string;
   @Prop({ default: [] })
   whitelisted: string[];
+  // TODO: It should ref the post model but first it has to be created.
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
 }
 
 export const UserSchema = (() => {

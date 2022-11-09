@@ -106,7 +106,6 @@ export class AuthService {
   };
   async forgetPassword(dto: ForgetPasswordDto) {
     try {
-      console.log(dto);
       const user: UserDocument = await this.userService.getUserByUsername(
         dto.username,
       );

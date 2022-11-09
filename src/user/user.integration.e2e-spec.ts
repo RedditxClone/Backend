@@ -410,7 +410,46 @@ describe('userController (e2e)', () => {
     });
     it('should throw an error', async () => {
       const res = await request(server)
-        .post(`/user/${id2.toString()}/unfollow`)
+        .delete(`/user`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+  });
+
+  describe('/POST /user/post/:post_id/save', () => {
+    it('should save post', async () => {
+      const res = await request(server)
+        .post(`/user/post/${id1.toString()}/save`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('should return an error', async () => {
+      const res = await request(server)
+        .post(`/user/post/${id1.toString()}/save`)
+        .set('authorization', token1)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.body.message).toEqual('the post already saved');
+    });
+    it('should throw an autherization error', async () => {
+      const res = await request(server)
+        .post(`/user/post/${id1.toString()}/save`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+  });
+
+  describe('/POST /user/post/save', () => {
+    it('should return saved posts successfully', async () => {
+      const res = await request(server)
+        .get(`/user/post/save`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ _id: id1, savedPosts: [id1] });
+    });
+    it('should throw an autherization error', async () => {
+      const res = await request(server)
+        .get(`/user/post/save`)
         .expect(HttpStatus.UNAUTHORIZED);
       expect(res.body.message).toEqual('Unauthorized');
     });

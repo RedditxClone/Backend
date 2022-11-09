@@ -15,7 +15,10 @@ import { AvailableUsernameDto } from './dto';
 import { Response } from 'express';
 import { FollowService } from '../follow/follow.service';
 import { PrefsDto } from './dto';
-import { throwGeneralException } from '../utils/throwException';
+import {
+  throwGeneralException,
+  throwIfNullObject,
+} from '../utils/throwException';
 import { FilterUserDto } from './dto/user-filter.dto';
 import { plainToClass } from 'class-transformer';
 import { BlockService } from '../block/block.service';
@@ -279,5 +282,23 @@ export class UserService {
       })
       .select('');
     return { status: 'success' };
+  }
+  async savePost(user_id: Types.ObjectId, post_id: Types.ObjectId) {
+    const data = await this.userModel
+      .updateOne(
+        { _id: user_id },
+        {
+          $addToSet: { savedPosts: post_id },
+        },
+      )
+      .select('');
+    if (data.modifiedCount == 0) {
+      throw new BadRequestException('the post already saved');
+    }
+    return { status: 'success' };
+  }
+
+  async getSavedPosts(user_id: Types.ObjectId) {
+    return await this.userModel.findById(user_id).select('savedPosts');
   }
 }

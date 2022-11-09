@@ -55,6 +55,7 @@ export const stubUser = (): User => {
     //messages
     acceptPms: 'everyone',
     whitelisted: [],
+    savedPosts: [],
   };
 };
 export const stubUserFresh = (): User => {
@@ -109,5 +110,6 @@ export const stubUserFresh = (): User => {
     //messages
     acceptPms: 'everyone',
     whitelisted: [],
+    savedPosts: [],
   };
 };
