@@ -7,10 +7,10 @@ import mongoose from 'mongoose';
 export type BlockDocument = Block & Document;
 @Schema()
 export class Block {
-  @Prop({ required: true, ref: 'User', type: mongoose.Schema.Types.ObjectId })
+  @Prop({ required: true, ref: 'User' })
   blocker: mongoose.Types.ObjectId;
 
-  @Prop({ required: true, ref: 'User', type: mongoose.Schema.Types.ObjectId })
+  @Prop({ required: true, ref: 'User' })
   blocked: mongoose.Types.ObjectId;
 }
 
