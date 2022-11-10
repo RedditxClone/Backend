@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 
+jest.mock('./post.service');
 describe('PostController', () => {
   let controller: PostController;
 
