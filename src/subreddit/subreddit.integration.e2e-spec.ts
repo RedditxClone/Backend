@@ -7,6 +7,7 @@ import { readFile, unlink } from 'fs/promises';
 import request from 'supertest';
 
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -74,6 +75,7 @@ describe('subredditController (e2e)', () => {
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'subreddit', schema: SubredditSchema },
         ]),
