@@ -51,7 +51,7 @@ describe('ImagesHandlerService', () => {
         '\\testing\\photos\\testingPhoto.jpeg';
       const file = await readFile(directory);
       const photoDirectory = await imagesHandlerservice.uploadPhoto(
-        'profile_icons',
+        'profile_photos',
         { buffer: file },
         modelTestService.getTestModel(),
         id,
