@@ -1,5 +1,6 @@
 import { plainToClass } from 'class-transformer';
 
+import { stubBlock } from '../../block/test/stubs/blocked-users.stub';
 import { PrefsDto } from '../dto';
 import { stubUser } from '../test/stubs/user.stub';
 export const UserService = jest.fn().mockReturnValue({
@@ -12,6 +13,7 @@ export const UserService = jest.fn().mockReturnValue({
   updateUserPrefs: jest.fn().mockResolvedValue({ status: 'success' }),
   block: jest.fn().mockResolvedValue({ status: 'success' }),
   unblock: jest.fn().mockResolvedValue({ status: 'success' }),
+  getBlockedUsers: jest.fn().mockResolvedValue(stubBlock()),
   allowUserToBeModerator: jest
     .fn()
     .mockResolvedValue({ ...stubUser(), authType: 'moderator' }),

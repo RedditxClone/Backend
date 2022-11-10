@@ -10,6 +10,7 @@ import { createResponse } from 'node-mocks-http';
 
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
 import {
   closeInMongodConnection,
@@ -228,8 +229,8 @@ describe('UserService', () => {
 
   describe('getBlockedUsers', () => {
     it('should return blocked users successfully', async () => {
-      // const res: any = await service.getBlockedUsers(id);
-      // expect(res).toEqual({ blocker: id, blo });
+      const res: any = await service.getBlockedUsers(id);
+      expect(res).toEqual(stubBlock());
     });
   });
   describe('unblock', () => {

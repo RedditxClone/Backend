@@ -77,6 +77,24 @@ describe('BlockService', () => {
       }).rejects.toThrow(`you are not allowed to block yourself`);
     });
   });
+  describe('getBlockedUsers', () => {
+    it('should return blocked users successfully', async () => {
+      const res = await service.getBlockedUsers(id1);
+      expect(res.length).toEqual(1);
+      expect(res[0].blocked).toEqual(
+        expect.objectContaining({
+          _id: id2,
+          username: 'username2',
+          profilePhoto: '',
+        }),
+      );
+    });
+    it('should return an empty array', async () => {
+      const res = await service.getBlockedUsers(id2);
+      expect(res.length).toEqual(0);
+    });
+  });
+
   describe('unblock', () => {
     it('should unblock successfully', async () => {
       const unblockRes = await service.unblock({

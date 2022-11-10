@@ -245,7 +245,7 @@ export class UserService {
     return this.blockService.block({ blocker, blocked });
   }
 
-  async getBlockedUsers(blocker: Types.ObjectId) {
+  getBlockedUsers(blocker: Types.ObjectId) {
     return this.blockService.getBlockedUsers(blocker);
   }
 
