@@ -7,6 +7,9 @@ pipeline {
         		MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD')
 				JWT_SECRET = credentials('JWT_SECRET')
 				FORGET_PASSWORD_SECRET = credentials('FORGET_PASSWORD_SECRET')
+				SU_USERNAME = credentials('SU_USERNAME')
+				SU_EMAIL = credentials('SU_EMAIL')
+				SU_PASS = credentials('SU_PASS')
     		}
             steps {
 				sh  '''
