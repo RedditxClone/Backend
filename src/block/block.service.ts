@@ -65,4 +65,8 @@ export class BlockService {
       })) > 0
     );
   }
+
+  async getBlockUsers(user_id: Types.ObjectId) {
+    return this.blockModel.find({ blocker: user_id }).populate('blocked');
+  }
 }
