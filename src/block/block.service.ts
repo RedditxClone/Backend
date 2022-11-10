@@ -66,7 +66,9 @@ export class BlockService {
     );
   }
 
-  async getBlockUsers(user_id: Types.ObjectId) {
-    return this.blockModel.find({ blocker: user_id }).populate('blocked');
+  async getBlockedUsers(user_id: Types.ObjectId) {
+    return this.blockModel
+      .find({ blocker: user_id })
+      .populate('blocked', 'username profilePhoto');
   }
 }

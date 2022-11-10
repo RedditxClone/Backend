@@ -225,6 +225,13 @@ describe('UserService', () => {
       }).rejects.toThrow(`there is no user with id : ${wrongId.toString()}`);
     });
   });
+
+  describe('getBlockedUsers', () => {
+    it('should return blocked users successfully', async () => {
+      // const res: any = await service.getBlockedUsers(id);
+      // expect(res).toEqual({ blocker: id, blo });
+    });
+  });
   describe('unblock', () => {
     it('should unblock successfully', async () => {
       const res: any = await service.unblock(id, id);
