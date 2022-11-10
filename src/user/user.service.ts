@@ -243,6 +243,10 @@ export class UserService {
     return this.blockService.block({ blocker, blocked });
   }
 
+  getBlockedUsers(blocker: Types.ObjectId) {
+    return this.blockService.getBlockedUsers(blocker);
+  }
+
   /**
    * unblock a user
    * @param blocker id of the follower

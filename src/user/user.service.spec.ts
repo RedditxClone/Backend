@@ -10,6 +10,7 @@ import { createResponse } from 'node-mocks-http';
 
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
 import {
   closeInMongodConnection,
@@ -223,6 +224,13 @@ describe('UserService', () => {
       await expect(async () => {
         await service.block(id, wrongId);
       }).rejects.toThrow(`there is no user with id : ${wrongId.toString()}`);
+    });
+  });
+
+  describe('getBlockedUsers', () => {
+    it('should return blocked users successfully', async () => {
+      const res: any = await service.getBlockedUsers(id);
+      expect(res).toEqual(stubBlock());
     });
   });
   describe('unblock', () => {

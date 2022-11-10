@@ -169,16 +169,6 @@ export class UserController {
     // TODO
   }
 
-  @ApiOperation({ description: 'get user info by user id' })
-  @ApiOkResponse({ description: 'The user info returned successfully' })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id')
-  async getUserById(
-    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-  ) {
-    return this.userService.getUserById(user_id);
-  }
-
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
     description: 'The data returned successfully',
@@ -295,6 +285,15 @@ export class UserController {
     return this.userService.unblock(request.user._id, user_id);
   }
 
+  @ApiOperation({ description: 'get list of blocked users' })
+  @ApiOkResponse({ description: 'Users returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
+  @Get('block')
+  getBlockedUsers(@Req() { user }): Promise<any> {
+    return this.userService.getBlockedUsers(user._id);
+  }
+
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
   @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
@@ -335,8 +334,18 @@ export class UserController {
     description: 'you are not allowed to make this action',
   })
   @UseGuards(JWTUserGuard)
-  @Delete('/')
+  @Delete('/me')
   async deleteAccount(@Req() request) {
     return this.userService.deleteAccount(request.user);
+  }
+
+  @ApiOperation({ description: 'get user info by user id' })
+  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id')
+  async getUserById(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return this.userService.getUserById(user_id);
   }
 }
