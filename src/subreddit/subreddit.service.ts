@@ -1,10 +1,5 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { unlink } from 'fs/promises';
 import mongoose, { Model } from 'mongoose';
 
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
@@ -102,26 +97,13 @@ export class SubredditService {
       new mongoose.Types.ObjectId(subreddit),
       'icon',
     );
-    // const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
-    // await Promise.all([
-    //   sharp(file.buffer).toFormat('jpeg').toFile(saveDir),
-    //   this.subredditModel
-    //     .findByIdAndUpdate(subreddit, {
-    //       icon: saveDir,
-    //     })
-    //     .select(''),
-    // ]);
-
-    // return {
-    //   icon: saveDir,
-    // };
   }
 
   async removeIcon(subreddit: string) {
     const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
     const sr = await this.subredditModel
       .findByIdAndUpdate(subreddit, {
-        icon: null,
+        icon: '',
       })
       .select('');
 
@@ -129,15 +111,7 @@ export class SubredditService {
       throw new NotFoundException('No subreddit with such id');
     }
 
-    try {
-      await unlink(saveDir);
-    } catch {
-      throw new BadRequestException({
-        description: "The subreddit doesn't have already an icon",
-      });
-    }
-
-    return { status: 'success' };
+    return this.imagesHandlerService.removePhoto(saveDir);
   }
 
   async deleteFlairById(subreddit: string, flair_id: string) {

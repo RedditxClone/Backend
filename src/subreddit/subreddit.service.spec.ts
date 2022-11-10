@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
@@ -234,7 +234,7 @@ describe('SubredditService', () => {
   });
 
   describe('uploadIcon', () => {
-    it('The Icon uploaded successfully', async () => {
+    it('should upload the icon successfully', async () => {
       const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
       expect(await subredditService.uploadIcon(id, { buffer: file })).toEqual(
         stubImagesHandler(),
@@ -242,17 +242,18 @@ describe('SubredditService', () => {
     });
   });
 
-  // describe('removeIcon', () => {
-  //   it('The Icon removed successfully', async () => {
-  //     const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
-  //     await subredditService.uploadIcon(id, { buffer: file });
-  //     const sr = await subredditService.findSubreddit(id);
-  //     expect(sr.icon).toBe(`src/statics/subreddit_icons/${id}.jpeg`);
-  //     await subredditService.removeIcon(id);
-  //     const srWithoutIcon = await subredditService.findSubreddit(id);
-  //     expect(srWithoutIcon.icon).toBe(null);
-  //   });
-  // });
+  describe('removeIcon', () => {
+    it('should remove the icon successfully', async () => {
+      expect(await subredditService.removeIcon(id)).toEqual({
+        status: 'success',
+      });
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.removeIcon(new Types.ObjectId(1).toString()),
+      ).rejects.toThrowError('No subreddit with such id');
+    });
+  });
 
   afterAll(async () => {
     await closeInMongodConnection();
