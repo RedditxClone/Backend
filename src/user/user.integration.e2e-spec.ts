@@ -19,6 +19,7 @@ import { FollowModule } from '../follow/follow.module';
 import { FollowSchema } from '../follow/follow.schema';
 import { EmailService } from '../utils';
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -86,6 +87,7 @@ describe('userController (e2e)', () => {
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           { name: 'User', schema: UserSchema },

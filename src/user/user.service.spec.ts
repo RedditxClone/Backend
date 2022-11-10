@@ -12,6 +12,7 @@ import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -34,6 +35,7 @@ describe('UserService', () => {
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
       ],
