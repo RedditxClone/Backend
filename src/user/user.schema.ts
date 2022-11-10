@@ -155,7 +155,7 @@ UserSchema.pre(/^find/, function (next) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   // eslint-disable-next-line no-invalid-this
-  this.where({ accountClosed: { $ne: true } });
+  this.where({ accountClosed: { $ne: true } }).select('-__v');
 
   next();
 });
