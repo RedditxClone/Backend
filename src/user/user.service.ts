@@ -324,13 +324,14 @@ export class UserService {
     return { status: 'success' };
   }
 
-  updateProfilePhoto(id: Types.ObjectId, file: any) {
+  uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {
+    // return { id, file, fieldName };
     return this.imagesHandlerService.uploadPhoto(
-      'profile_photos',
+      `${fieldName}s`,
       file,
       this.userModel,
       id,
-      'profilePhoto',
+      `${fieldName}`,
     );
   }
 }

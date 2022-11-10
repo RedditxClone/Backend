@@ -4,12 +4,16 @@ import {
   Delete,
   Get,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -319,5 +323,53 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
     return this.userService.getUserById(user_id);
+  }
+
+  @UseInterceptors(FileInterceptor('photo'))
+  @ApiOperation({
+    description: 'upload a new user profile photo',
+  })
+  @ApiOkResponse({ description: 'Photo uploaded successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/me/profile')
+  uploadProfilePhoto(
+    @Req() request,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: 10_485_760,
+        })
+        .build(),
+    )
+    file,
+  ) {
+    return this.userService.uploadPhoto(request.user._id, file, 'profilePhoto');
+  }
+
+  @UseInterceptors(FileInterceptor('photo'))
+  @ApiOperation({
+    description: 'upload a new user profile photo',
+  })
+  @ApiOkResponse({ description: 'Photo uploaded successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/me/cover')
+  uploadCoverPhoto(
+    @Req() request,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: 10_485_760,
+        })
+        .build(),
+    )
+    file,
+  ) {
+    return this.userService.uploadPhoto(request.user._id, file, 'coverPhoto');
   }
 }

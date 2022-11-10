@@ -13,6 +13,7 @@ import { BlockModule } from '../block/block.module';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
+import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -26,6 +27,7 @@ import { UserService } from './user.service';
 
 jest.mock('../follow/follow.service.ts');
 jest.mock('../block/block.service.ts');
+jest.mock('../utils/imagesHandler/images-handler.service');
 describe('UserService', () => {
   let service: UserService;
   let module: TestingModule;
@@ -322,6 +324,15 @@ describe('UserService', () => {
       });
     });
   });
+
+  describe('uploadIcon', () => {
+    it('should upload the icon successfully', async () => {
+      expect(
+        await service.uploadPhoto(id, { buffer: null }, 'profilePhoto'),
+      ).toEqual(stubImagesHandler());
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

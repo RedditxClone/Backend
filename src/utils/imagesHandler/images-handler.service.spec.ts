@@ -47,12 +47,10 @@ describe('ImagesHandlerService', () => {
 
   describe('uploadPhoto', () => {
     it('should upload the photo successfully', async () => {
-      const directory =
-        __dirname.slice(0, __dirname.lastIndexOf('\\imagesHandler')) +
-        '\\testing\\photos\\testingPhoto.jpeg';
+      const directory = __dirname + '\\test\\photos\\testingPhoto.jpeg';
       const file = await readFile(directory);
       photoDirectory = await imagesHandlerservice.uploadPhoto(
-        'profile_photos',
+        'profilePhotos',
         { buffer: file },
         modelTestService.getTestModel(),
         id,

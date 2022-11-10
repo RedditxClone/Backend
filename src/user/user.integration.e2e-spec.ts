@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
+import { readFile, unlink } from 'fs/promises';
 import { Types } from 'mongoose';
 import request from 'supertest';
 
@@ -433,6 +434,46 @@ describe('userController (e2e)', () => {
         ...plainToClass(PrefsDto, stubUserFresh()),
         countryCode: 'eg',
       });
+    });
+  });
+
+  describe('/POST /user/me/profile', () => {
+    it('must upload a photo successfully', async () => {
+      const res = await request(server)
+        .post(`/user/me/profile`)
+        .set('authorization', token1)
+        .attach('photo', __dirname + '\\test\\photos\\testingPhoto.jpeg');
+      expect(typeof (await readFile(res.body.profilePhoto))).toBe('object');
+      expect(res.body).toEqual({
+        profilePhoto: res.body.profilePhoto,
+      });
+      await unlink(res.body.profilePhoto);
+    });
+    it('must throw error no photo provided', async () => {
+      const res = await request(server)
+        .post(`/user/me/profile`)
+        .set('authorization', token1);
+      expect(res.body.message).toEqual('File is required');
+    });
+  });
+
+  describe('/POST /user/me/cover', () => {
+    it('must upload a photo successfully', async () => {
+      const res = await request(server)
+        .post(`/user/me/cover`)
+        .set('authorization', token1)
+        .attach('photo', __dirname + '\\test\\photos\\testingPhoto.jpeg');
+      expect(typeof (await readFile(res.body.coverPhoto))).toBe('object');
+      expect(res.body).toEqual({
+        coverPhoto: res.body.coverPhoto,
+      });
+      await unlink(res.body.coverPhoto);
+    });
+    it('must throw error no photo provided', async () => {
+      const res = await request(server)
+        .post(`/user/me/profile`)
+        .set('authorization', token1);
+      expect(res.body.message).toEqual('File is required');
     });
   });
 

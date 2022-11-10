@@ -138,8 +138,30 @@ describe('UserControllerSpec', () => {
       const req = createRequest();
       const id: Types.ObjectId = new Types.ObjectId(1);
       req.user = { id };
-      const res: any = await userController.deleteAccount(req);
-      expect(res).toEqual({ status: 'success' });
+      expect(await userController.deleteAccount(req)).toEqual({
+        status: 'success',
+      });
+    });
+  });
+  describe('upload profile photo', () => {
+    it('must be uploaded successfully', async () => {
+      const req = createRequest();
+      const _id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { _id };
+      expect(await userController.uploadProfilePhoto(req, null)).toEqual({
+        photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
+      });
+    });
+  });
+
+  describe('upload cover photo', () => {
+    it('must be uploaded successfully', async () => {
+      const req = createRequest();
+      const _id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { _id };
+      expect(await userController.uploadCoverPhoto(req, null)).toEqual({
+        photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
+      });
     });
   });
 });

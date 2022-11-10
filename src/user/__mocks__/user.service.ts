@@ -19,4 +19,7 @@ export const UserService = jest.fn().mockReturnValue({
     .mockResolvedValue({ ...stubUser(), authType: 'moderator' }),
   makeAdmin: jest.fn().mockResolvedValue({ ...stubUser(), authType: 'admin' }),
   deleteAccount: jest.fn().mockResolvedValue({ status: 'success' }),
+  uploadPhoto: jest.fn().mockResolvedValue({
+    photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
+  }),
 });
