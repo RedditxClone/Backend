@@ -338,7 +338,7 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-moderator`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('moderator');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it('should refuse to make the admin moderator', async () => {
       const res = await request(server)
@@ -371,14 +371,14 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-admin`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('admin');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it("mustn't change the admin role", async () => {
       const res = await request(server)
         .post(`/user/${adminId.toString()}/make-admin`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('admin');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it('should throw unauthorized', async () => {
       // regular user not admin

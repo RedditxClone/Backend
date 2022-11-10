@@ -60,7 +60,7 @@ export class UserController {
   @ApiOkResponse({ description: 'The friend request accepted successfully' })
   @ApiBadRequestResponse({ description: 'invalid user id' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  @Post('/:user_id/frined/accept')
+  @Post('/:user_id/friend/accept')
   acceptFriendRequest() {
     return this.userService.acceptFriendRequest();
   }
@@ -132,7 +132,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'Update user preferences' })
-  @ApiOkResponse({ description: 'The preferences updated successfully' })
+  @ApiCreatedResponse({ description: 'The preferences updated successfully' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
@@ -220,6 +220,16 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'follow specific user' })
+  @ApiCreatedResponse({
+    description: 'you have followed the user successfully',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'either you are following the user or there is a block between you and the user',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'user is not logged in',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/follow')
   async followUser(
@@ -229,6 +239,17 @@ export class UserController {
     return this.userService.follow(request.user._id, user_id);
   }
 
+  @ApiOperation({ description: 'unfollow specific user' })
+  @ApiCreatedResponse({
+    description: 'you have unfollowed the user successfully',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'either you are not following the user or there is a block between you and the user or wrong user id',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'user is not logged in',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unfollow')
   async unfollowUser(
@@ -240,7 +261,9 @@ export class UserController {
 
   @ApiOperation({ description: 'User block another user' })
   @ApiOkResponse({ description: 'User blocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiBadRequestResponse({
+    description: 'invalid user id or there is block between you and the user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/block')
@@ -253,7 +276,9 @@ export class UserController {
 
   @ApiOperation({ description: 'User unblock another user' })
   @ApiOkResponse({ description: 'User unblocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiBadRequestResponse({
+    description: "invalid user id or you haven't blocked the user",
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unblock')
@@ -274,9 +299,12 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
-  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
+  })
+  @ApiBadRequestResponse({
+    description: 'you are trying to change admin type to moderator',
   })
   @UseGuards(JWTAdminGuard)
   @Post('/:user_id/make-moderator')
@@ -290,7 +318,7 @@ export class UserController {
     description:
       'give an admin role to the ordinary user (for testing purpose and will be deleted)',
   })
-  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
   })

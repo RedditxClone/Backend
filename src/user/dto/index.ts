@@ -1,4 +1,5 @@
 export * from './available-username.dto';
+export * from './create-user.dto';
 export * from './friend.dto';
 export * from './get-friends.dto';
 export * from './get-user-info.dto';
@@ -6,5 +7,6 @@ export * from './prefs.dto';
 export * from './user.dto';
 export * from './user-account.dto';
 export * from './user-comments.dto';
+export * from './user-filter.dto';
 export * from './user-overview.dto';
 export * from './user-posts.dto';

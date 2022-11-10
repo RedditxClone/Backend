@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
+import type { Comment } from './comment.schema';
 import type { CreateCommentDto, UpdateCommentDto } from './dto';
 
 @Injectable()
 export class CommentService {
+  constructor(
+    @InjectModel('Comment') private readonly commentModel: Model<Comment>,
+  ) {}
+
   create(_createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+    return 'new post';
   }
 
   findAll() {
