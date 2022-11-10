@@ -306,7 +306,7 @@ export class UserController {
     description: 'you are not allowed to make this action',
   })
   @UseGuards(JWTUserGuard)
-  @Delete('/')
+  @Delete('/me')
   async deleteAccount(@Req() request) {
     return this.userService.deleteAccount(request.user);
   }

@@ -436,17 +436,17 @@ describe('userController (e2e)', () => {
     });
   });
 
-  describe('/DELETE /user', () => {
+  describe('/DELETE /user/me', () => {
     it('should delete the account successfully', async () => {
       const res = await request(server)
-        .delete(`/user`)
+        .delete(`/user/me`)
         .set('authorization', token1)
         .expect(HttpStatus.OK);
       expect(res.body).toEqual({ status: 'success' });
     });
     it('should throw an error', async () => {
       const res = await request(server)
-        .delete(`/user`)
+        .delete(`/user/me`)
         .set('authorization', token1)
         .expect(HttpStatus.NOT_FOUND);
       expect(res.body.message).toEqual(
