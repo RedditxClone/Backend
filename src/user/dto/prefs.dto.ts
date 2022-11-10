@@ -334,4 +334,12 @@ export class PrefsDto {
   })
   @IsString({ each: true })
   whitelisted?: string[];
+
+  @ValidateIf((o) => o.accountClosed !== undefined)
+  @Expose()
+  @ApiProperty({
+    description: 'Is the account deleted',
+  })
+  @IsBoolean()
+  accountClosed?: boolean;
 }

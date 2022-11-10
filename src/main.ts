@@ -19,7 +19,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Redditx')
     .setDescription('The Redditx API description')
-    .setVersion('1.0')
+    .setVersion('1.2')
     .addTag('Redditx')
     .addBearerAuth(
       {

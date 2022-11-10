@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
 
+import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import type { AvailableUsernameDto } from './dto';
 import { PrefsDto } from './dto';
 import { stubUser } from './test/stubs/user.stub';
@@ -69,6 +70,18 @@ describe('UserControllerSpec', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+
+  describe('block', () => {
+    test('it should block successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      req.user = { id };
+      const res: any = await userController.getBlockedUsers({
+        user: { _id: id },
+      });
+      expect(res).toEqual(stubBlock());
+    });
+  });
   describe('unblock', () => {
     test('it should unblock successfully', async () => {
       const req = createRequest();
@@ -117,6 +130,15 @@ describe('UserControllerSpec', () => {
         req,
         new PrefsDto(),
       );
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('Delete user', () => {
+    it('must be deleted successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { id };
+      const res: any = await userController.deleteAccount(req);
       expect(res).toEqual({ status: 'success' });
     });
   });

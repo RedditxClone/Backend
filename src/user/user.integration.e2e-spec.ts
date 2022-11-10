@@ -289,6 +289,28 @@ describe('userController (e2e)', () => {
       expect(res.body.message).toEqual(`you are not allowed to block yourself`);
     });
   });
+  describe('/GET /user/block', () => {
+    it('must get blocked users successfully', async () => {
+      const res = await request(server)
+        .get(`/user/block`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body[0]).toEqual({
+        _id: res.body[0]._id,
+        blocked: {
+          _id: id2,
+          profilePhoto: '',
+          username: `a${userDto.username}`,
+        },
+      });
+    });
+    it('must throw unauthorized error', async () => {
+      const res = await request(server)
+        .get(`/user/block`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+  });
   describe('/POST /user/:user_id/unblock', () => {
     it('should unblock successfully', async () => {
       const res = await request(server)
@@ -313,7 +335,7 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-moderator`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('moderator');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it('should refuse to make the admin moderator', async () => {
       const res = await request(server)
@@ -346,14 +368,14 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-admin`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('admin');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it("mustn't change the admin role", async () => {
       const res = await request(server)
         .post(`/user/${adminId.toString()}/make-admin`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('admin');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it('should throw unauthorized', async () => {
       // regular user not admin
@@ -411,6 +433,26 @@ describe('userController (e2e)', () => {
       });
     });
   });
+
+  describe('/DELETE /user/me', () => {
+    it('should delete the account successfully', async () => {
+      const res = await request(server)
+        .delete(`/user/me`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('should throw an error', async () => {
+      const res = await request(server)
+        .delete(`/user/me`)
+        .set('authorization', token1)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toEqual(
+        `there is no user with information {"_id":"${id1}"}`,
+      );
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await app.close();

@@ -56,7 +56,7 @@ export class UserController {
   @ApiOkResponse({ description: 'The friend request accepted successfully' })
   @ApiBadRequestResponse({ description: 'invalid user id' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  @Post('/:user_id/frined/accept')
+  @Post('/:user_id/friend/accept')
   acceptFriendRequest() {
     return this.userService.acceptFriendRequest();
   }
@@ -128,7 +128,7 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'Update user preferences' })
-  @ApiOkResponse({ description: 'The preferences updated successfully' })
+  @ApiCreatedResponse({ description: 'The preferences updated successfully' })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
@@ -167,16 +167,6 @@ export class UserController {
   @Get('/:user_id/submitted')
   getUserPosts(@Param('user_id') _userId: string) {
     // TODO
-  }
-
-  @ApiOperation({ description: 'get user info by user id' })
-  @ApiOkResponse({ description: 'The user info returned successfully' })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id')
-  async getUserById(
-    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-  ) {
-    return this.userService.getUserById(user_id);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -226,6 +216,16 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'follow specific user' })
+  @ApiCreatedResponse({
+    description: 'you have followed the user successfully',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'either you are following the user or there is a block between you and the user',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'user is not logged in',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/follow')
   async followUser(
@@ -235,6 +235,17 @@ export class UserController {
     return this.userService.follow(request.user._id, user_id);
   }
 
+  @ApiOperation({ description: 'unfollow specific user' })
+  @ApiCreatedResponse({
+    description: 'you have unfollowed the user successfully',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'either you are not following the user or there is a block between you and the user or wrong user id',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'user is not logged in',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unfollow')
   async unfollowUser(
@@ -246,7 +257,9 @@ export class UserController {
 
   @ApiOperation({ description: 'User block another user' })
   @ApiOkResponse({ description: 'User blocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiBadRequestResponse({
+    description: 'invalid user id or there is block between you and the user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/block')
@@ -259,7 +272,9 @@ export class UserController {
 
   @ApiOperation({ description: 'User unblock another user' })
   @ApiOkResponse({ description: 'User unblocked successfully' })
-  @ApiBadRequestResponse({ description: 'invalid user id' })
+  @ApiBadRequestResponse({
+    description: "invalid user id or you haven't blocked the user",
+  })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_id/unblock')
@@ -270,10 +285,22 @@ export class UserController {
     return this.userService.unblock(request.user._id, user_id);
   }
 
+  @ApiOperation({ description: 'get list of blocked users' })
+  @ApiOkResponse({ description: 'Users returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @UseGuards(JWTUserGuard)
+  @Get('block')
+  getBlockedUsers(@Req() { user }): Promise<any> {
+    return this.userService.getBlockedUsers(user._id);
+  }
+
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
-  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
+  })
+  @ApiBadRequestResponse({
+    description: 'you are trying to change admin type to moderator',
   })
   @UseGuards(JWTAdminGuard)
   @Post('/:user_id/make-moderator')
@@ -287,7 +314,7 @@ export class UserController {
     description:
       'give an admin role to the ordinary user (for testing purpose and will be deleted)',
   })
-  @ApiOkResponse({ description: 'type of user changed successfully' })
+  @ApiCreatedResponse({ description: 'type of user changed successfully' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
   })
@@ -297,5 +324,28 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
     return this.userService.makeAdmin(user_id);
+  }
+
+  @ApiOperation({
+    description: 'Delete the user account by sitting the accountClosed to true',
+  })
+  @ApiOkResponse({ description: 'Account deleted successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTUserGuard)
+  @Delete('/me')
+  async deleteAccount(@Req() request) {
+    return this.userService.deleteAccount(request.user);
+  }
+
+  @ApiOperation({ description: 'get user info by user id' })
+  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id')
+  async getUserById(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return this.userService.getUserById(user_id);
   }
 }

@@ -10,6 +10,7 @@ import { createResponse } from 'node-mocks-http';
 
 import { UserStrategy } from '../auth/stratigies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
 import {
   closeInMongodConnection,
@@ -225,6 +226,13 @@ describe('UserService', () => {
       }).rejects.toThrow(`there is no user with id : ${wrongId.toString()}`);
     });
   });
+
+  describe('getBlockedUsers', () => {
+    it('should return blocked users successfully', async () => {
+      const res: any = await service.getBlockedUsers(id);
+      expect(res).toEqual(stubBlock());
+    });
+  });
   describe('unblock', () => {
     it('should unblock successfully', async () => {
       const res: any = await service.unblock(id, id);
@@ -242,8 +250,8 @@ describe('UserService', () => {
       adminId = admin._id;
     });
     it('should be admin', async () => {
-      const user: UserDocument = await service.makeAdmin(adminId);
-      expect(user.authType).toEqual('admin');
+      const res: any = await service.makeAdmin(adminId);
+      expect(res).toEqual({ status: 'success' });
     });
     // to make sure that it has been changed inside database
     it('must be changed inside database', async () => {
@@ -268,10 +276,8 @@ describe('UserService', () => {
       moderatorId = moderator._id;
     });
     it('should be a moderator', async () => {
-      const user: UserDocument = await service.allowUserToBeModerator(
-        moderatorId,
-      );
-      expect(user.authType).toEqual('moderator');
+      const res: any = await service.allowUserToBeModerator(moderatorId);
+      expect(res).toEqual({ status: 'success' });
     });
     it('must be changed inside database', async () => {
       const user: UserDocument = await service.getUserById(moderatorId);
@@ -302,6 +308,14 @@ describe('UserService', () => {
       await expect(service.changePassword(wrongId, 'password')).rejects.toThrow(
         `there is no user with id ${wrongId}`,
       );
+    });
+  });
+  describe('Delete user by setting the accountClosed to true', () => {
+    it('should close the account successfully', async () => {
+      const user = { _id: id };
+      expect(await service.deleteAccount(user)).toEqual({
+        status: 'success',
+      });
     });
   });
   afterAll(async () => {
