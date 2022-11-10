@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
 
+jest.mock('./comment.service');
 describe('CommentController', () => {
   let controller: CommentController;
 
