@@ -302,4 +302,17 @@ export class UserService {
 
     return { status: 'success' };
   }
+
+  async deleteAccount(user: any) {
+    await this.userModel
+      .updateOne(
+        { _id: user._id },
+        {
+          accountClosed: true,
+        },
+      )
+      .select('');
+
+    return { status: 'success' };
+  }
 }

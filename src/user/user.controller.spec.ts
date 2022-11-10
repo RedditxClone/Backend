@@ -120,4 +120,13 @@ describe('UserControllerSpec', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+  describe('Delete user', () => {
+    it('must be deleted successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { id };
+      const res: any = await userController.deleteAccount(req);
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
 });

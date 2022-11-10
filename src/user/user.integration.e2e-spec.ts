@@ -411,6 +411,26 @@ describe('userController (e2e)', () => {
       });
     });
   });
+
+  describe('/DELETE /user', () => {
+    it('should delete the account successfully', async () => {
+      const res = await request(server)
+        .delete(`/user`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('should throw an error', async () => {
+      const res = await request(server)
+        .delete(`/user`)
+        .set('authorization', token1)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toEqual(
+        `there is no user with information {"_id":"${id1}"}`,
+      );
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await app.close();
