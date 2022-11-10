@@ -9,6 +9,10 @@ services:
       - MONGO_INITDB_ROOT_USERNAME
       - DB_CONNECTION_STRING
       - JWT_SECRET
+      - FORGET_PASSWORD_SECRET
+      - SU_PASS
+      - SU_EMAIL
+      - SU_USERNAME
     networks:
       - db-network
       - proxy-network
