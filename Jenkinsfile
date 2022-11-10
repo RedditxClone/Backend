@@ -1,17 +1,18 @@
 pipeline {
-	agent none 
-	environment {
-    		NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-	}
+	agent any
 	stages {
-		stage('Build') {
-			agent { docker { image 'nestjs/cli' } }
-            		steps {
-                		sh 'npm --version'
-				sh 'nest info'
-		    		sh 'npm install'
-				sh 'nest start'
-            		}
+		stage('Docker') {
+			environment {
+				MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
+        		MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD')
+				JWT_SECRET = credentials('JWT_SECRET')
+    		}
+            steps {
+				sh  '''
+					export DB_CONNECTION_STRING=mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@mongo-db:27017
+					docker-compose up --build -d
+					'''
+            }
 		}
 	}
 }
