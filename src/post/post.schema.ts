@@ -28,5 +28,11 @@ export class Post extends PostComment {
 
   @Prop({ required: true })
   title: string;
+
+  @Prop({ default: false, required: false })
+  nsfw: boolean;
+
+  @Prop({ default: false, required: false })
+  spoiler: boolean;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);

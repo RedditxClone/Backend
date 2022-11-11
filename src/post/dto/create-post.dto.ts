@@ -19,10 +19,12 @@ export class CreatePostDto {
   text: string;
 
   @IsBoolean()
-  nsfw: boolean;
+  @IsOptional()
+  nsfw?: boolean;
 
   @IsBoolean()
-  spoiler: boolean;
+  @IsOptional()
+  spoiler?: boolean;
 
   @IsNotEmpty()
   flairs: Types.ObjectId[];
