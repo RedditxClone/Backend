@@ -3,11 +3,15 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   Patch,
   Post,
+  Req,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -18,9 +22,12 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { PostCommentService } from 'post-comment/post-comment.service';
-import { ParseObjectIdPipe } from 'utils/utils.service';
+import { diskStorage } from 'multer';
 
+import { JWTUserGuard } from '../auth/guards';
+import { PostCommentService } from '../post-comment/post-comment.service';
+import { uniqueFileName } from '../utils';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreatePostDto,
   DefaultSortPostDto,
@@ -30,6 +37,7 @@ import {
   SendRepliesPostDto,
   SpamPostDto,
   UpdatePostDto,
+  UploadMediaDto,
   VotePostDto,
 } from './dto';
 import { PostService } from './post.service';
@@ -52,9 +60,30 @@ export class PostController {
     description:
       'If a link with the same URL has already been submitted to the specified subreddit an error will be returned unless resubmit is true.',
   })
+  @UseGuards(JWTUserGuard)
   @Post('/submit')
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  async create(@Req() req, @Body() createPostDto: CreatePostDto) {
+    return this.postService.create(req.user._id, createPostDto);
+  }
+
+  @ApiOperation({ description: 'upload a post media.' })
+  @ApiCreatedResponse({
+    description: 'The resource was uploaded successfully',
+    type: UploadMediaDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      storage: diskStorage({
+        destination: './statics/posts-media',
+        filename: uniqueFileName,
+      }),
+    }),
+  )
+  @Post('/upload-media')
+  uploadMedia(@UploadedFiles() files: Express.Multer.File[]) {
+    return this.postService.uploadMedia(files);
   }
 
   @ApiOperation({ description: 'Deletes a post.' })

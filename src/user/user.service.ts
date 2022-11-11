@@ -15,6 +15,7 @@ import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
+import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { AvailableUsernameDto, CreateUserDto, FilterUserDto } from './dto';
 import { PrefsDto } from './dto';
 import type { User, UserDocument } from './user.schema';
@@ -26,6 +27,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly followService: FollowService,
     private readonly blockService: BlockService,
+    private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
   getFriends() {
@@ -318,5 +320,16 @@ export class UserService {
       .select('');
 
     return { status: 'success' };
+  }
+
+  uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {
+    // return { id, file, fieldName };
+    return this.imagesHandlerService.uploadPhoto(
+      `${fieldName}s`,
+      file,
+      this.userModel,
+      id,
+      `${fieldName}`,
+    );
   }
 }

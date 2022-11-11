@@ -3,8 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
+import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -15,6 +17,7 @@ import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
+jest.mock('../utils/imagesHandler/images-handler.service');
 describe('SubredditService', () => {
   let subredditService: SubredditService;
   let module: TestingModule;
@@ -62,6 +65,7 @@ describe('SubredditService', () => {
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'subreddit', schema: SubredditSchema },
         ]),
@@ -230,25 +234,24 @@ describe('SubredditService', () => {
   });
 
   describe('uploadIcon', () => {
-    it('The Icon uploaded successfully', async () => {
+    it('should upload the icon successfully', async () => {
       const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
-      await subredditService.uploadIcon(id, { buffer: file });
-      expect(
-        typeof (await readFile(`src/statics/subreddit_icons/${id}.jpeg`)),
-      ).toBe('object');
-      await subredditService.removeIcon(id);
+      expect(await subredditService.uploadIcon(id, { buffer: file })).toEqual(
+        stubImagesHandler(),
+      );
     });
   });
 
   describe('removeIcon', () => {
-    it('The Icon removed successfully', async () => {
-      const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
-      await subredditService.uploadIcon(id, { buffer: file });
-      const sr = await subredditService.findSubreddit(id);
-      expect(sr.icon).toBe(`src/statics/subreddit_icons/${id}.jpeg`);
-      await subredditService.removeIcon(id);
-      const srWithoutIcon = await subredditService.findSubreddit(id);
-      expect(srWithoutIcon.icon).toBe(null);
+    it('should remove the icon successfully', async () => {
+      expect(await subredditService.removeIcon(id)).toEqual({
+        status: 'success',
+      });
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.removeIcon(new Types.ObjectId(1).toString()),
+      ).rejects.toThrowError('No subreddit with such id');
     });
   });
 
