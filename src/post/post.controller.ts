@@ -34,6 +34,7 @@ import {
   SendRepliesPostDto,
   SpamPostDto,
   UpdatePostDto,
+  UploadMediaDto,
   VotePostDto,
 } from './dto';
 import { PostService } from './post.service';
@@ -62,6 +63,7 @@ export class PostController {
   @ApiOperation({ description: 'upload a post media.' })
   @ApiCreatedResponse({
     description: 'The resource was uploaded successfully',
+    type: UploadMediaDto,
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
