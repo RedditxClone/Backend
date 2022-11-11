@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -8,6 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { JWTUserGuard } from '../auth/guards';
 import { CommentService } from './comment.service';
 import {
   CreateCommentDto,
@@ -28,9 +38,10 @@ export class CommentController {
     type: CreateCommentDto,
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(createCommentDto);
+  @UseGuards(JWTUserGuard)
+  @Post('submit')
+  async create(@Req() req, @Body() createCommentDto: CreateCommentDto) {
+    return this.commentService.create(req.user._id, createCommentDto);
   }
 
   @ApiOperation({ description: 'Deletes a comment.' })

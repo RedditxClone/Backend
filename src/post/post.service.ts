@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import type { CreatePostDto, UpdatePostDto } from './dto';
-import type { Post, PostDocument } from './post.schema';
+import type { Post } from './post.schema';
 
 @Injectable()
 export class PostService {
@@ -23,13 +23,14 @@ export class PostService {
     try {
       const subredditId = new Types.ObjectId(createPostDto.subredditId);
       const post: Post = await this.postModel.create({
-        userId: userId,
+        userId,
         ...createPostDto,
-        subredditId: subredditId,
+        subredditId,
       });
+
       return post;
-    } catch (err) {
-      throw new BadRequestException(err);
+    } catch (error) {
+      throw new BadRequestException(error);
     }
   };
 

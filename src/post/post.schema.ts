@@ -22,7 +22,11 @@ export class Post extends PostComment {
   // for post schedule
   @Prop({ default: Date.now })
   publishedDate: Date;
+
   @Prop({ ref: 'Subreddit', required: true })
   subredditId: Types.ObjectId;
+
+  @Prop({ required: true })
+  title: string;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);

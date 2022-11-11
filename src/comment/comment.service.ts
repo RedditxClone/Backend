@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import type { Comment } from './comment.schema';
 import type { CreateCommentDto, UpdateCommentDto } from './dto';
@@ -11,9 +11,32 @@ export class CommentService {
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
   ) {}
 
-  create(_createCommentDto: CreateCommentDto) {
-    return 'new post';
-  }
+  /**
+   * Create a Comment in a subreddit.
+   * @param userId user's id whom is creating the Comment
+   * @param createCommentDto encapsulating the create Comment data
+   * @returns a promise of the Comment created
+   * @throws BadRequestException when falling to create a Comment
+   */
+  create = async (
+    userId: Types.ObjectId,
+    createCommentDto: CreateCommentDto,
+  ): Promise<Comment> => {
+    try {
+      const parentId = new Types.ObjectId(createCommentDto.parentId);
+      const postId = new Types.ObjectId(createCommentDto.postId);
+      const comment: Comment = await this.commentModel.create({
+        userId,
+        ...createCommentDto,
+        postId,
+        parentId,
+      });
+
+      return comment;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  };
 
   findAll() {
     return `This action returns all comment`;

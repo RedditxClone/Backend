@@ -11,8 +11,8 @@ import request from 'supertest';
 
 import { AuthController } from '../auth/auth.controller';
 import { AuthService } from '../auth/auth.service';
-import { AdminStrategy } from '../auth/stratigies/admin.startegy';
-import { UserStrategy } from '../auth/stratigies/user.strategy';
+import { AdminStrategy } from '../auth/strategies/admin.strategy';
+import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { BlockSchema } from '../block/block.schema';
 import { FollowModule } from '../follow/follow.module';

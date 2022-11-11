@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { AdminStrategy } from '../auth/stratigies/admin.startegy';
-import { UserStrategy } from '../auth/stratigies/user.strategy';
+import { AdminStrategy } from '../auth/strategies/admin.strategy';
+import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { FollowModule } from '../follow/follow.module';
 import { UserController } from './user.controller';

@@ -7,7 +7,7 @@ import { UserModule } from '../user/user.module';
 import { UserSchema } from '../user/user.schema';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ForgetPasswordStrategy } from './stratigies/forget-password.strategy';
+import { ForgetPasswordStrategy } from './strategies/forget-password.strategy';
 @Global()
 @Module({
   imports: [
