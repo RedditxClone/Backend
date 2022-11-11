@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -16,6 +17,9 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { PostCommentService } from 'post-comment/post-comment.service';
+import { ParseObjectIdPipe } from 'utils/utils.service';
 
 import {
   CreatePostDto,
@@ -33,7 +37,10 @@ import { PostService } from './post.service';
 @ApiTags('Post')
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly postCommentService: PostCommentService,
+  ) {}
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
   @ApiCreatedResponse({
@@ -66,10 +73,12 @@ export class PostController {
   })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/edit')
-  //todo
-  update(@Body() updatePostDto: UpdatePostDto, @Param('id') id: string) {
-    return this.postService.update(Number(id), updatePostDto);
+  @Patch(':id')
+  update(
+    @Body() dto: UpdatePostDto,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.postCommentService.update(id, dto);
   }
 
   @ApiOperation({

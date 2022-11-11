@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 
 export class UpdatePostDto {
   @ApiProperty()
-  subredditId: string;
-
-  @ApiProperty()
-  text: string;
+  @IsString()
+  text?: string;
 }

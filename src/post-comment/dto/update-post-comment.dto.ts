@@ -1,5 +1,16 @@
-import { PartialType } from '@nestjs/swagger';
+import { IntersectionType } from '@nestjs/mapped-types';
+import { IsString } from 'class-validator';
 
-import { CreatePostCommentDto } from './create-post-comment.dto';
+import { UpdateCommentDto } from '../../comment/dto';
+import { UpdatePostDto } from '../../post/dto';
 
-export class UpdatePostCommentDto extends PartialType(CreatePostCommentDto) {}
+export class UpdatePostCommentDto extends IntersectionType(
+  UpdatePostDto,
+  UpdateCommentDto,
+) {
+  @IsString()
+  text?: string;
+
+  @IsString()
+  flair?: string;
+}

@@ -7,6 +7,8 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from 'utils/utils.service';
 
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { UpdatePostCommentDto } from './dto/update-post-comment.dto';
@@ -29,14 +31,6 @@ export class PostCommentController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postCommentService.findOne(Number(id));
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updatePostCommentDto: UpdatePostCommentDto,
-  ) {
-    return this.postCommentService.update(Number(id), updatePostCommentDto);
   }
 
   @Delete(':id')

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
 import { PostComment } from '../post-comment/post-comment.schema';
 
@@ -21,5 +22,8 @@ export class Post extends PostComment {
   // for post schedule
   @Prop()
   publishedDate: Date;
+
+  @Prop({ ref: 'Subreddit' })
+  subredditId: Types.ObjectId;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);

@@ -8,7 +8,7 @@ import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { PostCommentController } from './post-comment.controller';
-import { PostCommentSchema } from './post-comment.schema';
+import { PostComment, PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
 
 @Module({
