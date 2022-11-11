@@ -7,8 +7,11 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -18,8 +21,10 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
 
 import { JWTUserGuard } from '../auth/guards';
+import { uniqueFileName } from '../utils';
 import {
   CreatePostDto,
   DefaultSortPostDto,
@@ -52,6 +57,25 @@ export class PostController {
   @Post('/submit')
   async create(@Req() req, @Body() createPostDto: CreatePostDto) {
     return this.postService.create(req.user._id, createPostDto);
+  }
+
+  @ApiOperation({ description: 'upload a post media.' })
+  @ApiCreatedResponse({
+    description: 'The resource was uploaded successfully',
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      storage: diskStorage({
+        destination: './statics/posts-media',
+        filename: uniqueFileName,
+      }),
+    }),
+  )
+  @Post('/upload-media')
+  uploadMedia(@UploadedFiles() files: Express.Multer.File[]) {
+    return this.postService.uploadMedia(files);
   }
 
   @ApiOperation({ description: 'Deletes a post.' })

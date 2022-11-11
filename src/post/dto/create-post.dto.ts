@@ -3,12 +3,10 @@ import {
   IsDate,
   IsMongoId,
   IsNotEmpty,
-  IsNotEmptyObject,
   IsOptional,
   IsString,
-  ValidateIf,
 } from 'class-validator';
-import { isValidObjectId, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
 export class CreatePostDto {
   @IsMongoId()

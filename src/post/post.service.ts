@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import type { CreatePostDto, UpdatePostDto } from './dto';
+import { UploadMediaDto } from './dto';
 import type { Post } from './post.schema';
 
 @Injectable()
@@ -32,6 +33,23 @@ export class PostService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  };
+
+  /**
+   * Uploads users media on a post
+   * @param files the files the user uploaded
+   * @returns a list of uploaded images Ids for referencing.
+   */
+  uploadMedia = (files: Express.Multer.File[]): UploadMediaDto => {
+    const res: UploadMediaDto = new UploadMediaDto();
+    res.status = 'success';
+    res.mediaIds = [];
+
+    for (const file of files) {
+      res.mediaIds.push(file.filename);
+    }
+
+    return res;
   };
 
   findAll() {
