@@ -442,7 +442,7 @@ describe('userController (e2e)', () => {
       const res = await request(server)
         .post(`/user/me/profile`)
         .set('authorization', token1)
-        .attach('photo', __dirname + '\\test\\photos\\testingPhoto.jpeg');
+        .attach('photo', __dirname + '/test/photos/testingPhoto.jpeg');
       expect(typeof (await readFile(res.body.profilePhoto))).toBe('object');
       expect(res.body).toEqual({
         profilePhoto: res.body.profilePhoto,
@@ -462,7 +462,7 @@ describe('userController (e2e)', () => {
       const res = await request(server)
         .post(`/user/me/cover`)
         .set('authorization', token1)
-        .attach('photo', __dirname + '\\test\\photos\\testingPhoto.jpeg');
+        .attach('photo', __dirname + '/test/photos/testingPhoto.jpeg');
       expect(typeof (await readFile(res.body.coverPhoto))).toBe('object');
       expect(res.body).toEqual({
         coverPhoto: res.body.coverPhoto,
