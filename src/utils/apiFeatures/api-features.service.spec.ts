@@ -7,9 +7,9 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../mongoose-in-memory';
+import { ReturnModelTest } from '../testing/return-model-testing';
+import { TestModelSchema } from '../testing/test-api-feature-model-testing';
 import { ApiFeaturesService } from './api-features.service';
-import { ReturnModelTest } from './testing/return-model-testing';
-import { TestApiFeatureSchema } from './testing/test-api-feature-model-testing';
 describe('apiFeaturesService', () => {
   let modelTestService: ReturnModelTest;
   let apiFeaturesService: ApiFeaturesService;
@@ -20,7 +20,7 @@ describe('apiFeaturesService', () => {
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
         MongooseModule.forFeature([
-          { name: 'TestApiFeature', schema: TestApiFeatureSchema },
+          { name: 'TestModel', schema: TestModelSchema },
         ]),
       ],
       providers: [ApiFeaturesService, ReturnModelTest],
@@ -29,7 +29,7 @@ describe('apiFeaturesService', () => {
     modelTestService = module.get<ReturnModelTest>(ReturnModelTest);
     apiFeaturesService = module.get<ApiFeaturesService>(ApiFeaturesService);
 
-    const model = modelTestService.getTestApiFeatureModel();
+    const model = modelTestService.getTestModel();
     const date = Date.now();
     const promises: any[] = [];
 
@@ -52,7 +52,7 @@ describe('apiFeaturesService', () => {
   });
   describe('test api Features', () => {
     it('should return one object', async () => {
-      const model = modelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { age: 10 },
@@ -70,7 +70,7 @@ describe('apiFeaturesService', () => {
       );
     });
     it('should return 18 objects', async () => {
-      const model = modelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { page: 2, limit: 18 },
@@ -79,7 +79,7 @@ describe('apiFeaturesService', () => {
       expect(data.length).toEqual(18);
     });
     it('should return 15 objects', async () => {
-      const model = modelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { page: 3 },
@@ -89,7 +89,7 @@ describe('apiFeaturesService', () => {
     });
 
     it('should not return any objects', async () => {
-      const model = modelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { age: 5 },
@@ -99,7 +99,7 @@ describe('apiFeaturesService', () => {
     });
 
     it('should return objects sorted by data', async () => {
-      const model = modelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { sort: 'age' },
@@ -112,7 +112,7 @@ describe('apiFeaturesService', () => {
     });
 
     it('should return only the id and the name', async () => {
-      const model = modelTestService.getTestApiFeatureModel();
+      const model = modelTestService.getTestModel();
       const data = await apiFeaturesService.processQuery(
         model.find(),
         { fields: '-_id,age,name', limit: 1 },

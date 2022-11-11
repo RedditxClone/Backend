@@ -7,6 +7,7 @@ import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -23,6 +24,7 @@ describe('BlockService', () => {
     module = await Test.createTestingModule({
       imports: [
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'Block', schema: BlockSchema },
           { name: 'User', schema: UserSchema },

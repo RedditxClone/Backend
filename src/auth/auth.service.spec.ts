@@ -13,6 +13,7 @@ import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService, EmailServiceMock } from '../utils';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -37,6 +38,7 @@ describe('AuthService', () => {
         }),
         FollowModule,
         BlockModule,
+        ImagesHandlerModule,
       ],
       providers: [AuthService, UserService, EmailService],
     })

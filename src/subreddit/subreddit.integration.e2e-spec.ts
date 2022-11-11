@@ -7,6 +7,7 @@ import { readFile, unlink } from 'fs/promises';
 import request from 'supertest';
 
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -74,6 +75,7 @@ describe('subredditController (e2e)', () => {
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'subreddit', schema: SubredditSchema },
         ]),
@@ -203,15 +205,14 @@ describe('subredditController (e2e)', () => {
 
   describe('/POST /subreddit/:subreddit/icon', () => {
     it('must upload a photo successfully', async () => {
-      const saveDir = `src/statics/subreddit_icons/${sr._id}.jpeg`;
       const res = await request(server)
         .post(`/subreddit/${sr._id}/icon`)
         .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
-      expect(typeof (await readFile(saveDir))).toBe('object');
+      expect(typeof (await readFile(res.body.icon))).toBe('object');
       expect(res.body).toEqual({
-        icon: saveDir,
+        icon: res.body.icon,
       });
-      await unlink(saveDir);
+      await unlink(res.body.icon);
     });
     it("must throw error subreddit doesn't exist", async () => {
       const res = await request(server)
@@ -227,7 +228,6 @@ describe('subredditController (e2e)', () => {
 
   describe('/DELETE /subreddit/:subreddit/icon', () => {
     it('The Icon removed successfully', async () => {
-      // `statics/subreddit_icons/${sr._id}.jpeg`;
       await request(server)
         .post(`/subreddit/${sr._id}/icon`)
         .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');

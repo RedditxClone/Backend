@@ -14,6 +14,7 @@ import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService, EmailServiceMock } from '../utils';
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -67,6 +68,7 @@ describe('authController (e2e)', () => {
         }),
         FollowModule,
         BlockModule,
+        ImagesHandlerModule,
       ],
       controllers: [AuthController],
       providers: [

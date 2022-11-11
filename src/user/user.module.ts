@@ -5,6 +5,7 @@ import { AdminStrategy } from '../auth/strategies/admin.strategy';
 import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { FollowModule } from '../follow/follow.module';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { UserController } from './user.controller';
 import { UserSchema } from './user.schema';
 import { UserService } from './user.service';
@@ -12,6 +13,7 @@ import { UserService } from './user.service';
   imports: [
     FollowModule,
     BlockModule,
+    ImagesHandlerModule,
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
   providers: [UserService, UserStrategy, AdminStrategy],
