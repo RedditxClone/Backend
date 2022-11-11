@@ -16,11 +16,15 @@ export class ImagesHandlerService {
     const accessedField: any = {};
     accessedField[fieldName] = saveDir;
     await Promise.all([
-      sharp(file.buffer).toFormat('jpeg').toFile(saveDir),
+      this.uploadPhotoToServer(file, saveDir),
       Model.findByIdAndUpdate(targetId, accessedField).select(''),
     ]);
 
     return accessedField;
+  }
+
+  async uploadPhotoToServer(file: any, saveDir: string) {
+    return sharp(file.buffer).toFormat('jpeg').toFile(saveDir);
   }
 
   async removePhoto(saveDir: string) {
