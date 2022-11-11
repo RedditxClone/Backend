@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
+import { readFile, unlink } from 'fs/promises';
 import { Types } from 'mongoose';
 import request from 'supertest';
 
@@ -112,7 +113,18 @@ describe('postController (e2e)', () => {
       expect(res.body).toMatchObject({ ...stubPost(), userId });
     });
   });
-
+  describe('POST /post/upload-media', () => {
+    it('must upload successfully', async () => {
+      const res = await request(server)
+        .post(`/post/upload-media`)
+        .set('authorization', token)
+        .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
+      const saveDir = `./statics/posts-media/${res.body.mediaIds[0]}`;
+      expect(typeof (await readFile(saveDir))).toBe('object');
+      expect(res.body.status).toEqual('success');
+      await unlink(saveDir);
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await app.close();

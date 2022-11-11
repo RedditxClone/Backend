@@ -62,6 +62,13 @@ describe('PostService', () => {
       expect(post).toEqual(expect.objectContaining(expected));
     });
   });
+  describe('upload media spec', () => {
+    test('should upload successfully', () => {
+      const files: Express.Multer.File[] = [];
+      const res = service.uploadMedia(files);
+      expect(res.status).toEqual('success');
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

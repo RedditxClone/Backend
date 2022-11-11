@@ -31,4 +31,11 @@ describe('PostController', () => {
       expect(res).toEqual(stubPost());
     });
   });
+  describe('Upload Media', () => {
+    it('should upload successfully', () => {
+      const files: Express.Multer.File[] = [];
+      const res = controller.uploadMedia(files);
+      expect(res.status).toEqual('success');
+    });
+  });
 });
