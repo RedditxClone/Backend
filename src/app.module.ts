@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { BlockModule } from './block/block.module';
 import { CategoryModule } from './category/category.module';
 import { FollowModule } from './follow/follow.module';
+import { HealthModule } from './health/health.module';
 import { MessageModule } from './message/message.module';
 import { ControllerService } from './module/controller/controller.service';
 import { NotificationModule } from './notification/notification.module';
@@ -44,6 +45,7 @@ import { EmailModule } from './utils/mail/mail.module';
     EmailModule,
     BlockModule,
     PostCommentModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [ControllerService],

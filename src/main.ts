@@ -10,7 +10,7 @@ async function bootstrap() {
     rawBody: true,
   });
 
-  // Prefix all endpoinds with api/
+  // Prefix api endpoinds with api/
   app.setGlobalPrefix('api');
 
   // Catch general exceptions
