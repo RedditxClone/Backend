@@ -19,6 +19,9 @@ export class PostComment {
 
   @Prop({ ref: 'PostComment', default: null })
   parentId: Types.ObjectId;
+
+  @Prop({ ref: 'User', required: true })
+  userId: Types.ObjectId;
 }
 
 export const PostCommentSchema = SchemaFactory.createForClass(PostComment);

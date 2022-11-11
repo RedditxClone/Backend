@@ -20,8 +20,8 @@ import {
 } from '../utils/mongoose-in-memory';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ForgetPasswordStrategy } from './stratigies/forget-password.strategy';
-import { UserStrategy } from './stratigies/user.strategy';
+import { ForgetPasswordStrategy } from './strategies/forget-password.strategy';
+import { UserStrategy } from './strategies/user.strategy';
 
 describe('authController (e2e)', () => {
   let app: INestApplication;

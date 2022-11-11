@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
 import { PostComment } from '../post-comment/post-comment.schema';
 
@@ -15,11 +16,23 @@ export class Post extends PostComment {
   @Prop({ default: 0 })
   insightsCount: number;
 
-  @Prop()
-  flair: string;
+  @Prop({ default: [] })
+  flairs: Types.ObjectId[];
 
   // for post schedule
-  @Prop()
+  @Prop({ default: Date.now })
   publishedDate: Date;
+
+  @Prop({ ref: 'Subreddit', required: true })
+  subredditId: Types.ObjectId;
+
+  @Prop({ required: true })
+  title: string;
+
+  @Prop({ default: false, required: false })
+  nsfw: boolean;
+
+  @Prop({ default: false, required: false })
+  spoiler: boolean;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);

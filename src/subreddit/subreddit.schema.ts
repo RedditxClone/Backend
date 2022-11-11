@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { Document } from 'mongoose';
 import { Schema as schemaType } from 'mongoose';
 
-class Flair {
+export class Flair {
   @Prop({ required: true })
   text: string;
 

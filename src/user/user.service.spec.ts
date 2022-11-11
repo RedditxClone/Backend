@@ -8,7 +8,7 @@ import { plainToClass } from 'class-transformer';
 import { Types } from 'mongoose';
 import { createResponse } from 'node-mocks-http';
 
-import { UserStrategy } from '../auth/stratigies/user.strategy';
+import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';

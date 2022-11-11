@@ -1,13 +1,35 @@
-export class CreatePostDto {
-  subredditId: string;
+import {
+  IsBoolean,
+  IsDate,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Types } from 'mongoose';
 
+export class CreatePostDto {
+  @IsMongoId()
+  subredditId: Types.ObjectId;
+
+  @IsString()
   title: string;
 
+  @IsString()
   text: string;
 
-  nsfw: boolean;
+  @IsBoolean()
+  @IsOptional()
+  nsfw?: boolean;
 
-  spoiler: boolean;
+  @IsBoolean()
+  @IsOptional()
+  spoiler?: boolean;
 
-  flairs: string[];
+  @IsNotEmpty()
+  flairs: Types.ObjectId[];
+
+  @IsDate()
+  @IsOptional()
+  publishedDate?: Date;
 }
