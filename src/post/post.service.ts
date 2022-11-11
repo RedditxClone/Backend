@@ -21,18 +21,14 @@ export class PostService {
     userId: Types.ObjectId,
     createPostDto: CreatePostDto,
   ): Promise<Post> => {
-    try {
-      const subredditId = new Types.ObjectId(createPostDto.subredditId);
-      const post: Post = await this.postModel.create({
-        userId,
-        ...createPostDto,
-        subredditId,
-      });
+    const subredditId = new Types.ObjectId(createPostDto.subredditId);
+    const post: Post = await this.postModel.create({
+      userId,
+      ...createPostDto,
+      subredditId,
+    });
 
-      return post;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return post;
   };
 
   /**
@@ -43,11 +39,8 @@ export class PostService {
   uploadMedia = (files: Express.Multer.File[]): UploadMediaDto => {
     const res: UploadMediaDto = new UploadMediaDto();
     res.status = 'success';
-    res.mediaIds = [];
 
-    for (const file of files) {
-      res.mediaIds.push(file.filename);
-    }
+    res.mediaIds = files.map((file: Express.Multer.File) => file.filename);
 
     return res;
   };

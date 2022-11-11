@@ -22,20 +22,16 @@ export class CommentService {
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
   ): Promise<Comment> => {
-    try {
-      const parentId = new Types.ObjectId(createCommentDto.parentId);
-      const postId = new Types.ObjectId(createCommentDto.postId);
-      const comment: Comment = await this.commentModel.create({
-        userId,
-        ...createCommentDto,
-        postId,
-        parentId,
-      });
+    const parentId = new Types.ObjectId(createCommentDto.parentId);
+    const postId = new Types.ObjectId(createCommentDto.postId);
+    const comment: Comment = await this.commentModel.create({
+      userId,
+      ...createCommentDto,
+      postId,
+      parentId,
+    });
 
-      return comment;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return comment;
   };
 
   findAll() {
