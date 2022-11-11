@@ -1,8 +1,17 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
-import { Types } from 'mongoose';
+import {
+  IsBoolean,
+  IsDate,
+  IsMongoId,
+  IsNotEmpty,
+  IsNotEmptyObject,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
+import { isValidObjectId, Types } from 'mongoose';
 
 export class CreatePostDto {
-  @IsNotEmpty()
+  @IsMongoId()
   subredditId: Types.ObjectId;
 
   @IsString()
@@ -21,5 +30,6 @@ export class CreatePostDto {
   flairs: Types.ObjectId[];
 
   @IsDate()
-  publishedDate: Date;
+  @IsOptional()
+  publishedDate?: Date;
 }

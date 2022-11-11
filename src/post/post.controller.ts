@@ -6,6 +6,8 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -16,7 +18,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-
+import { JWTUserGuard } from '../auth/guards';
 import {
   CreatePostDto,
   DefaultSortPostDto,
@@ -33,7 +35,7 @@ import { PostService } from './post.service';
 @ApiTags('Post')
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(private readonly postService: PostService) { }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
   @ApiCreatedResponse({
@@ -45,9 +47,10 @@ export class PostController {
     description:
       'If a link with the same URL has already been submitted to the specified subreddit an error will be returned unless resubmit is true.',
   })
+  @UseGuards(JWTUserGuard)
   @Post('/submit')
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  async create(@Req() req, @Body() createPostDto: CreatePostDto) {
+    return this.postService.create(req.user._id, createPostDto);
   }
 
   @ApiOperation({ description: 'Deletes a post.' })
