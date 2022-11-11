@@ -11,7 +11,7 @@ async function bootstrap() {
   });
 
   // Prefix api endpoinds with api/
-  app.setGlobalPrefix('api', { exclude: ['health'] });
+  app.setGlobalPrefix('api');
 
   // Catch general exceptions
   app.useGlobalFilters(new AllExceptionsFilter());
