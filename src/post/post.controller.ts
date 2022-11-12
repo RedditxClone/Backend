@@ -105,9 +105,9 @@ export class PostController {
   @UseGuards(JWTUserGuard)
   @Patch(':id')
   update(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() dto: UpdatePostDto,
     @Req() { user },
-    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
   ) {
     return this.postCommentService.update(id, dto, user._id);
   }

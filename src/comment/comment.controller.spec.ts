@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { createRequest } from 'node-mocks-http';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { stubPostComment } from '../post-comment/test/stubs/post-comment.stub';
 import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto';
@@ -41,7 +42,7 @@ describe('CommentController', () => {
         { text: 'new text' },
         { user: { _id: new Types.ObjectId(1) } },
       );
-      expect(res).toEqual(stubComment());
+      expect(res).toEqual(stubPostComment());
     });
   });
 });
