@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
+import { Types } from 'mongoose';
 import { createRequest } from 'node-mocks-http';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
@@ -30,6 +31,16 @@ describe('CommentController', () => {
       const req = createRequest();
       req.user = { id: '123' };
       const res = await controller.create(req, new CreateCommentDto());
+      expect(res).toEqual(stubComment());
+    });
+  });
+  describe('update comment', () => {
+    it('should be updated successfully', async () => {
+      const res = await controller.update(
+        new Types.ObjectId(1),
+        { text: 'new text' },
+        { user: { _id: new Types.ObjectId(1) } },
+      );
       expect(res).toEqual(stubComment());
     });
   });

@@ -9,11 +9,7 @@ import { CommentService } from '../comment/comment.service';
 import type { Post } from '../post/post.schema';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
-import { SubredditModule } from '../subreddit/subreddit.module';
-import type {
-  Subreddit,
-  SubredditDocument,
-} from '../subreddit/subreddit.schema';
+import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
