@@ -9,7 +9,7 @@ export const stubPost = (): any => ({
   images: [],
   commentCount: 0,
   insightsCount: 0,
-  flairs: [new Types.ObjectId('6363fba4ab2c2f94f3ac9f37')],
+  flair: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
   subredditId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
   title: 'post1',
   type: 'Post',

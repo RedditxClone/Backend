@@ -9,7 +9,6 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
-import { SubredditService } from '../subreddit/subreddit.service';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
@@ -20,7 +19,6 @@ export class PostCommentService {
   constructor(
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
-    private readonly subredditService: SubredditService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {

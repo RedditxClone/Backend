@@ -22,7 +22,7 @@ describe('PostService', () => {
     text: 'Hello World',
     nsfw: false,
     spoiler: false,
-    flairs: [new Types.ObjectId('6363fba4ab2c2f94f3ac9f37')],
+    flair: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
   };
   beforeAll(async () => {
     module = await Test.createTestingModule({

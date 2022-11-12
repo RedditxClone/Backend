@@ -2,7 +2,6 @@ import {
   IsBoolean,
   IsDate,
   IsMongoId,
-  IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';

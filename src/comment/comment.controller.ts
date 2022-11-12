@@ -17,10 +17,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { ParseObjectIdPipe } from 'utils/utils.service';
 
 import { JWTUserGuard } from '../auth/guards';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CommentService } from './comment.service';
 import {
   CreateCommentDto,
