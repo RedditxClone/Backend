@@ -91,7 +91,7 @@ describe('PostCommentService', () => {
   });
   describe('updateTing', () => {
     let post: Post & { _id: Types.ObjectId };
-    let comment: Comment;
+    let comment: Comment & { _id: Types.ObjectId };
     let userId: Types.ObjectId;
     beforeAll(async () => {
       // post = await postService.create();
@@ -102,8 +102,22 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
+      comment = await commentService.create(userId, {
+        parentId: post._id,
+        postId: post._id,
+        text: 'top level comment',
+      });
     });
-    it('should be updated successfully', async () => {
+
+    it('should update comment successfully', async () => {
+      const res = await service.update(
+        comment._id,
+        { text: 'comment text' },
+        userId,
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should be update post successfully', async () => {
       const res = await service.update(
         post._id,
         {
