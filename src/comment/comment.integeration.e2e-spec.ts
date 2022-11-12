@@ -12,15 +12,20 @@ import { AuthController } from '../auth/auth.controller';
 import { AuthService } from '../auth/auth.service';
 import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import type { Comment } from '../comment/comment.schema';
 import { CommentSchema } from '../comment/comment.schema';
 import { FollowModule } from '../follow/follow.module';
+import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
+import { PostService } from '../post/post.service';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../utils';
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -46,19 +51,28 @@ describe('postController (e2e)', () => {
   };
   let token: string;
   let userId: Types.ObjectId;
+  let token2: string;
 
   const createDummyUsers = async () => {
     const authRes1 = await request(server).post('/auth/signup').send(userDto);
     userId = authRes1.body._id;
     const cookie1 = authRes1.headers['set-cookie'];
     token = cookie1[0].split('; ')[0].split('=')[1].replace('%20', ' ');
+    const authRes2 = await request(server)
+      .post('/auth/signup')
+      .send({ ...userDto, username: 'another username' });
+    // userId = authRes1.body._id;
+    const cookie2 = authRes2.headers['set-cookie'];
+    token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
   };
 
+  let createdComment: Comment & { _id: Types.ObjectId };
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'User', schema: UserSchema },
           {
@@ -83,9 +97,11 @@ describe('postController (e2e)', () => {
         FollowModule,
         BlockModule,
       ],
-      controllers: [CommentController, AuthController],
+      controllers: [CommentController, AuthController, PostController],
       providers: [
+        PostCommentService,
         CommentService,
+        PostService,
         UserService,
         AuthService,
         EmailService,
@@ -98,6 +114,12 @@ describe('postController (e2e)', () => {
     await app.init();
     server = app.getHttpServer();
     await createDummyUsers();
+    const commentService = moduleFixture.get<CommentService>(CommentService);
+    createdComment = await commentService.create(userId, {
+      text: 'text',
+      parentId: new Types.ObjectId(1),
+      postId: new Types.ObjectId(1),
+    });
   });
   describe('POST /comment/submit', () => {
     it('must create the post successfully', async () => {
@@ -107,6 +129,32 @@ describe('postController (e2e)', () => {
         .set('authorization', token)
         .expect(HttpStatus.CREATED);
       expect(res.body).toMatchObject({ ...stubComment(), userId });
+    });
+  });
+
+  describe('PATCH /comment/{id}', () => {
+    it('must update it successfully', async () => {
+      const res = await request(server)
+        .patch(`/comment/${createdComment._id}`)
+        .send({ text: 'new text' })
+        .set('authorization', token)
+        .expect(HttpStatus.OK);
+      expect(res.body).toEqual({ status: 'success' });
+    });
+    it('must throw an error because unauthorized', async () => {
+      const res = await request(server)
+        .patch(`/comment/${createdComment._id}`)
+        .send({ text: 'another text' })
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+    it('must throw an error because iam not the owner', async () => {
+      const res = await request(server)
+        .patch(`/comment/${createdComment._id}`)
+        .send({ text: 'good text' })
+        .set('authorization', token2)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('only the owner can do this operation');
     });
   });
 

@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { Document } from 'mongoose';
-import { Schema as schemaType } from 'mongoose';
+import { Types } from 'mongoose';
 
 export class Flair {
   @Prop({ required: true })
   text: string;
 
   @Prop({ auto: true, required: true })
-  _id: schemaType.Types.ObjectId;
+  _id: Types.ObjectId;
 
   @Prop()
   backgroundColor: string;

@@ -2,7 +2,6 @@ import {
   IsBoolean,
   IsDate,
   IsMongoId,
-  IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -26,8 +25,9 @@ export class CreatePostDto {
   @IsOptional()
   spoiler?: boolean;
 
-  @IsNotEmpty()
-  flairs: Types.ObjectId[];
+  @IsMongoId()
+  @IsOptional()
+  flair?: Types.ObjectId;
 
   @IsDate()
   @IsOptional()

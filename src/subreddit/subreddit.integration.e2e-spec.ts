@@ -77,7 +77,7 @@ describe('subredditController (e2e)', () => {
         rootMongooseTestModule(),
         ImagesHandlerModule,
         MongooseModule.forFeature([
-          { name: 'subreddit', schema: SubredditSchema },
+          { name: 'Subreddit', schema: SubredditSchema },
         ]),
       ],
       controllers: [SubredditController],
@@ -116,7 +116,7 @@ describe('subredditController (e2e)', () => {
         .post('/subreddit')
         .send({ over18: true, type: 'public' });
       expect(res.body.message).toEqual(
-        'subreddit validation failed: name: Path `name` is required.',
+        'Subreddit validation failed: name: Path `name` is required.',
       );
     });
   });

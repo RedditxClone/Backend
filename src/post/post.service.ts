@@ -20,9 +20,12 @@ export class PostService {
   create = async (
     userId: Types.ObjectId,
     createPostDto: CreatePostDto,
-  ): Promise<Post> => {
+  ): Promise<Post & { _id: Types.ObjectId }> => {
+    //TODO:
+    // add this validation to dto and it will transfer it and add validation
+    // make sure that there exist a subreddit with this id
     const subredditId = new Types.ObjectId(createPostDto.subredditId);
-    const post: Post = await this.postModel.create({
+    const post: Post & { _id: Types.ObjectId } = await this.postModel.create({
       userId,
       ...createPostDto,
       subredditId,

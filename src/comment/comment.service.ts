@@ -21,15 +21,16 @@ export class CommentService {
   create = async (
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
-  ): Promise<Comment> => {
+  ): Promise<Comment & { _id: Types.ObjectId }> => {
     const parentId = new Types.ObjectId(createCommentDto.parentId);
     const postId = new Types.ObjectId(createCommentDto.postId);
-    const comment: Comment = await this.commentModel.create({
-      userId,
-      ...createCommentDto,
-      postId,
-      parentId,
-    });
+    const comment: Comment & { _id: Types.ObjectId } =
+      await this.commentModel.create({
+        userId,
+        ...createCommentDto,
+        postId,
+        parentId,
+      });
 
     return comment;
   };

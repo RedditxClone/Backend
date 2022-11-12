@@ -1,9 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class UpdatePostDto {
   @ApiProperty()
-  subredditId: string;
+  @IsOptional()
+  @IsString()
+  text?: string;
 
-  @ApiProperty()
-  text: string;
+  @IsOptional()
+  @IsMongoId({ message: 'flair must be a mongo id' })
+  flair?: Types.ObjectId;
+
+  @IsOptional()
+  @IsBoolean()
+  nsfw?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  spoiler?: boolean;
 }

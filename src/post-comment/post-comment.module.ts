@@ -32,5 +32,6 @@ import { PostCommentService } from './post-comment.service';
   ],
   controllers: [PostCommentController, PostController, CommentController],
   providers: [PostCommentService, PostService, CommentService],
+  exports: [PostCommentService],
 })
 export class PostCommentModule {}

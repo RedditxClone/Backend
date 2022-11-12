@@ -3,6 +3,8 @@ import { IsNotEmpty } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class FlairDto {
+  //TODO:
+  // what if the user sent _id?
   @Optional()
   _id?: mongoose.Types.ObjectId;
 
