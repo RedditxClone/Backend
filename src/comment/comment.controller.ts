@@ -16,8 +16,11 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from 'utils/utils.service';
 
 import { JWTUserGuard } from '../auth/guards';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { CommentService } from './comment.service';
 import {
   CreateCommentDto,
@@ -30,7 +33,10 @@ import {
 @ApiTags('comment')
 @Controller('comment')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly commentService: CommentService,
+    private readonly postCommentService: PostCommentService,
+  ) {}
 
   @ApiOperation({ description: 'Submit a new comment.' })
   @ApiCreatedResponse({
@@ -60,10 +66,14 @@ export class CommentController {
   })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
   @Patch(':id')
-  //todo
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(Number(id), updateCommentDto);
+  update(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: UpdateCommentDto,
+    @Req() { user },
+  ) {
+    return this.postCommentService.update(id, dto, user._id);
   }
 
   @ApiOperation({
