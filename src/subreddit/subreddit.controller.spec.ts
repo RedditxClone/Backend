@@ -46,6 +46,24 @@ describe('subredditControllerSpec', () => {
     });
   });
 
+  describe('getSubredditByName', () => {
+    test('it should return a subreddit', async () => {
+      const subreddit = await subredditController.getSubredditByName(
+        'subreddit',
+      );
+      expect(subreddit).toEqual(stubSubreddit());
+    });
+  });
+
+  describe('checkSubredditAvailable', () => {
+    test('it should return a subreddit', async () => {
+      const subreddit = await subredditController.checkSubredditAvailable(
+        'JPDptiOyGFdH',
+      );
+      expect(subreddit).toEqual(expect.objectContaining({ status: 'success' }));
+    });
+  });
+
   describe('updateSubreddit', () => {
     test('it should update a subreddit', async () => {
       const updatedFields: UpdateSubredditDto = {
