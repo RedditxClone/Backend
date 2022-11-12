@@ -14,6 +14,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -47,8 +48,31 @@ export class SubredditController {
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
-  @ApiCreatedResponse({ description: 'The subreddit returned succesfully' })
+  @ApiOkResponse({ description: 'The subreddit returned succesfully' })
   @ApiBadRequestResponse({ description: "The subreddit name doesn't exist" })
+  @Get('/r/:subreddit_name')
+  getSubredditByName(
+    @Param('subreddit_name') subredditName: string,
+  ): Promise<SubredditDocument> {
+    return this.subredditService.findSubredditByName(subredditName);
+  }
+
+  @ApiOperation({ description: 'Check if subreddit name is available' })
+  @ApiOkResponse({
+    description: 'Subreddit Name Available',
+  })
+  @ApiConflictResponse({ description: 'Subreddit name is unavailable' })
+  @Get('/r/:subreddit_name/available')
+  checkSubredditAvailable(
+    @Param('subreddit_name')
+    subredditName: string,
+  ) {
+    return this.subredditService.checkSubredditAvailbale(subredditName);
+  }
+
+  @ApiOperation({ description: 'Get subreddit by id' })
+  @ApiOkResponse({ description: 'The subreddit returned succesfully' })
+  @ApiBadRequestResponse({ description: "The subreddit id doesn't exist" })
   @Get('/:subreddit')
   getSubreddit(
     @Param('subreddit') subreddit: string,

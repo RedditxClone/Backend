@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
+import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
@@ -33,6 +38,29 @@ export class SubredditService {
     }
 
     return sr;
+  }
+
+  async findSubredditByName(subredditName: string): Promise<SubredditDocument> {
+    const filter: FilterSubredditDto = { name: subredditName };
+    const sr: SubredditDocument | null | undefined =
+      await this.subredditModel.findOne(filter);
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such name');
+    }
+
+    return sr;
+  }
+
+  async checkSubredditAvailbale(subredditName: string) {
+    const filter: FilterSubredditDto = { name: subredditName };
+    const isSubredditUnavailable = await this.subredditModel.exists(filter);
+
+    if (isSubredditUnavailable) {
+      throw new ConflictException('Subreddit name is unavailable');
+    }
+
+    return { status: 'success' };
   }
 
   async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
