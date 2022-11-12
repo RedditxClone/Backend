@@ -41,9 +41,7 @@ export class PostCommentService {
       return;
     }
 
-    throw new UnauthorizedException(
-      'only the owner of the post can do this operation',
-    );
+    throw new UnauthorizedException('only the owner can do this operation');
   }
 
   private checkIfValidFlairId(

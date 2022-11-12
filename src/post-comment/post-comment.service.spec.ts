@@ -126,7 +126,7 @@ describe('PostCommentService', () => {
     it('should give unauthorized because i am not the owner', async () => {
       await expect(
         service.update(post._id, { text: 'new text' }, new Types.ObjectId(2)),
-      ).rejects.toThrow('only the owner of the post can do this operation');
+      ).rejects.toThrow('only the owner can do this operation');
     });
 
     it('should throw that the post not found', async () => {
