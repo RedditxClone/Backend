@@ -67,7 +67,7 @@ export class SubredditController {
     @Param('subreddit_name')
     subredditName: string,
   ) {
-    return this.subredditService.checkSubredditAvailbale(subredditName);
+    return this.subredditService.checkSubredditAvailable(subredditName);
   }
 
   @ApiOperation({ description: 'Get subreddit by id' })

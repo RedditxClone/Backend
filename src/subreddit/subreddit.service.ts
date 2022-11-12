@@ -52,7 +52,7 @@ export class SubredditService {
     return sr;
   }
 
-  async checkSubredditAvailbale(subredditName: string) {
+  async checkSubredditAvailable(subredditName: string) {
     const filter: FilterSubredditDto = { name: subredditName };
     const isSubredditUnavailable = await this.subredditModel.exists(filter);
 

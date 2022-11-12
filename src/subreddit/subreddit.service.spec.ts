@@ -148,9 +148,9 @@ describe('SubredditService', () => {
     });
   });
 
-  describe('checkSubredditAvailbale', () => {
+  describe('checkSubredditAvailable', () => {
     it('Should return that the subreddit name is available', async () => {
-      const sr = await subredditService.checkSubredditAvailbale('JPDptiOyGFdH');
+      const sr = await subredditService.checkSubredditAvailable('JPDptiOyGFdH');
       expect(sr).toEqual(
         expect.objectContaining({
           status: 'success',
@@ -160,11 +160,11 @@ describe('SubredditService', () => {
 
     it('Should throw an error', async () => {
       await expect(async () => {
-        await subredditService.checkSubredditAvailbale(subredditDocument.name);
+        await subredditService.checkSubredditAvailable(subredditDocument.name);
       }).rejects.toThrow('Subreddit name is unavailable');
 
       await expect(async () => {
-        await subredditService.checkSubredditAvailbale(subredditDocument.name);
+        await subredditService.checkSubredditAvailable(subredditDocument.name);
       }).rejects.toThrowError(ConflictException);
     });
   });

@@ -4,6 +4,8 @@ import { stubSubreddit } from '../test/stubs/subreddit.stub';
 export const SubredditService = jest.fn().mockReturnValue({
   create: jest.fn().mockResolvedValue(stubSubreddit()),
   findSubreddit: jest.fn().mockResolvedValue(stubSubreddit()),
+  findSubredditByName: jest.fn().mockResolvedValue(stubSubreddit()),
+  checkSubredditAvailable: jest.fn().mockResolvedValue({ status: 'success' }),
   update: jest.fn().mockResolvedValue({ status: 'success' }),
   createFlair: jest.fn().mockResolvedValue({ flairList: [stubFlair()] }),
   getFlairs: jest.fn().mockResolvedValue({ flairList: [stubFlair()] }),
