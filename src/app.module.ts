@@ -24,8 +24,6 @@ import { EmailModule } from './utils/mail/mail.module';
     // connect to database using connection string
     MongooseModule.forRoot(process.env.DB_CONNECTION_STRING || ''),
     UserModule,
-    // PostModule,
-    // CommentModule,
     SubredditModule,
     MessageModule,
     NotificationModule,

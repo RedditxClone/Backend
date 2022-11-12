@@ -10,7 +10,7 @@ import type { Subreddit, SubredditDocument } from './subreddit.schema';
 @Injectable()
 export class SubredditService {
   constructor(
-    @InjectModel('subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 

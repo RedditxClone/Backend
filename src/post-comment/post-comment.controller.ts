@@ -1,17 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
-import { Types } from 'mongoose';
-import { ParseObjectIdPipe } from 'utils/utils.service';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
-import { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
 
 @Controller('post-comment')

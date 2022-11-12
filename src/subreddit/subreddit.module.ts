@@ -8,7 +8,7 @@ import { SubredditService } from './subreddit.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'subreddit', schema: SubredditSchema }]),
+    MongooseModule.forFeature([{ name: 'Subreddit', schema: SubredditSchema }]),
     ImagesHandlerModule,
   ],
   controllers: [SubredditController],

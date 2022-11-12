@@ -102,12 +102,14 @@ export class PostController {
   })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
   @Patch(':id')
   update(
     @Body() dto: UpdatePostDto,
+    @Req() { user },
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
   ) {
-    return this.postCommentService.update(id, dto);
+    return this.postCommentService.update(id, dto, user._id);
   }
 
   @ApiOperation({

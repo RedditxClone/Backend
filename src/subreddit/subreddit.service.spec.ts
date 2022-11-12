@@ -67,7 +67,7 @@ describe('SubredditService', () => {
         rootMongooseTestModule(),
         ImagesHandlerModule,
         MongooseModule.forFeature([
-          { name: 'subreddit', schema: SubredditSchema },
+          { name: 'Subreddit', schema: SubredditSchema },
         ]),
       ],
       providers: [SubredditService],

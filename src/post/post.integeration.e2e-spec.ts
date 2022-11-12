@@ -16,11 +16,13 @@ import { BlockModule } from '../block/block.module';
 import { CommentSchema } from '../comment/comment.schema';
 import { FollowModule } from '../follow/follow.module';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../utils';
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -62,6 +64,7 @@ describe('postController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
+        ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           { name: 'User', schema: UserSchema },
@@ -89,6 +92,7 @@ describe('postController (e2e)', () => {
       ],
       controllers: [PostController, AuthController],
       providers: [
+        PostCommentService,
         PostService,
         UserService,
         AuthService,

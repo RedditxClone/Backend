@@ -15,12 +15,14 @@ import { BlockModule } from '../block/block.module';
 import { CommentSchema } from '../comment/comment.schema';
 import { FollowModule } from '../follow/follow.module';
 import { PostSchema } from '../post/post.schema';
+import { PostCommentService } from '../post-comment/__mocks__/post-comment.service';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../utils';
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -59,6 +61,7 @@ describe('postController (e2e)', () => {
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'User', schema: UserSchema },
           {
@@ -85,6 +88,7 @@ describe('postController (e2e)', () => {
       ],
       controllers: [CommentController, AuthController],
       providers: [
+        PostCommentService,
         CommentService,
         UserService,
         AuthService,

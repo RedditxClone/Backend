@@ -21,6 +21,9 @@ export class PostService {
     userId: Types.ObjectId,
     createPostDto: CreatePostDto,
   ): Promise<Post> => {
+    //TODO:
+    // add this validation to dto and it will transfer it and add validation
+    // make sure that there exist a subreddit with this id
     const subredditId = new Types.ObjectId(createPostDto.subredditId);
     const post: Post = await this.postModel.create({
       userId,

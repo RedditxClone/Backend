@@ -2,19 +2,21 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { createRequest } from 'node-mocks-http';
 
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { CreatePostDto } from './dto';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { stubPost } from './test/stubs/post.stub';
 
 jest.mock('./post.service');
+jest.mock('../post-comment/post-comment.service');
 describe('PostController', () => {
   let controller: PostController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PostController],
-      providers: [PostService],
+      providers: [PostService, PostCommentService],
     }).compile();
 
     controller = module.get<PostController>(PostController);

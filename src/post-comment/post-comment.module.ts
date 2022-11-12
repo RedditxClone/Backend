@@ -7,12 +7,15 @@ import { CommentService } from '../comment/comment.service';
 import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
+import { SubredditModule } from '../subreddit/subreddit.module';
+// import { SubredditService } from '../subreddit/subreddit.service';
 import { PostCommentController } from './post-comment.controller';
-import { PostComment, PostCommentSchema } from './post-comment.schema';
+import { PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
 
 @Module({
   imports: [
+    SubredditModule,
     MongooseModule.forFeature([
       {
         name: 'PostComment',

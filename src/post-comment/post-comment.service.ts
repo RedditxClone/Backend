@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
+import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
+import { SubredditService } from '../subreddit/subreddit.service';
+// import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
@@ -11,7 +19,8 @@ import type { PostComment } from './post-comment.schema';
 export class PostCommentService {
   constructor(
     @InjectModel('PostComment')
-    private readonly postComModule: Model<PostComment>,
+    private readonly postCommentModel: Model<PostComment>,
+    private readonly subredditService: SubredditService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -26,10 +35,48 @@ export class PostCommentService {
     return `This action returns a #${id} postComment`;
   }
 
-  async update(id: Types.ObjectId, dto: UpdatePostCommentDto) {
-    const updatedThing = await this.postComModule.findByIdAndUpdate(id, dto, {
-      new: true,
-    });
+  private checkIfTheOwner(
+    userId: Types.ObjectId,
+    postUserId: Types.ObjectId | undefined,
+  ): void | never {
+    if (userId.toString() === postUserId?.toString()) {
+      return;
+    }
+
+    throw new UnauthorizedException(
+      'only the owner of the post can do this operation',
+    );
+  }
+
+  private checkIfValidFlairId(
+    flairId: Types.ObjectId | undefined,
+    subreddit: Subreddit | undefined | null,
+  ): void | never {
+    if (
+      !flairId ||
+      subreddit?.flairList.find((flair) => flair._id === flairId)
+    ) {
+      return;
+    }
+
+    throw new BadRequestException('flair is not included in post subreddit');
+  }
+
+  async update(
+    id: Types.ObjectId,
+    dto: UpdatePostCommentDto,
+    userId: Types.ObjectId,
+  ) {
+    const post: (PostComment & { subredditId: Subreddit | null }) | null =
+      await this.postCommentModel
+        .findById(id)
+        .populate('subredditId', 'flairList');
+
+    this.checkIfTheOwner(userId, post?.userId);
+
+    this.checkIfValidFlairId(dto.flair, post?.subredditId);
+
+    const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
 
     if (!updatedThing) {
       throw new NotFoundException(`id : ${id} not found`);

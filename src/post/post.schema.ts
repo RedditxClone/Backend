@@ -16,8 +16,8 @@ export class Post extends PostComment {
   @Prop({ default: 0 })
   insightsCount: number;
 
-  @Prop({ default: [] })
-  flairs: Types.ObjectId[];
+  @Prop({ required: false })
+  flair: Types.ObjectId;
 
   // for post schedule
   @Prop({ default: Date.now })

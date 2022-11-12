@@ -77,7 +77,7 @@ describe('subredditController (e2e)', () => {
         rootMongooseTestModule(),
         ImagesHandlerModule,
         MongooseModule.forFeature([
-          { name: 'subreddit', schema: SubredditSchema },
+          { name: 'Subreddit', schema: SubredditSchema },
         ]),
       ],
       controllers: [SubredditController],

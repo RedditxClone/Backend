@@ -60,7 +60,7 @@ export class CommentController {
   })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/edit')
+  @Patch(':id')
   //todo
   update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
     return this.commentService.update(Number(id), updateCommentDto);
