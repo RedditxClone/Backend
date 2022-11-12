@@ -50,12 +50,13 @@ export class PostCommentService {
 
   private checkIfValidFlairId(
     flairId: Types.ObjectId | undefined,
-    subreddit: Subreddit | undefined | null,
+    flairs: Flair[] | undefined | null,
   ): void | never {
-    if (
-      !flairId ||
-      subreddit?.flairList.find((flair) => flair._id === flairId)
-    ) {
+    const validFlairId = flairs?.find(
+      (flair) => flair._id.toString() === flairId?.toString(),
+    );
+
+    if (!flairId || validFlairId) {
       return;
     }
 
@@ -74,7 +75,7 @@ export class PostCommentService {
 
     this.checkIfTheOwner(userId, post?.userId);
 
-    this.checkIfValidFlairId(dto.flair, post?.subredditId);
+    this.checkIfValidFlairId(dto.flair, post?.subredditId?.flairList);
 
     const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
 
