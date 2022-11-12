@@ -75,9 +75,13 @@ export class PostCommentService {
         .findById(id)
         .populate('subredditId', 'flairList');
 
-    this.checkIfTheOwner(userId, thing?.userId);
+    if (!thing) {
+      throw new BadRequestException(`id : ${id} not found `);
+    }
 
-    this.checkIfValidFlairId(dto.flair, thing?.subredditId?.flairList);
+    this.checkIfTheOwner(userId, thing.userId);
+
+    this.checkIfValidFlairId(dto.flair, thing.subredditId?.flairList);
 
     const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
 
