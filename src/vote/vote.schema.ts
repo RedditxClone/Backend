@@ -12,4 +12,9 @@ export class Vote {
   thing: Types.ObjectId;
 }
 
-export const VoteSchema = SchemaFactory.createForClass(Vote);
+export const VoteSchema = (() => {
+  const schema = SchemaFactory.createForClass(Vote);
+  schema.index({ user: 1, thing: 1 }, { unique: true });
+
+  return schema;
+})();
