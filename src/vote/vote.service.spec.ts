@@ -2,6 +2,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 
+import { BlockService } from '../block/block.service';
+import { FollowService } from '../follow/follow.service';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
+import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -21,9 +26,19 @@ describe('VoteService', () => {
             name: 'Vote',
             schema: VoteSchema,
           },
+          {
+            name: 'User',
+            schema: UserSchema,
+          },
         ]),
       ],
-      providers: [VoteService],
+      providers: [
+        VoteService,
+        UserService,
+        FollowService,
+        BlockService,
+        ImagesHandlerService,
+      ],
     }).compile();
 
     service = module.get<VoteService>(VoteService);
