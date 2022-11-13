@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
 export type VoteDocument = Vote & Document;
+export type VoteWithId = Vote & { _id: Types.ObjectId };
 
 @Schema()
 export class Vote {
