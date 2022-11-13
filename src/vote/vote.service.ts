@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
-import type { Vote, VoteDocument, VoteWithId } from './vote.schema';
+import type { Vote, VoteWithId } from './vote.schema';
 
 @Injectable()
 export class VoteService {
