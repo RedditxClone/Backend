@@ -166,6 +166,11 @@ export class UserService {
     return `${randomPrefix}-${date}${num}${rand}`;
   }
 
+  /**
+   * generate list of random usernames
+   * @param length length of the list (may be less than it)
+   * @returns list of random usernames
+   */
   async generateRandomUsernames(length: number) {
     const randomList: string[] = Array.from({ length }).map((_, num) =>
       this.generateRandomUsername(num),
