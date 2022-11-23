@@ -137,6 +137,13 @@ describe('UserService', () => {
       });
     });
   });
+
+  describe('generate random list', () => {
+    it('should create 6 usernames', async () => {
+      const list = await service.generateRandomUsernames(6);
+      expect(list.length).toEqual(6);
+    });
+  });
   describe('getUserByUsername', () => {
     it('should get user', async () => {
       const user: UserDocument = await service.getUserByUsername(

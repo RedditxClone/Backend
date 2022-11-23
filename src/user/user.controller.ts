@@ -121,6 +121,16 @@ export class UserController {
     return this.userService.getUserInfo(req.user);
   }
 
+  @ApiOperation({ description: 'generate list of random usernames' })
+  @ApiOkResponse({
+    description: 'return username successfully',
+    type: UserAccountDto,
+  })
+  @Get('/random-usernames')
+  async getRandomList(): Promise<string[]> {
+    return this.userService.generateRandomUsernames(6);
+  }
+
   @ApiOperation({ description: 'Get user preferences' })
   @ApiOkResponse({
     description: 'The preferences returned successfully',

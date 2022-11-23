@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import {
   BadRequestException,
   Global,
@@ -142,6 +144,48 @@ export class UserService {
     hashedPassword: string,
   ): Promise<boolean> {
     return bcrypt.compare(userPassword, hashedPassword);
+  }
+
+  private randomPrefixes = [
+    'player',
+    'good',
+    'success',
+    'winner',
+    'gamed',
+    'attention',
+    'successful',
+  ];
+
+  private generateRandomUsername(num: number): string {
+    const date = Date.now().toString(36);
+    const rand = randomInt(281_474_976_710_655).toString(36);
+    const randomIndex =
+      randomInt(1000 * (num + 1)) % this.randomPrefixes.length;
+    const randomPrefix = this.randomPrefixes[randomIndex];
+
+    return `${randomPrefix}-${date}${num}${rand}`;
+  }
+
+  /**
+   * generate list of random usernames
+   * @param length length of the list (may be less than it)
+   * @returns list of random usernames
+   */
+  async generateRandomUsernames(length: number) {
+    const randomList: string[] = Array.from({ length }).map((_, num) =>
+      this.generateRandomUsername(num),
+    );
+    const usernameExists = await this.userModel
+      .find({
+        username: {
+          $in: [...randomList],
+        },
+      })
+      .select('username');
+
+    return randomList.filter(
+      (username) => !usernameExists.some((user) => user.username === username),
+    );
   }
 
   async userExist(filter: FilterUserDto): Promise<boolean> {
