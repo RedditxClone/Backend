@@ -1,10 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export class UserAccountDto {
   @ApiProperty({ description: 'The account user name' })
-  userName: string;
+  username: string;
 
   @ApiProperty({ description: 'The account icon' })
-  @ApiPropertyOptional()
-  icon?: string;
+  profilePhoto: string;
+
+  @ApiProperty({ description: 'id of current user' })
+  _id: Types.ObjectId;
 }
