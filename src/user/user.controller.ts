@@ -121,6 +121,17 @@ export class UserController {
     return this.userService.getUserInfo(req.user);
   }
 
+  @ApiOperation({ description: 'Get user data if logged in' })
+  @ApiOkResponse({
+    description: 'The user is logged in and the data returned successfully',
+    type: UserAccountDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unautherized' })
+  @Get('/random-usernames')
+  async getRandomList(): Promise<string[]> {
+    return this.userService.generateRandomUsernames(6);
+  }
+
   @ApiOperation({ description: 'Get user preferences' })
   @ApiOkResponse({
     description: 'The preferences returned successfully',
