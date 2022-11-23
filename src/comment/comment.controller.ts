@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
@@ -74,6 +75,12 @@ export class CommentController {
     @Req() { user },
   ) {
     return this.postCommentService.update(id, dto, user._id);
+  }
+
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @Get(':id')
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.postCommentService.get(id, 'Comment');
   }
 
   @ApiOperation({
