@@ -112,6 +112,12 @@ export class PostController {
     return this.postCommentService.update(id, dto, user._id);
   }
 
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @Get(':id')
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.postCommentService.get(id, 'Post');
+  }
+
   @ApiOperation({
     description: `Follow or unFollow a post.    
        To follow, follow should be True.
