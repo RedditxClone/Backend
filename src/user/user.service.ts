@@ -16,9 +16,14 @@ import { Model } from 'mongoose';
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
-import type { AvailableUsernameDto, CreateUserDto, FilterUserDto } from './dto';
+import type {
+  AvailableUsernameDto,
+  CreateUserDto,
+  FilterUserDto,
+  UserAccountDto,
+} from './dto';
 import { PrefsDto } from './dto';
-import type { User, UserDocument } from './user.schema';
+import type { User, UserDocument, UserWithId } from './user.schema';
 
 @Global()
 @Injectable()
@@ -124,6 +129,12 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`there is no user with id ${id.toString()}`);
     }
+  }
+
+  getUserInfo(user: UserWithId): UserAccountDto {
+    const { _id, profilePhoto, username } = user;
+
+    return { _id, profilePhoto, username };
   }
 
   async validPassword(

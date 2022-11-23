@@ -125,6 +125,18 @@ describe('UserService', () => {
       }).rejects.toThrow(/.*there is no user.*/);
     });
   });
+  describe('getUserInfo', () => {
+    it('should return user successfully', async () => {
+      const user: any = await service.getUserById(id);
+      expect(user).toBeTruthy();
+      const userAccount = service.getUserInfo(user);
+      expect(userAccount).toEqual({
+        username: userDto.username,
+        profilePhoto: '',
+        _id: id,
+      });
+    });
+  });
   describe('getUserByUsername', () => {
     it('should get user', async () => {
       const user: UserDocument = await service.getUserByUsername(

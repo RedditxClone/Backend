@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import type { Document } from 'mongoose';
+import type { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
+export type UserWithId = User & { _id: Types.ObjectId };
 @Schema()
 export class User {
   @Prop({ required: true, unique: true })

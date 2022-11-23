@@ -38,6 +38,7 @@ import {
   UserOverviewDto,
   UserPostsDto,
 } from './dto';
+import type { UserWithId } from './user.schema';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -115,8 +116,9 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
-  getUser() {
-    // TODO
+  @UseGuards(JWTUserGuard)
+  getCurrentUser(@Req() req: Request & { user: UserWithId }): UserAccountDto {
+    return this.userService.getUserInfo(req.user);
   }
 
   @ApiOperation({ description: 'Get user preferences' })
