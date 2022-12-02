@@ -69,7 +69,9 @@ export class AuthService {
   ): Promise<void> {
     const token: string = await this.createAuthToken(user._id);
     res.cookie('authorization', `Bearer ${token}`);
-    res.json(user);
+    const trimmedUser = user.toObject();
+    delete trimmedUser.hashPassword;
+    res.json({ token, ...trimmedUser });
   }
 
   /**
