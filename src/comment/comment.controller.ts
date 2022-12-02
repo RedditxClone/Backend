@@ -56,8 +56,9 @@ export class CommentController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(Number(id));
+  @UseGuards(JWTUserGuard)
+  remove(@Req() req, @Param('id', ParseObjectIdPipe) user_id: Types.ObjectId) {
+    return this.postCommentService.remove(user_id, req.user._id, 'Comment');
   }
 
   @ApiOperation({ description: 'Edit the body text of a comment.' })
