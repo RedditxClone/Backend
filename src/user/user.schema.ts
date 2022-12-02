@@ -148,6 +148,19 @@ export class User {
 
   @Prop({ default: [] })
   whitelisted: string[];
+
+  //Miscellaneous
+  @Prop({ default: false })
+  safeBrowsingMode: boolean;
+
+  @Prop({ default: true })
+  chatRequest: boolean;
+
+  @Prop({ default: false })
+  newFollower: boolean;
+
+  @Prop({ default: false })
+  unSubscribe: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
