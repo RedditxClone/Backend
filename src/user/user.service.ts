@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import {
   BadRequestException,
   Global,
@@ -16,9 +18,14 @@ import { Model } from 'mongoose';
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
-import type { AvailableUsernameDto, CreateUserDto, FilterUserDto } from './dto';
+import type {
+  AvailableUsernameDto,
+  CreateUserDto,
+  FilterUserDto,
+  UserAccountDto,
+} from './dto';
 import { PrefsDto } from './dto';
-import type { User, UserDocument } from './user.schema';
+import type { User, UserDocument, UserWithId } from './user.schema';
 
 @Global()
 @Injectable()
@@ -126,11 +133,59 @@ export class UserService {
     }
   }
 
+  getUserInfo(user: UserWithId): UserAccountDto {
+    const { _id, profilePhoto, username } = user;
+
+    return { _id, profilePhoto, username };
+  }
+
   async validPassword(
     userPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
     return bcrypt.compare(userPassword, hashedPassword);
+  }
+
+  private randomPrefixes = [
+    'player',
+    'good',
+    'success',
+    'winner',
+    'gamed',
+    'attention',
+    'successful',
+  ];
+
+  private generateRandomUsername(num: number): string {
+    const date = Date.now().toString(36);
+    const rand = randomInt(281_474_976_710_655).toString(36);
+    const randomIndex =
+      randomInt(1000 * (num + 1)) % this.randomPrefixes.length;
+    const randomPrefix = this.randomPrefixes[randomIndex];
+
+    return `${randomPrefix}-${date}${num}${rand}`;
+  }
+
+  /**
+   * generate list of random usernames
+   * @param length length of the list (may be less than it)
+   * @returns list of random usernames
+   */
+  async generateRandomUsernames(length: number) {
+    const randomList: string[] = Array.from({ length }).map((_, num) =>
+      this.generateRandomUsername(num),
+    );
+    const usernameExists = await this.userModel
+      .find({
+        username: {
+          $in: [...randomList],
+        },
+      })
+      .select('username');
+
+    return randomList.filter(
+      (username) => !usernameExists.some((user) => user.username === username),
+    );
   }
 
   async userExist(filter: FilterUserDto): Promise<boolean> {

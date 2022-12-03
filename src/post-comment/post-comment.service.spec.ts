@@ -1,3 +1,4 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
@@ -17,6 +18,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import type { PostComment } from './post-comment.schema';
 import { PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
 
@@ -135,7 +137,7 @@ describe('PostCommentService', () => {
       ).rejects.toThrow(`id : ${userId} not found`);
     });
 
-    it('should be updated flair successfullt', async () => {
+    it('should be updated flair successfully', async () => {
       const res = await service.update(post._id, { flair: flairId }, userId);
       expect(res).toEqual({ status: 'success' });
     });
@@ -144,6 +146,43 @@ describe('PostCommentService', () => {
       await expect(
         service.update(post._id, { flair: new Types.ObjectId(1) }, userId),
       ).rejects.toThrow('flair is not included in post subreddit');
+    });
+  });
+  describe('getThing', () => {
+    let post: Post & { _id: Types.ObjectId };
+    let comment: Comment & { _id: Types.ObjectId };
+    let userId: Types.ObjectId;
+    beforeAll(async () => {
+      userId = new Types.ObjectId(1);
+      post = await postService.create(userId, {
+        subredditId: subreddit._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+      comment = await commentService.create(userId, {
+        parentId: post._id,
+        postId: post._id,
+        text: 'top level comment',
+      });
+    });
+    it('should get the post successfully', async () => {
+      const res: PostComment = await service.get(post._id, 'Post');
+      expect(res.text).toEqual(post.text);
+    });
+    it('should get the comment successfully', async () => {
+      const res: PostComment = await service.get(comment._id, 'Comment');
+      expect(res.text).toEqual(comment.text);
+    });
+    it('should throw not found error', async () => {
+      await expect(service.get(new Types.ObjectId(1), 'Post')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+    it('should throw mistype error', async () => {
+      await expect(service.get(comment._id, 'Post')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
   afterAll(async () => {

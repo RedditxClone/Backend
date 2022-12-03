@@ -125,6 +125,25 @@ describe('UserService', () => {
       }).rejects.toThrow(/.*there is no user.*/);
     });
   });
+  describe('getUserInfo', () => {
+    it('should return user successfully', async () => {
+      const user: any = await service.getUserById(id);
+      expect(user).toBeTruthy();
+      const userAccount = service.getUserInfo(user);
+      expect(userAccount).toEqual({
+        username: userDto.username,
+        profilePhoto: '',
+        _id: id,
+      });
+    });
+  });
+
+  describe('generate random list', () => {
+    it('should create 6 usernames', async () => {
+      const list = await service.generateRandomUsernames(6);
+      expect(list.length).toEqual(6);
+    });
+  });
   describe('getUserByUsername', () => {
     it('should get user', async () => {
       const user: UserDocument = await service.getUserByUsername(

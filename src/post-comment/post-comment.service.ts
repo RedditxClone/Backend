@@ -63,6 +63,28 @@ export class PostCommentService {
     throw new BadRequestException('flair is not included in post subreddit');
   }
 
+  /**
+   * Retrieves a comment or a post from the data base.
+   * @param id the id of the thing to be retrieved
+   * @param type the thing type
+   * @returns a comment or post
+   */
+  get = async (id: Types.ObjectId, type: string) => {
+    const thing: PostComment | null = await this.postCommentModel.findById(id);
+
+    if (!thing) {
+      throw new NotFoundException(`id : ${id} not found`);
+    }
+
+    if (thing.type !== type) {
+      throw new BadRequestException(
+        `Requested a ${type} but the id belongs to ${thing.type}`,
+      );
+    }
+
+    return thing;
+  };
+
   async update(
     id: Types.ObjectId,
     dto: UpdatePostCommentDto,

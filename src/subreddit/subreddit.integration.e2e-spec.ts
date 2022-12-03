@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
@@ -24,13 +25,14 @@ describe('subredditController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   const invalidId = '6363fba4ab2c2f94f3ac9f37';
+  const invalidName = 'JPDptiOyGFdH';
   const createSubreddit: CreateSubredditDto = {
     name: 'subreddit',
     over18: false,
     type: 'public',
   };
   const dummySubreddit: CreateSubredditDto = {
-    name: 'dummy_subreddit',
+    name: 'dummysubreddit',
     over18: false,
     type: 'public',
   };
@@ -131,6 +133,34 @@ describe('subredditController (e2e)', () => {
     it('must throw error not found', async () => {
       const res = await request(server).get(`/subreddit/${invalidId}`);
       expect(res.body.message).toEqual('No subreddit with such id');
+    });
+  });
+
+  describe('/GET /subreddit/r/:subreddit_name', () => {
+    it('must return a subreddit successfully', async () => {
+      const res = await request(server).get(`/subreddit/r/${sr.name}`);
+      expect(res.body).toEqual({
+        ...sr,
+      });
+    });
+    it('must throw error not found', async () => {
+      const res = await request(server).get(`/subreddit/r/${invalidName}`);
+      expect(res.body.message).toEqual('No subreddit with such name');
+    });
+  });
+
+  describe('/GET /subreddit/r/:subreddit_name/available', () => {
+    it('must return that the subreddit name is available', async () => {
+      const res = await request(server).get(
+        `/subreddit/r/${invalidName}/available`,
+      );
+      expect(res.statusCode).toEqual(HttpStatus.OK);
+    });
+    it('must throw conflict error', async () => {
+      const res = await request(server).get(
+        `/subreddit/r/${sr.name}/available`,
+      );
+      expect(res.statusCode).toEqual(HttpStatus.CONFLICT);
     });
   });
 

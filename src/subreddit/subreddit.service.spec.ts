@@ -1,3 +1,4 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
@@ -14,6 +15,7 @@ import {
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import type { SubredditDocument } from './subreddit.schema';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
@@ -22,6 +24,7 @@ describe('SubredditService', () => {
   let subredditService: SubredditService;
   let module: TestingModule;
   let id: string;
+  let subredditDocument: SubredditDocument;
 
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
@@ -73,7 +76,7 @@ describe('SubredditService', () => {
       providers: [SubredditService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
-    const subredditDocument = await subredditService.create(subredditDefault);
+    subredditDocument = await subredditService.create(subredditDefault);
     id = subredditDocument._id.toString();
   });
 
@@ -118,6 +121,51 @@ describe('SubredditService', () => {
       await expect(async () => {
         await subredditService.findSubreddit('6363fba4ab2c2f94f3ac9f31');
       }).rejects.toThrowError();
+    });
+  });
+
+  describe('findSubredditByName', () => {
+    it('Should find the subreddit successfully', async () => {
+      const sr = await subredditService.findSubredditByName(
+        subredditDocument.name,
+      );
+      expect(sr).toEqual(
+        expect.objectContaining({
+          ...subredditDefault,
+          ...defaultFields,
+        }),
+      );
+    });
+
+    it('Should throw an error', async () => {
+      await expect(async () => {
+        await subredditService.findSubredditByName('JPDptiOyGFdH');
+      }).rejects.toThrow('No subreddit with such name');
+
+      await expect(async () => {
+        await subredditService.findSubredditByName('JPDptiOyGFdH');
+      }).rejects.toThrowError(NotFoundException);
+    });
+  });
+
+  describe('checkSubredditAvailable', () => {
+    it('Should return that the subreddit name is available', async () => {
+      const sr = await subredditService.checkSubredditAvailable('JPDptiOyGFdH');
+      expect(sr).toEqual(
+        expect.objectContaining({
+          status: 'success',
+        }),
+      );
+    });
+
+    it('Should throw an error', async () => {
+      await expect(async () => {
+        await subredditService.checkSubredditAvailable(subredditDocument.name);
+      }).rejects.toThrow('Subreddit name is unavailable');
+
+      await expect(async () => {
+        await subredditService.checkSubredditAvailable(subredditDocument.name);
+      }).rejects.toThrowError(ConflictException);
     });
   });
 
