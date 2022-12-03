@@ -8,7 +8,9 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -25,6 +27,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 
+import { JWTUserGuard } from '../auth/guards/user.guard';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -40,11 +43,14 @@ export class SubredditController {
   @ApiCreatedResponse({ description: 'The resource was created succesfully' })
   @ApiUnprocessableEntityResponse({ description: 'Bad Request' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiConflictResponse({ description: 'Subreddit name already exists' })
+  @UseGuards(JWTUserGuard)
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
+    @Req() req,
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto);
+    return this.subredditService.create(createSubredditDto, req.user._id);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
