@@ -68,11 +68,14 @@ describe('PostCommentService', () => {
     postService = module.get<PostService>(PostService);
     commentService = module.get<CommentService>(CommentService);
     subredditService = module.get<SubredditService>(SubredditService);
-    subreddit = await subredditService.create({
-      name: 'subreddit',
-      over18: true,
-      type: 'type',
-    });
+    subreddit = await subredditService.create(
+      {
+        name: 'subreddit',
+        over18: true,
+        type: 'type',
+      },
+      new Types.ObjectId(1),
+    );
     const { flairList } = await subredditService.createFlair(
       subreddit._id.toString(),
       {
