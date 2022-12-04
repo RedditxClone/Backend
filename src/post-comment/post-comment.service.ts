@@ -101,7 +101,7 @@ export class PostCommentService {
 
     this.checkIfTheOwner(userId, thing.userId);
 
-    this.checkIfValidFlairId(dto.flair, thing.subredditId?.flairList);
+    this.checkIfValidFlairId(dto.flair, thing.subredditId.flairList);
 
     const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
 
@@ -121,7 +121,9 @@ export class PostCommentService {
    */
   remove = async (id: Types.ObjectId, userId: Types.ObjectId, type: string) => {
     const thing: (PostComment & { subredditId: Subreddit | null }) | null =
-      await this.postCommentModel.findById(id);
+      await this.postCommentModel
+        .findById(id)
+        .populate('subredditId', 'moderators');
 
     if (!thing) {
       throw new NotFoundException(`id : ${id} not found`);
@@ -133,9 +135,15 @@ export class PostCommentService {
       );
     }
 
-    if (!thing.userId.equals(userId)) {
+    //if moderator or the creator can remove the post
+    if (
+      !(
+        thing.userId.equals(userId) ||
+        thing.subredditId.moderators.includes(userId)
+      )
+    ) {
       throw new UnauthorizedException(
-        `NonAdmin Users can only delete their ${type}`,
+        `NonModerators can only delete their ${type}`,
       );
     }
 

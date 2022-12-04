@@ -9,6 +9,10 @@ export class CreateCommentDto {
 
   @ApiProperty()
   @IsMongoId()
+  subredditId: Types.ObjectId;
+
+  @ApiProperty()
+  @IsMongoId()
   postId: Types.ObjectId;
 
   @ApiProperty()

@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
@@ -104,6 +108,7 @@ describe('PostCommentService', () => {
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
       comment = await commentService.create(userId, {
+        subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
         text: 'top level comment',
@@ -164,6 +169,7 @@ describe('PostCommentService', () => {
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
       comment = await commentService.create(userId, {
+        subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
         text: 'top level comment',
@@ -186,6 +192,49 @@ describe('PostCommentService', () => {
       await expect(service.get(comment._id, 'Post')).rejects.toThrow(
         BadRequestException,
       );
+    });
+  });
+  describe('deleteThing', () => {
+    let post: Post & { _id: Types.ObjectId };
+    let comment: Comment & { _id: Types.ObjectId };
+    let userId: Types.ObjectId;
+    beforeAll(async () => {
+      userId = new Types.ObjectId(1);
+      post = await postService.create(userId, {
+        subredditId: subreddit._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+      comment = await commentService.create(userId, {
+        subredditId: subreddit._id,
+        parentId: post._id,
+        postId: post._id,
+        text: 'top level comment',
+      });
+    });
+    it('should delete the post successfully', async () => {
+      const res = await service.remove(post._id, userId, 'Post');
+      expect(res.status).toEqual('success');
+    });
+    it('should delete the comment successfully', async () => {
+      const res = await service.remove(comment._id, userId, 'Comment');
+      expect(res.status).toEqual('success');
+    });
+    it('should throw not found error', async () => {
+      await expect(
+        service.remove(new Types.ObjectId(1), userId, 'Post'),
+      ).rejects.toThrow(NotFoundException);
+    });
+    it('should throw mistype error', async () => {
+      await expect(service.remove(comment._id, userId, 'Post')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+    it('should throw not authorized error', async () => {
+      await expect(
+        service.remove(comment._id, new Types.ObjectId(1), 'Comment'),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
   afterAll(async () => {
