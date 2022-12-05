@@ -1,14 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { UserWithId } from 'user/user.schema';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
 import type { Post } from './post.schema';
 
 @Injectable()
 export class PostService {
-  constructor(@InjectModel('Post') private readonly postModel: Model<Post>) {}
+  constructor(
+    @InjectModel('Post') private readonly postModel: Model<Post>,
+    private readonly apiFeatures: ApiFeaturesService,
+  ) {}
 
   /**
    * Create a post in a subreddit.
@@ -62,5 +67,23 @@ export class PostService {
 
   remove(id: number) {
     return `This action removes a #${id} post`;
+  }
+
+  private getRandomTimeLine() {
+    return this.postModel.aggregate([
+      {
+        $sample: { size: 15 },
+      },
+    ]);
+  }
+
+  private async getUserTimeLine(user: UserWithId) {}
+
+  async getTimeLine(req: Request & { user: UserWithId | undefined }) {
+    if (!req.user) {
+      return this.getRandomTimeLine();
+    }
+
+    return this.getUserTimeLine(req.user);
   }
 }

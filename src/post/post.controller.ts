@@ -25,6 +25,7 @@ import { Types } from 'mongoose';
 import { diskStorage } from 'multer';
 
 import { JWTUserGuard } from '../auth/guards';
+import { JWTUserIfExistGuard } from '../auth/guards/user-if-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { uniqueFileName } from '../utils';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -49,6 +50,12 @@ export class PostController {
     private readonly postService: PostService,
     private readonly postCommentService: PostCommentService,
   ) {}
+
+  @Get('timeline')
+  // @UseGuards(JWTUserIfExistGuard)
+  getTimeLine(@Req() req) {
+    return this.postService.getTimeLine(req);
+  }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
   @ApiCreatedResponse({
