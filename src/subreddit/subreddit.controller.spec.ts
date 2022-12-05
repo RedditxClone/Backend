@@ -1,6 +1,7 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
+import { createRequest } from 'node-mocks-http';
 
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
@@ -33,7 +34,13 @@ describe('subredditControllerSpec', () => {
         type: 'strict',
         over18: false,
       };
-      const subreddit = await subredditController.createSubreddit(subredditDto);
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { id };
+      const subreddit = await subredditController.createSubreddit(
+        subredditDto,
+        req,
+      );
       expect(subreddit).toEqual(stubSubreddit());
     });
   });

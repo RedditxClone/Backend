@@ -1,14 +1,26 @@
 import type { INestApplication } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { readFile, unlink } from 'fs/promises';
+import type { Types } from 'mongoose';
 import request from 'supertest';
+import type { CreateUserDto } from 'user/dto';
 
+import { AuthController } from '../auth/auth.controller';
+import { AuthService } from '../auth/auth.service';
+import { ForgetPasswordStrategy } from '../auth/strategies/forget-password.strategy';
+import { UserStrategy } from '../auth/strategies/user.strategy';
+import { BlockModule } from '../block/block.module';
+import { FollowModule } from '../follow/follow.module';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
 import { AllExceptionsFilter } from '../utils/all-exception.filter';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
+import { EmailService } from '../utils/mail/mail.service';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -21,6 +33,7 @@ import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
 jest.mock('../utils/mail/mail.service.ts');
+
 describe('subredditController (e2e)', () => {
   let app: INestApplication;
   let server: any;
@@ -65,8 +78,26 @@ describe('subredditController (e2e)', () => {
     flairList: [],
   };
 
-  const createDummySubreddit = async () => {
-    const req = await request(server).post('/subreddit').send(dummySubreddit);
+  const userDto: CreateUserDto = {
+    email: 'email@example.com',
+    password: '12345678',
+    username: 'username',
+  };
+
+  let token1: string;
+  let id1: Types.ObjectId;
+
+  const createDummyUsers = async () => {
+    const authRes1 = await request(server).post('/auth/signup').send(userDto);
+    id1 = authRes1.body._id;
+    token1 = `Bearer ${authRes1.body.token}`;
+  };
+
+  const createDummySubreddit = async (token) => {
+    const req = await request(server)
+      .post('/subreddit')
+      .set('authorization', token)
+      .send(dummySubreddit);
 
     return req.body;
   };
@@ -81,15 +112,32 @@ describe('subredditController (e2e)', () => {
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
         ]),
+        MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+        JwtModule.register({
+          secret: process.env.JWT_SECRET,
+          signOptions: { expiresIn: '15d' },
+        }),
+        FollowModule,
+        BlockModule,
+        ImagesHandlerModule,
       ],
-      controllers: [SubredditController],
-      providers: [SubredditService],
+
+      controllers: [SubredditController, AuthController],
+      providers: [
+        SubredditService,
+        UserService,
+        AuthService,
+        UserStrategy,
+        EmailService,
+        ForgetPasswordStrategy,
+      ],
     }).compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
     server = app.getHttpServer();
-    sr = await createDummySubreddit();
+    await createDummyUsers();
+    sr = await createDummySubreddit(token1);
   });
   it('should be defined', () => {
     expect(app).toBeDefined();
@@ -98,24 +146,29 @@ describe('subredditController (e2e)', () => {
     it('must create subreddit successfully', async () => {
       const res = await request(server)
         .post('/subreddit')
+        .set('authorization', token1)
         .send(createSubreddit);
       expect(res.body).toEqual({
         ...defaultFields,
         ...createSubreddit,
         _id: res.body._id,
+        moderators: [id1],
       });
     });
-    it('must throw duplicate error', async () => {
+    it('must throw conflict error', async () => {
       const res = await request(server)
         .post('/subreddit')
+        .set('authorization', token1)
         .send(createSubreddit);
       expect(res.body.message).toBe(
-        'E11000 duplicate key error collection: test.subreddits index: name_1 dup key: { name: "subreddit" }',
+        `Subreddit with name ${createSubreddit.name} already exists.`,
       );
+      expect(res.statusCode).toBe(HttpStatus.CONFLICT);
     });
     it('must throw error leckage of data', async () => {
       const res = await request(server)
         .post('/subreddit')
+        .set('authorization', token1)
         .send({ over18: true, type: 'public' });
       expect(res.body.message).toEqual(
         'Subreddit validation failed: name: Path `name` is required.',
