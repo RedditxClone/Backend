@@ -12,7 +12,7 @@ export class SubredditUser {
   userId: Types.ObjectId;
 }
 
-export const FollowSchema = (() => {
+export const SubredditUserSchema = (() => {
   const schema = SchemaFactory.createForClass(SubredditUser);
   schema.index({ subredditId: 1, userId: 1 }, { unique: true });
 
