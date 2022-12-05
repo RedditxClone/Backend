@@ -55,6 +55,11 @@ export const stubUser = (): User => ({
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
+  //Miscellaneous
+  safeBrowsingMode: false,
+  chatRequest: true,
+  newFollower: false,
+  unSubscribe: false,
 });
 
 export const stubUserFresh = (): User => ({
@@ -108,4 +113,9 @@ export const stubUserFresh = (): User => ({
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
+  //Miscellaneous
+  safeBrowsingMode: false,
+  chatRequest: true,
+  newFollower: false,
+  unSubscribe: false,
 });
