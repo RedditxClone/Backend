@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
@@ -20,10 +20,5 @@ export class PostCommentController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postCommentService.findOne(Number(id));
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postCommentService.remove(Number(id));
   }
 }

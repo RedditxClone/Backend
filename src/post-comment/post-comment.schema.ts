@@ -5,6 +5,9 @@ export type PostCommentDocument = PostComment & Document;
 export class PostComment {
   type: string;
 
+  @Prop({ default: false })
+  isDeleted: boolean;
+
   @Prop({ required: true })
   text: string;
 
@@ -23,8 +26,8 @@ export class PostComment {
   @Prop({ ref: 'User', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ ref: 'Post', required: true })
-  postId: Types.ObjectId;
+  @Prop({ ref: 'Subreddit', required: true })
+  subredditId: Types.ObjectId;
 }
 
 export const PostCommentSchema = SchemaFactory.createForClass(PostComment);

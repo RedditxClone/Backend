@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
@@ -21,10 +22,24 @@ export class SubredditService {
 
   async create(
     createSubredditDto: CreateSubredditDto,
+    user_id: Types.ObjectId,
   ): Promise<SubredditDocument> {
-    const subreddit: SubredditDocument = await this.subredditModel.create(
-      createSubredditDto,
-    );
+    let subreddit: SubredditDocument | undefined;
+
+    try {
+      subreddit = await this.subredditModel.create({
+        ...createSubredditDto,
+        moderators: [user_id],
+      });
+    } catch (error) {
+      if (error?.message?.startsWith('E11000')) {
+        throw new ConflictException(
+          `Subreddit with name ${createSubredditDto.name} already exists.`,
+        );
+      }
+
+      throw error;
+    }
 
     return subreddit;
   }
