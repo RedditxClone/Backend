@@ -15,6 +15,7 @@ export class Flair {
   @Prop({ required: true })
   textColor: string;
 }
+
 @Schema()
 export class Subreddit {
   @Prop({
@@ -110,6 +111,9 @@ export class Subreddit {
 
   @Prop({ default: [] })
   flairList: Flair[];
+
+  @Prop({ default: [], ref: 'User' })
+  moderators: Types.ObjectId[];
 
   @Prop()
   icon: string;

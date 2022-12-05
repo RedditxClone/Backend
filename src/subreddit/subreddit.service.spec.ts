@@ -26,6 +26,8 @@ describe('SubredditService', () => {
   let id: string;
   let subredditDocument: SubredditDocument;
 
+  const userId = new Types.ObjectId(1);
+
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
     type: 'public',
@@ -76,7 +78,7 @@ describe('SubredditService', () => {
       providers: [SubredditService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
-    subredditDocument = await subredditService.create(subredditDefault);
+    subredditDocument = await subredditService.create(subredditDefault, userId);
     id = subredditDocument._id.toString();
   });
 
@@ -85,7 +87,7 @@ describe('SubredditService', () => {
   });
   describe('create', () => {
     it('should create subreddit successfully', async () => {
-      const subreddit = await subredditService.create(subreddit1);
+      const subreddit = await subredditService.create(subreddit1, userId);
       expect(subreddit).toEqual(
         expect.objectContaining({
           name: subreddit1.name,
@@ -97,7 +99,7 @@ describe('SubredditService', () => {
     });
     it('should throw an error', async () => {
       await expect(async () => {
-        await subredditService.create(subredditDefault);
+        await subredditService.create(subredditDefault, userId);
       }).rejects.toThrowError();
     });
   });
