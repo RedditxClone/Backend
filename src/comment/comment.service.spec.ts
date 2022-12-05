@@ -17,6 +17,7 @@ describe('CommentService', () => {
   let service: CommentService;
   let module: TestingModule;
   const commentDto: CreateCommentDto = {
+    subredditId: new Types.ObjectId(1),
     postId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
     parentId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
     text: 'Hello World',

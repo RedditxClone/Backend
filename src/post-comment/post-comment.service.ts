@@ -101,7 +101,7 @@ export class PostCommentService {
 
     this.checkIfTheOwner(userId, thing.userId);
 
-    this.checkIfValidFlairId(dto.flair, thing.subredditId?.flairList);
+    this.checkIfValidFlairId(dto.flair, thing.subredditId.flairList);
 
     const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
 
@@ -112,7 +112,45 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} postComment`;
-  }
+  /**
+   * Deletes a post or comment from the database (SoftDelete)
+   * @param id the id of the thing to be deleted
+   * @param userId the user's id
+   * @param type the type of the thing
+   * @returns success if was able to delete
+   */
+  remove = async (id: Types.ObjectId, userId: Types.ObjectId, type: string) => {
+    const thing: (PostComment & { subredditId: Subreddit | null }) | null =
+      await this.postCommentModel
+        .findById(id)
+        .populate('subredditId', 'moderators');
+
+    if (!thing) {
+      throw new NotFoundException(`id : ${id} not found`);
+    }
+
+    if (thing.type !== type) {
+      throw new BadRequestException(
+        `Requested a ${type} but the id belongs to ${thing.type}`,
+      );
+    }
+
+    //if moderator or the creator can remove the post
+    if (
+      !(
+        thing.userId.equals(userId) ||
+        thing.subredditId.moderators.includes(userId)
+      )
+    ) {
+      throw new UnauthorizedException(
+        `NonModerators can only delete their ${type}`,
+      );
+    }
+
+    await this.postCommentModel.findByIdAndUpdate(id, {
+      isDeleted: true,
+    });
+
+    return { status: 'success', timestamp: new Date() };
+  };
 }

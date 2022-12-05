@@ -21,9 +21,4 @@ export class PostCommentController {
   findOne(@Param('id') id: string) {
     return this.postCommentService.findOne(Number(id));
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postCommentService.remove(Number(id));
-  }
 }
