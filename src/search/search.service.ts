@@ -4,9 +4,9 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
-// import type { Comment } from '../comment/comment.schema';
-// import type { Post } from '../post/post.schema';
-// import type { Subreddit } from '../subreddit/subreddit.schema';
+import type { Comment } from '../comment/comment.schema';
+import type { Post } from '../post/post.schema';
+import type { Subreddit } from '../subreddit/subreddit.schema';
 import type { User } from '../user/user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 
@@ -14,9 +14,9 @@ import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 export class SearchService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
-    // @InjectModel('post') private readonly postModel: Model<Post>,
-    // @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
-    // @InjectModel('Comment') private readonly commentModel: Model<Comment>,
+    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('Post') private readonly postModel: Model<Post>,
+    @InjectModel('Comment') private readonly commentModel: Model<Comment>,
     private readonly apiFeaturesService: ApiFeaturesService,
     private readonly blockService: BlockService,
   ) {}
@@ -29,13 +29,13 @@ export class SearchService {
     numberOfData: number,
     blocker: Types.ObjectId,
   ) => {
-    const users = await this.getUsersBlockedMe(blocker);
+    const usersBlockedMe = await this.getUsersBlockedMe(blocker);
 
     return this.apiFeaturesService.processQuery(
       this.userModel
         .find({
           username: new RegExp(`^${data}`),
-          _id: { $not: { $all: users.map((v) => v.blocker) } },
+          _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
         })
         .select('username profilePhoto about'),
       { limit: numberOfData },
@@ -43,58 +43,86 @@ export class SearchService {
     );
   };
 
-  // searchCommunities = (data: string, numberOfData: number) =>
-  //   this.apiFeaturesService.processQuery(
-  //     this.subredditModel.find(
-  //       { name: new RegExp(`^${data}`) },
-  //       { description: new RegExp(`*${data}*`) },
-  //     ),
-  //     { limit: numberOfData },
-  //     { pagination: true },
-  //   );
+  searchCommunities = async (data: string, numberOfData: number) => {
+    await this.apiFeaturesService.processQuery(
+      this.subredditModel.find(
+        { name: new RegExp(`^${data}`) },
+        { description: { $regex: data } },
+      ),
+      { limit: numberOfData },
+      { pagination: true },
+    );
+  };
 
-  // searchPosts = async (data: string, numberOfData: number) =>
-  //   this.apiFeaturesService.processQuery(
-  //     this.postModel
-  //       .find({
-  //         $or: [
-  //           { title: new RegExp(`^${data}`) },
-  //           { text: new RegExp(`*${data}*`) },
-  //         ],
-  //       })
-  //       .populate([
-  //         {
-  //           path: 'user_id',
-  //           model: 'Post',
-  //           // populate: {
-  //           //   path: 'country',
-  //           //   model: 'Country',
-  //           // },
-  //         },
-  //       ]),
-  //     { limit: numberOfData },
-  //     { pagination: true },
-  //   );
+  searchPosts = async (
+    data: string,
+    numberOfData: number,
+    blocker: Types.ObjectId,
+  ) => {
+    const usersBlockedMe = await this.getUsersBlockedMe(blocker);
 
-  // searchComments = (data: string, numberOfData: number) =>
-  //   this.apiFeaturesService.processQuery(
-  //     this.commentModel.find({ text: new RegExp(`*${data}*`) }).populate([
-  //       {
-  //         path: 'postId',
-  //         model: 'Post',
-  //         select: 'title publishedDate',
-  //         // populate: {
-  //         //   path: 'country',
-  //         //   model: 'Country',
-  //         // },
-  //       },
-  //       {
-  //         path: 'userId',
-  //         model: 'User',
-  //         select: 'username profilePhoto',
-  //       },
-  //     ]),
-  //     { limit: numberOfData },
-  //     { pagination: true },
-  //   );
+    return this.apiFeaturesService.processQuery(
+      this.postModel
+        .find({
+          $or: [{ title: { $regex: data } }, { text: { $regex: data } }],
+          _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+        })
+        .populate([
+          {
+            path: 'subredditId',
+            model: 'Subreddit',
+            select: 'name',
+          },
+          {
+            path: 'userId',
+            model: 'User',
+            select: 'username profilePhoto',
+          },
+        ]),
+      { limit: numberOfData },
+      { pagination: true },
+    );
+  };
+
+  searchComments = async (
+    data: string,
+    numberOfData: number,
+    blocker: Types.ObjectId,
+  ) => {
+    const usersBlockedMe = await this.getUsersBlockedMe(blocker);
+
+    return this.apiFeaturesService.processQuery(
+      this.commentModel
+        .find({
+          text: { $regex: data },
+          userId: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+        })
+        .populate([
+          {
+            path: 'postId',
+            model: 'Post',
+            select: 'title publishedDate',
+            populate: [
+              {
+                path: 'subredditId',
+                model: 'Subreddit',
+                select: 'name',
+              },
+              {
+                path: 'userId',
+                model: 'User',
+                select: 'username profilePhoto',
+              },
+            ],
+          },
+          {
+            path: 'userId',
+            model: 'User',
+            select: 'username profilePhoto',
+          },
+        ]),
+      { limit: numberOfData },
+      { pagination: true },
+    );
+  };
 }

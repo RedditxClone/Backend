@@ -32,9 +32,29 @@ export class SearchController {
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for people' })
-  @Get('/people')
+  @Get('/peoples')
   searchPeople(@Query('word') word, @Req() req) {
     return this.searchService.searchPeople(word, 10, req._id);
+  }
+
+  @ApiProperty({ description: 'search for people' })
+  @Get('/communities')
+  searchCommunities(@Query('word') word) {
+    return this.searchService.searchCommunities(word, 10);
+  }
+
+  @UseGuards(IsUserExistGuard)
+  @ApiProperty({ description: 'search for people' })
+  @Get('/posts')
+  searchPosts(@Query('word') word, @Req() req) {
+    return this.searchService.searchPosts(word, 10, req._id);
+  }
+
+  @UseGuards(IsUserExistGuard)
+  @ApiProperty({ description: 'search for people' })
+  @Get('/comments')
+  searchComments(@Query('word') word, @Req() req) {
+    return this.searchService.searchComments(word, 10, req._id);
   }
 
   @ApiProperty({ description: 'get subreddit search results' })
