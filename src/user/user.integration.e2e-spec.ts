@@ -1,36 +1,46 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import type { INestApplication } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { plainToClass } from 'class-transformer';
+import { readFile, unlink } from 'fs/promises';
+import { Types } from 'mongoose';
+import request from 'supertest';
+
+import { AuthController } from '../auth/auth.controller';
+import { AuthService } from '../auth/auth.service';
+import { AdminStrategy } from '../auth/strategies/admin.strategy';
+import { UserStrategy } from '../auth/strategies/user.strategy';
+import { BlockModule } from '../block/block.module';
+import { BlockSchema } from '../block/block.schema';
+import { FollowModule } from '../follow/follow.module';
+import { FollowSchema } from '../follow/follow.schema';
+import { EmailService } from '../utils';
+import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
-import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
-import { UserSchema } from './user.schema';
-import { AuthController } from '../auth/auth.controller';
-import { UserService } from './user.service';
-import { AuthService } from '../auth/auth.service';
-import { AvailableUsernameDto, CreateUserDto, PrefsDto } from './dto';
-import { FollowSchema } from '../follow/follow.schema';
-import { FollowModule } from '../follow/follow.module';
-import { Types } from 'mongoose';
+} from '../utils/mongoose-in-memory';
+import type { AvailableUsernameDto, CreateUserDto } from './dto';
+import { PrefsDto } from './dto';
+import { stubUserFresh } from './test/stubs/user.stub';
 import { UserController } from './user.controller';
-import { UserStrategy } from '../auth/stratigies/user.strategy';
-import { EmailService } from '../utils';
-import { BlockSchema } from '../block/block.schema';
-import { BlockModule } from '../block/block.module';
-import { AdminStrategy } from '../auth/stratigies/admin.startegy';
-import { stubUser, stubUserFresh } from './test/stubs/user.stub';
-import { plainToClass } from 'class-transformer';
+import { UserSchema } from './user.schema';
+import { UserService } from './user.service';
+
+const getToken = (cookie: string): string =>
+  cookie[0].split('; ')[0].split('=')[1].replace('%20', ' ');
 
 jest.mock('../utils/mail/mail.service.ts');
 describe('userController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   let userService: UserService;
-  const dto: CreateUserDto = {
+  const userDto: CreateUserDto = {
     email: 'email@example.com',
     password: '12345678',
     username: 'username',
@@ -42,39 +52,43 @@ describe('userController (e2e)', () => {
   let adminId: Types.ObjectId;
   let adminToken: string;
 
-  const getToken = (cookie: string): string =>
-    cookie[0].split('; ')[0].split('=')[1].replace('%20', ' ');
-
   const createDummyUsers = async () => {
-    const authRes1 = await request(server).post('/auth/signup').send(dto);
+    const authRes1 = await request(server).post('/auth/signup').send(userDto);
     id1 = authRes1.body._id;
     const cookie1 = authRes1.headers['set-cookie'];
     const authRes2 = await request(server)
       .post('/auth/signup')
-      .send({ ...dto, email: `a${dto.email}`, username: `a${dto.username}` });
+      .send({
+        ...userDto,
+        email: `a${userDto.email}`,
+        username: `a${userDto.username}`,
+      });
     id2 = authRes2.body._id;
     const cookie2 = authRes2.headers['set-cookie'];
     token1 = cookie1[0].split('; ')[0].split('=')[1].replace('%20', ' ');
     token2 = cookie2[0].split('; ')[0].split('=')[1].replace('%20', ' ');
   };
+
   const createAdminWithToken = async () => {
     const authRes = await request(server)
       .post('/auth/signup')
       .send({
-        ...dto,
-        email: `admin${dto.email}`,
-        username: `admin${dto.username}`,
+        ...userDto,
+        email: `admin${userDto.email}`,
+        username: `admin${userDto.username}`,
       });
     adminId = authRes.body._id;
     adminToken = getToken(authRes.header['set-cookie']);
     await userService.makeAdmin(adminId);
   };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           { name: 'User', schema: UserSchema },
@@ -96,6 +110,7 @@ describe('userController (e2e)', () => {
       ],
     }).compile();
     app = moduleFixture.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
     userService = app.get<UserService>(UserService);
     server = app.getHttpServer();
@@ -110,8 +125,8 @@ describe('userController (e2e)', () => {
       expect(res.body).toEqual(
         expect.objectContaining({
           _id: id1,
-          username: dto.username,
-          email: dto.email,
+          username: userDto.username,
+          email: userDto.email,
         }),
       );
     });
@@ -122,12 +137,12 @@ describe('userController (e2e)', () => {
       expect(res.body.message).toEqual('wrong_id is not a valid MongoId');
     });
     it('must throw an error because there is no user with id', async () => {
-      const wrong_id = new Types.ObjectId('wrong_id____');
+      const wrongId = new Types.ObjectId('wrong_id____');
       const res = await request(server)
-        .get(`/user/${wrong_id}`)
+        .get(`/user/${wrongId}`)
         .expect(HttpStatus.NOT_FOUND);
       expect(res.body.message).toEqual(
-        `there is no user with information {"_id":"${wrong_id}"}`,
+        `there is no user with information {"_id":"${wrongId}"}`,
       );
     });
   });
@@ -277,6 +292,28 @@ describe('userController (e2e)', () => {
       expect(res.body.message).toEqual(`you are not allowed to block yourself`);
     });
   });
+  describe('/GET /user/block', () => {
+    it('must get blocked users successfully', async () => {
+      const res = await request(server)
+        .get(`/user/block`)
+        .set('authorization', token1)
+        .expect(HttpStatus.OK);
+      expect(res.body[0]).toEqual({
+        _id: res.body[0]._id,
+        blocked: {
+          _id: id2,
+          profilePhoto: '',
+          username: `a${userDto.username}`,
+        },
+      });
+    });
+    it('must throw unauthorized error', async () => {
+      const res = await request(server)
+        .get(`/user/block`)
+        .expect(HttpStatus.UNAUTHORIZED);
+      expect(res.body.message).toEqual('Unauthorized');
+    });
+  });
   describe('/POST /user/:user_id/unblock', () => {
     it('should unblock successfully', async () => {
       const res = await request(server)
@@ -301,7 +338,7 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-moderator`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('moderator');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it('should refuse to make the admin moderator', async () => {
       const res = await request(server)
@@ -334,14 +371,14 @@ describe('userController (e2e)', () => {
         .post(`/user/${id1.toString()}/make-admin`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('admin');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it("mustn't change the admin role", async () => {
       const res = await request(server)
         .post(`/user/${adminId.toString()}/make-admin`)
         .set('authorization', adminToken)
         .expect(HttpStatus.CREATED);
-      expect(res.body.authType).toEqual('admin');
+      expect(res.body).toEqual({ status: 'success' });
     });
     it('should throw unauthorized', async () => {
       // regular user not admin
@@ -400,58 +437,62 @@ describe('userController (e2e)', () => {
     });
   });
 
-  describe('/DELETE /user', () => {
+  describe('/POST /user/me/profile', () => {
+    it('must upload a photo successfully', async () => {
+      const res = await request(server)
+        .post(`/user/me/profile`)
+        .set('authorization', token1)
+        .attach('photo', __dirname + '/test/photos/testingPhoto.jpeg');
+      expect(typeof (await readFile(res.body.profilePhoto))).toBe('object');
+      expect(res.body).toEqual({
+        profilePhoto: res.body.profilePhoto,
+      });
+      await unlink(res.body.profilePhoto);
+    });
+    it('must throw error no photo provided', async () => {
+      const res = await request(server)
+        .post(`/user/me/profile`)
+        .set('authorization', token1);
+      expect(res.body.message).toEqual('File is required');
+    });
+  });
+
+  describe('/POST /user/me/cover', () => {
+    it('must upload a photo successfully', async () => {
+      const res = await request(server)
+        .post(`/user/me/cover`)
+        .set('authorization', token1)
+        .attach('photo', __dirname + '/test/photos/testingPhoto.jpeg');
+      expect(typeof (await readFile(res.body.coverPhoto))).toBe('object');
+      expect(res.body).toEqual({
+        coverPhoto: res.body.coverPhoto,
+      });
+      await unlink(res.body.coverPhoto);
+    });
+    it('must throw error no photo provided', async () => {
+      const res = await request(server)
+        .post(`/user/me/profile`)
+        .set('authorization', token1);
+      expect(res.body.message).toEqual('File is required');
+    });
+  });
+
+  describe('/DELETE /user/me', () => {
     it('should delete the account successfully', async () => {
       const res = await request(server)
-        .delete(`/user`)
+        .delete(`/user/me`)
         .set('authorization', token1)
         .expect(HttpStatus.OK);
       expect(res.body).toEqual({ status: 'success' });
     });
     it('should throw an error', async () => {
       const res = await request(server)
-        .delete(`/user`)
-        .expect(HttpStatus.UNAUTHORIZED);
-      expect(res.body.message).toEqual('Unauthorized');
-    });
-  });
-
-  describe('/POST /user/post/:post_id/save', () => {
-    it('should save post', async () => {
-      const res = await request(server)
-        .post(`/user/post/${id1.toString()}/save`)
+        .delete(`/user/me`)
         .set('authorization', token1)
-        .expect(HttpStatus.OK);
-      expect(res.body).toEqual({ status: 'success' });
-    });
-    it('should return an error', async () => {
-      const res = await request(server)
-        .post(`/user/post/${id1.toString()}/save`)
-        .set('authorization', token1)
-        .expect(HttpStatus.BAD_REQUEST);
-      expect(res.body.message).toEqual('the post already saved');
-    });
-    it('should throw an autherization error', async () => {
-      const res = await request(server)
-        .post(`/user/post/${id1.toString()}/save`)
-        .expect(HttpStatus.UNAUTHORIZED);
-      expect(res.body.message).toEqual('Unauthorized');
-    });
-  });
-
-  describe('/POST /user/post/save', () => {
-    it('should return saved posts successfully', async () => {
-      const res = await request(server)
-        .get(`/user/post/save`)
-        .set('authorization', token1)
-        .expect(HttpStatus.OK);
-      expect(res.body).toEqual({ _id: id1, savedPosts: [id1] });
-    });
-    it('should throw an autherization error', async () => {
-      const res = await request(server)
-        .get(`/user/post/save`)
-        .expect(HttpStatus.UNAUTHORIZED);
-      expect(res.body.message).toEqual('Unauthorized');
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toEqual(
+        `there is no user with information {"_id":"${id1}"}`,
+      );
     });
   });
 

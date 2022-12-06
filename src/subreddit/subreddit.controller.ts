@@ -4,16 +4,19 @@ import {
   Delete,
   Get,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
-  ParseFilePipeBuilder,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -23,10 +26,12 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+
+import { JWTUserGuard } from '../auth/guards/user.guard';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
-import { SubredditDocument } from './subreddit.schema';
+import type { SubredditDocument } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 
 @ApiTags('subreddit')
@@ -38,16 +43,42 @@ export class SubredditController {
   @ApiCreatedResponse({ description: 'The resource was created succesfully' })
   @ApiUnprocessableEntityResponse({ description: 'Bad Request' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiConflictResponse({ description: 'Subreddit name already exists' })
+  @UseGuards(JWTUserGuard)
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
+    @Req() req,
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto);
+    return this.subredditService.create(createSubredditDto, req.user._id);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
-  @ApiCreatedResponse({ description: 'The subreddit returned succesfully' })
+  @ApiOkResponse({ description: 'The subreddit returned succesfully' })
   @ApiBadRequestResponse({ description: "The subreddit name doesn't exist" })
+  @Get('/r/:subreddit_name')
+  getSubredditByName(
+    @Param('subreddit_name') subredditName: string,
+  ): Promise<SubredditDocument> {
+    return this.subredditService.findSubredditByName(subredditName);
+  }
+
+  @ApiOperation({ description: 'Check if subreddit name is available' })
+  @ApiOkResponse({
+    description: 'Subreddit Name Available',
+  })
+  @ApiConflictResponse({ description: 'Subreddit name is unavailable' })
+  @Get('/r/:subreddit_name/available')
+  checkSubredditAvailable(
+    @Param('subreddit_name')
+    subredditName: string,
+  ) {
+    return this.subredditService.checkSubredditAvailable(subredditName);
+  }
+
+  @ApiOperation({ description: 'Get subreddit by id' })
+  @ApiOkResponse({ description: 'The subreddit returned succesfully' })
+  @ApiBadRequestResponse({ description: "The subreddit id doesn't exist" })
   @Get('/:subreddit')
   getSubreddit(
     @Param('subreddit') subreddit: string,
@@ -65,7 +96,7 @@ export class SubredditController {
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
-          maxSize: 10485760,
+          maxSize: 10_485_760,
         })
         .build(),
     )
@@ -102,7 +133,7 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Get(':subreddit/about/edit')
-  findSettings(@Param('subreddit') subreddit: string) {
+  findSettings(@Param('subreddit') _subreddit: string) {
     // TODO: implement service
   }
 
@@ -112,8 +143,8 @@ export class SubredditController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Get(':subreddit/about/user')
   findUsersForMods(
-    @Param('subreddit') subreddit: string,
-    @Query('role') role: string,
+    @Param('subreddit') _subreddit: string,
+    @Query('role') _role: string,
   ) {
     // TODO: implement service
   }
@@ -124,8 +155,8 @@ export class SubredditController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Get(':subreddit/about/post')
   findPostsForMods(
-    @Param('subreddit') subreddit: string,
-    @Query('location') location: string,
+    @Param('subreddit') _subreddit: string,
+    @Query('location') _location: string,
   ) {
     // TODO: implement service
   }
@@ -138,8 +169,8 @@ export class SubredditController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Get('mine')
   findUserSubreddits(
-    @Param('subreddit') subreddit: string,
-    @Query('role') role: string,
+    @Param('subreddit') _subreddit: string,
+    @Query('role') _role: string,
   ) {
     // TODO: implement service
   }
@@ -182,8 +213,8 @@ export class SubredditController {
   @ApiBadRequestResponse({ description: 'User is not part of that community' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Get('/:subreddit/user/me/flair')
-  getMyFlairsInSubreddit(@Param('subreddit') subreddit: string) {
-    return;
+  getMyFlairsInSubreddit(@Param('subreddit') _subreddit: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get the hottest subreddits' })
@@ -196,21 +227,21 @@ export class SubredditController {
   @ApiOperation({ description: 'Get the newest subreddits' })
   @ApiOkResponse({ description: 'The newest subreddits returned successfully' })
   @Get('/:subreddit/new')
-  getNewSubreddits(@Param('subreddit') subreddit: string) {
-    return;
+  getNewSubreddits(@Param('subreddit') _subreddit: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get the top subreddits' })
   @ApiOkResponse({ description: 'The top subreddits returned successfully' })
   @Get('/:subreddit/top')
-  getTopSubreddits(@Param('subreddit') subreddit: string) {
-    return;
+  getTopSubreddits(@Param('subreddit') _subreddit: string) {
+    // TODO
   }
 
   @ApiOperation({ description: 'Get subreddits randomally' })
   @ApiOkResponse({ description: 'The random subreddits returned successfully' })
   @Get('/:subreddit/random')
-  getRandomSubreddits(@Param('subreddit') subreddit: string) {
-    return;
+  getRandomSubreddits(@Param('subreddit') _subreddit: string) {
+    // TODO
   }
 }

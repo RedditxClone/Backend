@@ -1,9 +1,11 @@
 export const EmailServiceMock = {
-  sendEmail: (toMail: string, subject: string, body: string) => {
-    return new Promise((resolve, reject) => {
+  // Todo: use subject and body
+  sendEmail: (toMail: string, _subject: string, _body: string) =>
+    new Promise((resolve, reject) => {
       if (toMail.includes('throw')) {
         reject('Error while sending');
-      } else resolve('OK');
-    });
-  },
+      } else {
+        resolve('OK');
+      }
+    }),
 };

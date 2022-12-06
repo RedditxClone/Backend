@@ -1,20 +1,27 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cors from 'cors';
+
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './utils/all-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
+    cors: true,
   });
 
-  // Prefix all endpoinds with api/
+  // Prefix api endpoinds with api/
   app.setGlobalPrefix('api');
+
+  // Catch general exceptions
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Redditx')
     .setDescription('The Redditx API description')
-    .setVersion('1.0')
+    .setVersion('1.2')
     .addTag('Redditx')
     .addBearerAuth(
       {
@@ -33,6 +40,15 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.use(cors());
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+    methods: 'GET, POST, PATCH, DELETE, PUT, OPTIONS',
+    allowedHeaders:
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  });
   await app.listen(process.env.PORT || 3000);
 }
-bootstrap();
+
+void bootstrap();

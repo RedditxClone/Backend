@@ -1,49 +1,92 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
-import { CreateSubredditDto } from './dto/create-subreddit.dto';
-import { FlairDto } from './dto/flair.dto';
-import * as sharp from 'sharp';
-import { Subreddit, SubredditDocument } from './subreddit.schema';
-import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import {
-  throwGeneralException,
-  throwIfNullObject,
-} from '../utils/throwException';
-import { unlink } from 'fs/promises';
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import type { Types } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
+
+import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
+import type { CreateSubredditDto } from './dto/create-subreddit.dto';
+import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
+import type { FlairDto } from './dto/flair.dto';
+import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import type { Subreddit, SubredditDocument } from './subreddit.schema';
 @Injectable()
 export class SubredditService {
   constructor(
-    @InjectModel('subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
   async create(
     createSubredditDto: CreateSubredditDto,
+    user_id: Types.ObjectId,
   ): Promise<SubredditDocument> {
+    let subreddit: SubredditDocument | undefined;
+
     try {
-      const subreddit: SubredditDocument = await this.subredditModel.create(
-        createSubredditDto,
-      );
-      return subreddit;
+      subreddit = await this.subredditModel.create({
+        ...createSubredditDto,
+        moderators: [user_id],
+      });
     } catch (error) {
-      throwGeneralException(error);
+      if (error?.message?.startsWith('E11000')) {
+        throw new ConflictException(
+          `Subreddit with name ${createSubredditDto.name} already exists.`,
+        );
+      }
+
+      throw error;
     }
+
+    return subreddit;
   }
 
   async findSubreddit(subreddit: string): Promise<SubredditDocument> {
-    return throwIfNullObject(
-      await this.subredditModel.findById(subreddit),
-      'No subreddit with such id',
-    );
+    const sr: SubredditDocument | null | undefined =
+      await this.subredditModel.findById(subreddit);
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    return sr;
+  }
+
+  async findSubredditByName(subredditName: string): Promise<SubredditDocument> {
+    const filter: FilterSubredditDto = { name: subredditName };
+    const sr: SubredditDocument | null | undefined =
+      await this.subredditModel.findOne(filter);
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such name');
+    }
+
+    return sr;
+  }
+
+  async checkSubredditAvailable(subredditName: string) {
+    const filter: FilterSubredditDto = { name: subredditName };
+    const isSubredditUnavailable = await this.subredditModel.exists(filter);
+
+    if (isSubredditUnavailable) {
+      throw new ConflictException('Subreddit name is unavailable');
+    }
+
+    return { status: 'success' };
   }
 
   async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
-    throwIfNullObject(
-      await this.subredditModel
-        .findByIdAndUpdate(subreddit, updateSubredditDto)
-        .select('_id'),
-      'No subreddit with such id',
-    );
+    const sr: SubredditDocument | null | undefined = await this.subredditModel
+      .findByIdAndUpdate(subreddit, updateSubredditDto)
+      .select('_id');
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
     return {
       status: 'success',
     };
@@ -54,78 +97,81 @@ export class SubredditService {
     flairDto: FlairDto,
   ): Promise<SubredditDocument> {
     flairDto._id = new mongoose.Types.ObjectId();
-    return throwIfNullObject(
-      await this.subredditModel
-        .findByIdAndUpdate(
-          subreddit,
-          {
-            $push: { flairList: flairDto },
-          },
-          { new: true },
-        )
-        .select('flairList'),
-      'No subreddit with such id',
-    );
+    const sr: SubredditDocument | null | undefined = await this.subredditModel
+      .findByIdAndUpdate(
+        subreddit,
+        {
+          $push: { flairList: flairDto },
+        },
+        { new: true },
+      )
+      .select('flairList');
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    return sr;
   }
 
   async getFlairs(subreddit: string): Promise<SubredditDocument> {
-    return throwIfNullObject(
-      await this.subredditModel.findById(subreddit).select('flairList'),
-      'No subreddit with such id',
-    );
+    const sr = await this.subredditModel
+      .findById(subreddit)
+      .select('flairList');
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    return sr;
   }
 
   async uploadIcon(subreddit: string, file) {
-    const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
-    throwIfNullObject(
-      await this.subredditModel.findById(subreddit).select('_id'),
-      'No subreddit with such id',
+    const sr = await this.subredditModel.findById(subreddit).select('_id');
+
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    return this.imagesHandlerService.uploadPhoto(
+      'subreddit_icons',
+      file,
+      this.subredditModel,
+      new mongoose.Types.ObjectId(subreddit),
+      'icon',
     );
-    await Promise.all([
-      sharp(file.buffer).toFormat('jpeg').toFile(saveDir),
-      this.subredditModel
-        .findByIdAndUpdate(subreddit, {
-          icon: saveDir,
-        })
-        .select(''),
-    ]);
-    return {
-      icon: saveDir,
-    };
   }
 
   async removeIcon(subreddit: string) {
     const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
-    throwIfNullObject(
-      await this.subredditModel
-        .findByIdAndUpdate(subreddit, {
-          icon: null,
-        })
-        .select(''),
-      'No subreddit with such id',
-    );
+    const sr = await this.subredditModel
+      .findByIdAndUpdate(subreddit, {
+        icon: '',
+      })
+      .select('');
 
-    try {
-      await unlink(saveDir);
-    } catch (error) {
-      throwIfNullObject(null, "The subreddit doesn't have already an icon");
+    if (!sr) {
+      throw new NotFoundException('No subreddit with such id');
     }
-    return { status: 'success' };
+
+    return this.imagesHandlerService.removePhoto(saveDir);
   }
 
   async deleteFlairById(subreddit: string, flair_id: string) {
-    const flair = throwIfNullObject(
-      await this.subredditModel.findByIdAndUpdate(subreddit, {
-        $pull: {
-          flairList: { _id: new mongoose.Types.ObjectId(flair_id) },
-        },
-      }),
-      'No subreddit with such id',
-    );
+    const flair = await this.subredditModel.findByIdAndUpdate(subreddit, {
+      $pull: {
+        flairList: { _id: new mongoose.Types.ObjectId(flair_id) },
+      },
+    });
+
+    if (!flair) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
     return { status: 'success' };
   }
 
-  getHotSubreddits(subreddit: string) {
+  getHotSubreddits(_subreddit: string) {
     return 'Waiting for api features to use the sort function';
   }
 }

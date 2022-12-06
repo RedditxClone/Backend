@@ -1,4 +1,14 @@
-import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -7,6 +17,11 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+
+import { JWTUserGuard } from '../auth/guards';
+import { PostCommentService } from '../post-comment/post-comment.service';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CommentService } from './comment.service';
 import {
   CreateCommentDto,
@@ -19,7 +34,10 @@ import {
 @ApiTags('comment')
 @Controller('comment')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly commentService: CommentService,
+    private readonly postCommentService: PostCommentService,
+  ) {}
 
   @ApiOperation({ description: 'Submit a new comment.' })
   @ApiCreatedResponse({
@@ -27,9 +45,10 @@ export class CommentController {
     type: CreateCommentDto,
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(createCommentDto);
+  @UseGuards(JWTUserGuard)
+  @Post('submit')
+  async create(@Req() req, @Body() createCommentDto: CreateCommentDto) {
+    return this.commentService.create(req.user._id, createCommentDto);
   }
 
   @ApiOperation({ description: 'Deletes a comment.' })
@@ -37,8 +56,9 @@ export class CommentController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(+id);
+  @UseGuards(JWTUserGuard)
+  remove(@Req() req, @Param('id', ParseObjectIdPipe) user_id: Types.ObjectId) {
+    return this.postCommentService.remove(user_id, req.user._id, 'Comment');
   }
 
   @ApiOperation({ description: 'Edit the body text of a comment.' })
@@ -48,10 +68,20 @@ export class CommentController {
   })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/edit')
-  //todo
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(+id, updateCommentDto);
+  @UseGuards(JWTUserGuard)
+  @Patch(':id')
+  update(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: UpdateCommentDto,
+    @Req() { user },
+  ) {
+    return this.postCommentService.update(id, dto, user._id);
+  }
+
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @Get(':id')
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.postCommentService.get(id, 'Comment');
   }
 
   @ApiOperation({
@@ -103,6 +133,7 @@ export class CommentController {
   save(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description:
       "UnSave a link or comment, this removes the thing from the user's saved listings as well.",

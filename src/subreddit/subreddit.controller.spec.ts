@@ -1,12 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { CreateSubredditDto } from './dto/create-subreddit.dto';
-import { FlairDto } from './dto/flair.dto';
-import { UpdateSubredditDto } from './dto/update-subreddit.dto';
+import { createRequest } from 'node-mocks-http';
+
+import type { CreateSubredditDto } from './dto/create-subreddit.dto';
+import type { FlairDto } from './dto/flair.dto';
+import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { SubredditController } from './subreddit.controller';
 import { SubredditService } from './subreddit.service';
-import { stubSubreddit } from './test/stubs/subreddit.stub';
 import { stubFlair } from './test/stubs/flair.stub';
+import { stubSubreddit } from './test/stubs/subreddit.stub';
 
 jest.mock('./subreddit.service');
 describe('subredditControllerSpec', () => {
@@ -31,7 +34,13 @@ describe('subredditControllerSpec', () => {
         type: 'strict',
         over18: false,
       };
-      const subreddit = await subredditController.createSubreddit(subredditDto);
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { id };
+      const subreddit = await subredditController.createSubreddit(
+        subredditDto,
+        req,
+      );
       expect(subreddit).toEqual(stubSubreddit());
     });
   });
@@ -44,6 +53,24 @@ describe('subredditControllerSpec', () => {
     });
   });
 
+  describe('getSubredditByName', () => {
+    test('it should return a subreddit', async () => {
+      const subreddit = await subredditController.getSubredditByName(
+        'subreddit',
+      );
+      expect(subreddit).toEqual(stubSubreddit());
+    });
+  });
+
+  describe('checkSubredditAvailable', () => {
+    test('it should return a subreddit', async () => {
+      const subreddit = await subredditController.checkSubredditAvailable(
+        'JPDptiOyGFdH',
+      );
+      expect(subreddit).toEqual(expect.objectContaining({ status: 'success' }));
+    });
+  });
+
   describe('updateSubreddit', () => {
     test('it should update a subreddit', async () => {
       const updatedFields: UpdateSubredditDto = {
@@ -51,8 +78,11 @@ describe('subredditControllerSpec', () => {
         type: 'private',
       };
       const id = new Types.ObjectId(1).toString();
-      const u_sr = await subredditController.updateSubreddit(id, updatedFields);
-      expect(u_sr).toEqual({ status: 'success' });
+      const updateSr = await subredditController.updateSubreddit(
+        id,
+        updatedFields,
+      );
+      expect(updateSr).toEqual({ status: 'success' });
     });
   });
 
@@ -64,16 +94,16 @@ describe('subredditControllerSpec', () => {
         textColor: 'fff',
       };
       const id = new Types.ObjectId(1).toString();
-      const f_sr = await subredditController.createFlairlist(id, flair);
-      expect(f_sr).toEqual({ flairList: [stubFlair()] });
+      const flairSr = await subredditController.createFlairlist(id, flair);
+      expect(flairSr).toEqual({ flairList: [stubFlair()] });
     });
   });
 
   describe('getFlairlist', () => {
     test('it should create a flair', async () => {
       const id = new Types.ObjectId(1).toString();
-      const f_sr = await subredditController.getFlairlist(id);
-      expect(f_sr).toEqual({ flairList: [stubFlair()] });
+      const flairSr = await subredditController.getFlairlist(id);
+      expect(flairSr).toEqual({ flairList: [stubFlair()] });
     });
   });
 
@@ -81,25 +111,25 @@ describe('subredditControllerSpec', () => {
     test('it should delete a flair', async () => {
       const id1 = new Types.ObjectId(1).toString();
       const id2 = new Types.ObjectId(1).toString();
-      const f_sr = await subredditController.removeFlair(id1, id2);
-      expect(f_sr).toEqual({ status: 'success' });
+      const flairSr = await subredditController.removeFlair(id1, id2);
+      expect(flairSr).toEqual({ status: 'success' });
     });
   });
 
   describe('uploadIcon', () => {
     test('it should upload an icon', async () => {
       const id = new Types.ObjectId(1).toString();
-      const file: File = null;
-      const i1_sr = await subredditController.uploadIcon(id, file);
-      expect(i1_sr).toEqual({ icon: '6365278228aa323e825cf55e.jpeg' });
+      const file: File | null = null;
+      const i1Sr = await subredditController.uploadIcon(id, file);
+      expect(i1Sr).toEqual({ icon: '6365278228aa323e825cf55e.jpeg' });
     });
   });
 
   describe('removeIcon', () => {
     test('it should upload an icon', async () => {
       const id = new Types.ObjectId(1).toString();
-      const i2_sr = await subredditController.removeIcon(id);
-      expect(i2_sr).toEqual({ status: 'success' });
+      const i2Sr = await subredditController.removeIcon(id);
+      expect(i2Sr).toEqual({ status: 'success' });
     });
   });
 });

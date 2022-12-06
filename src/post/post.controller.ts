@@ -1,13 +1,17 @@
 import {
-  Controller,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
   Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { PostService } from './post.service';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -17,6 +21,13 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { diskStorage } from 'multer';
+
+import { JWTUserGuard } from '../auth/guards';
+import { PostCommentService } from '../post-comment/post-comment.service';
+import { uniqueFileName } from '../utils';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreatePostDto,
   DefaultSortPostDto,
@@ -26,13 +37,18 @@ import {
   SendRepliesPostDto,
   SpamPostDto,
   UpdatePostDto,
+  UploadMediaDto,
   VotePostDto,
 } from './dto';
+import { PostService } from './post.service';
 
 @ApiTags('Post')
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly postCommentService: PostCommentService,
+  ) {}
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
   @ApiCreatedResponse({
@@ -44,9 +60,30 @@ export class PostController {
     description:
       'If a link with the same URL has already been submitted to the specified subreddit an error will be returned unless resubmit is true.',
   })
+  @UseGuards(JWTUserGuard)
   @Post('/submit')
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  async create(@Req() req, @Body() createPostDto: CreatePostDto) {
+    return this.postService.create(req.user._id, createPostDto);
+  }
+
+  @ApiOperation({ description: 'upload a post media.' })
+  @ApiCreatedResponse({
+    description: 'The resource was uploaded successfully',
+    type: UploadMediaDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      storage: diskStorage({
+        destination: './statics/posts-media',
+        filename: uniqueFileName,
+      }),
+    }),
+  )
+  @Post('/upload-media')
+  uploadMedia(@UploadedFiles() files: Express.Multer.File[]) {
+    return this.postService.uploadMedia(files);
   }
 
   @ApiOperation({ description: 'Deletes a post.' })
@@ -54,8 +91,9 @@ export class PostController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  @UseGuards(JWTUserGuard)
+  remove(@Req() req, @Param('id', ParseObjectIdPipe) user_id: Types.ObjectId) {
+    return this.postCommentService.remove(user_id, req.user._id, 'Post');
   }
 
   @ApiOperation({ description: 'Edit the body text of a post.' })
@@ -65,10 +103,20 @@ export class PostController {
   })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/edit')
-  //todo
-  update(@Body() updatePostDto: UpdatePostDto, @Param('id') id: string) {
-    return this.postService.update(+id, updatePostDto);
+  @UseGuards(JWTUserGuard)
+  @Patch(':id')
+  update(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: UpdatePostDto,
+    @Req() { user },
+  ) {
+    return this.postCommentService.update(id, dto, user._id);
+  }
+
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @Get(':id')
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.postCommentService.get(id, 'Post');
   }
 
   @ApiOperation({
@@ -97,6 +145,7 @@ export class PostController {
   hide(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `UnHide a post, this removes the hide property from a post thus it can reappear again.`,
   })
@@ -108,6 +157,7 @@ export class PostController {
   unhide(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `Lock a post. Prevents a post from receiving new comments.`,
   })
@@ -119,6 +169,7 @@ export class PostController {
   lock(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `UnLock a post. Prevents a post from receiving new comments.`,
   })
@@ -130,11 +181,12 @@ export class PostController {
   unlock(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({ description: `UnMark a post NSFW.` })
   @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/mark_nsfw')
+  @Post(':id/mark-nsfw')
   //todo
   markNsfw(@Param('id') id: string) {
     return id;
@@ -144,7 +196,7 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post mark` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/unmark_nsfw')
+  @Post(':id/unmark-nsfw')
   //todo
   unMarkNsfw(@Param('id') id: string) {
     return id;
@@ -166,11 +218,12 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post replies set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/send_replies')
+  @Post(':id/send-replies')
   //todo
   sendReplies(@Param('id') id, @Body() sendRepliesPostDto: SendRepliesPostDto) {
     return sendRepliesPostDto;
   }
+
   @ApiOperation({
     description: `Flag the post as spoiler.`,
   })
@@ -182,6 +235,7 @@ export class PostController {
   spoiler(@Param('id') id) {
     return id;
   }
+
   @ApiOperation({
     description: `Flag the post as not spoiler.`,
   })
@@ -220,6 +274,7 @@ export class PostController {
   save(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `UnSave post, Saved things are kept in the user's saved listing for later perusal.`,
   })
@@ -231,6 +286,7 @@ export class PostController {
   unSave(@Param('id') id: string) {
     return id;
   }
+
   @ApiOperation({
     description: `Set a suggested sort for a link.
      Suggested sorts are useful to display comments in a certain preferred way for posts.`,
@@ -238,11 +294,12 @@ export class PostController {
   @ApiCreatedResponse({ description: `Successful post suggested sort set` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/set_suggested_sort')
+  @Post(':id/set-suggested-sort')
   //todo
   setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
     return defaultSortPostDto;
   }
+
   @ApiOperation({
     description: `Get the total number of post views.`,
   })
@@ -253,10 +310,13 @@ export class PostController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   //todo
-  @Get(':id/insights_counts')
-  viewInsights(@Param('id') id: string) {
+  @Get(':id/insights-counts')
+  viewInsights(@Param('id') _id: string) {
+    // TODO implement service
+
     const insightsPostDto: InsightsPostDto = new InsightsPostDto();
     insightsPostDto.insightsCount = 0;
+
     return insightsPostDto;
   }
 }

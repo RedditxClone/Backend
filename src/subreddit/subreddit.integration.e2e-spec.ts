@@ -1,34 +1,51 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import type { INestApplication } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { readFile, unlink } from 'fs/promises';
+import type { Types } from 'mongoose';
+import request from 'supertest';
+import type { CreateUserDto } from 'user/dto';
+
+import { AuthController } from '../auth/auth.controller';
+import { AuthService } from '../auth/auth.service';
+import { ForgetPasswordStrategy } from '../auth/strategies/forget-password.strategy';
+import { UserStrategy } from '../auth/strategies/user.strategy';
+import { BlockModule } from '../block/block.module';
+import { FollowModule } from '../follow/follow.module';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
+import { AllExceptionsFilter } from '../utils/all-exception.filter';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
+import { EmailService } from '../utils/mail/mail.service';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
-import { MongooseModule } from '@nestjs/mongoose';
-import { SubredditSchema } from './subreddit.schema';
+} from '../utils/mongoose-in-memory';
+import type { CreateSubredditDto } from './dto/create-subreddit.dto';
+import type { FlairDto } from './dto/flair.dto';
+import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { SubredditController } from './subreddit.controller';
+import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
-import { CreateSubredditDto } from './dto/create-subreddit.dto';
-import { UpdateSubredditDto } from './dto/update-subreddit.dto';
-import { FlairDto } from './dto/flair.dto';
-import { readFile, unlink } from 'fs/promises';
-import mongoose from 'mongoose';
-import path from 'path';
 
 jest.mock('../utils/mail/mail.service.ts');
+
 describe('subredditController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   const invalidId = '6363fba4ab2c2f94f3ac9f37';
+  const invalidName = 'JPDptiOyGFdH';
   const createSubreddit: CreateSubredditDto = {
     name: 'subreddit',
     over18: false,
     type: 'public',
   };
   const dummySubreddit: CreateSubredditDto = {
-    name: 'dummy_subreddit',
+    name: 'dummysubreddit',
     over18: false,
     type: 'public',
   };
@@ -60,26 +77,67 @@ describe('subredditController (e2e)', () => {
     welcomeMessageEnabled: false,
     flairList: [],
   };
-  const createDummySubreddit = async () => {
-    return (await request(server).post('/subreddit').send(dummySubreddit)).body;
+
+  const userDto: CreateUserDto = {
+    email: 'email@example.com',
+    password: '12345678',
+    username: 'username',
   };
+
+  let token1: string;
+  let id1: Types.ObjectId;
+
+  const createDummyUsers = async () => {
+    const authRes1 = await request(server).post('/auth/signup').send(userDto);
+    id1 = authRes1.body._id;
+    token1 = `Bearer ${authRes1.body.token}`;
+  };
+
+  const createDummySubreddit = async (token) => {
+    const req = await request(server)
+      .post('/subreddit')
+      .set('authorization', token)
+      .send(dummySubreddit);
+
+    return req.body;
+  };
+
   let sr;
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
-          { name: 'subreddit', schema: SubredditSchema },
+          { name: 'Subreddit', schema: SubredditSchema },
         ]),
+        MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+        JwtModule.register({
+          secret: process.env.JWT_SECRET,
+          signOptions: { expiresIn: '15d' },
+        }),
+        FollowModule,
+        BlockModule,
+        ImagesHandlerModule,
       ],
-      controllers: [SubredditController],
-      providers: [SubredditService],
+
+      controllers: [SubredditController, AuthController],
+      providers: [
+        SubredditService,
+        UserService,
+        AuthService,
+        UserStrategy,
+        EmailService,
+        ForgetPasswordStrategy,
+      ],
     }).compile();
     app = moduleFixture.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
     server = app.getHttpServer();
-    sr = await createDummySubreddit();
+    await createDummyUsers();
+    sr = await createDummySubreddit(token1);
   });
   it('should be defined', () => {
     expect(app).toBeDefined();
@@ -88,27 +146,32 @@ describe('subredditController (e2e)', () => {
     it('must create subreddit successfully', async () => {
       const res = await request(server)
         .post('/subreddit')
+        .set('authorization', token1)
         .send(createSubreddit);
       expect(res.body).toEqual({
         ...defaultFields,
         ...createSubreddit,
         _id: res.body._id,
+        moderators: [id1],
       });
     });
-    it('must throw duplicate error', async () => {
+    it('must throw conflict error', async () => {
       const res = await request(server)
         .post('/subreddit')
+        .set('authorization', token1)
         .send(createSubreddit);
       expect(res.body.message).toBe(
-        'E11000 duplicate key error collection: test.subreddits index: name_1 dup key: { name: "subreddit" }',
+        `Subreddit with name ${createSubreddit.name} already exists.`,
       );
+      expect(res.statusCode).toBe(HttpStatus.CONFLICT);
     });
     it('must throw error leckage of data', async () => {
       const res = await request(server)
         .post('/subreddit')
+        .set('authorization', token1)
         .send({ over18: true, type: 'public' });
       expect(res.body.message).toEqual(
-        'subreddit validation failed: name: Path `name` is required.',
+        'Subreddit validation failed: name: Path `name` is required.',
       );
     });
   });
@@ -123,6 +186,34 @@ describe('subredditController (e2e)', () => {
     it('must throw error not found', async () => {
       const res = await request(server).get(`/subreddit/${invalidId}`);
       expect(res.body.message).toEqual('No subreddit with such id');
+    });
+  });
+
+  describe('/GET /subreddit/r/:subreddit_name', () => {
+    it('must return a subreddit successfully', async () => {
+      const res = await request(server).get(`/subreddit/r/${sr.name}`);
+      expect(res.body).toEqual({
+        ...sr,
+      });
+    });
+    it('must throw error not found', async () => {
+      const res = await request(server).get(`/subreddit/r/${invalidName}`);
+      expect(res.body.message).toEqual('No subreddit with such name');
+    });
+  });
+
+  describe('/GET /subreddit/r/:subreddit_name/available', () => {
+    it('must return that the subreddit name is available', async () => {
+      const res = await request(server).get(
+        `/subreddit/r/${invalidName}/available`,
+      );
+      expect(res.statusCode).toEqual(HttpStatus.OK);
+    });
+    it('must throw conflict error', async () => {
+      const res = await request(server).get(
+        `/subreddit/r/${sr.name}/available`,
+      );
+      expect(res.statusCode).toEqual(HttpStatus.CONFLICT);
     });
   });
 
@@ -150,7 +241,7 @@ describe('subredditController (e2e)', () => {
       expect(res.body.message).toEqual('No subreddit with such id');
     });
   });
-  let flair_id: string;
+  let flairId: string;
   describe('/POST /subreddit/:subreddit/flair', () => {
     const flair: FlairDto = {
       backgroundColor: 'aaa321',
@@ -161,13 +252,13 @@ describe('subredditController (e2e)', () => {
       const res = await request(server)
         .post(`/subreddit/${sr._id}/flair`)
         .send(flair);
-      flair_id = res.body.flairList[0]._id.toString();
+      flairId = res.body.flairList[0]._id.toString();
       expect(res.body).toEqual({
         _id: res.body._id,
         flairList: [
           {
             ...flair,
-            _id: flair_id,
+            _id: flairId,
           },
         ],
       });
@@ -183,13 +274,13 @@ describe('subredditController (e2e)', () => {
   describe('/DELETE /subreddit/:subreddit/flair', () => {
     it('must delete a flair successfully', async () => {
       const res = await request(server).delete(
-        `/subreddit/${sr._id}/flair/${flair_id}`,
+        `/subreddit/${sr._id}/flair/${flairId}`,
       );
       expect(res.body).toEqual({ status: 'success' });
     });
     it("must throw error subreddit doesn't exist", async () => {
       const res = await request(server).delete(
-        `/subreddit/${invalidId}/flair/${flair_id}`,
+        `/subreddit/${invalidId}/flair/${flairId}`,
       );
       expect(res.body.message).toEqual('No subreddit with such id');
     });
@@ -197,15 +288,14 @@ describe('subredditController (e2e)', () => {
 
   describe('/POST /subreddit/:subreddit/icon', () => {
     it('must upload a photo successfully', async () => {
-      const saveDir = `src/statics/subreddit_icons/${sr._id}.jpeg`;
       const res = await request(server)
         .post(`/subreddit/${sr._id}/icon`)
         .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');
-      expect(typeof (await readFile(saveDir))).toBe('object');
+      expect(typeof (await readFile(res.body.icon))).toBe('object');
       expect(res.body).toEqual({
-        icon: saveDir,
+        icon: res.body.icon,
       });
-      await unlink(saveDir);
+      await unlink(res.body.icon);
     });
     it("must throw error subreddit doesn't exist", async () => {
       const res = await request(server)
@@ -221,7 +311,6 @@ describe('subredditController (e2e)', () => {
 
   describe('/DELETE /subreddit/:subreddit/icon', () => {
     it('The Icon removed successfully', async () => {
-      // `statics/subreddit_icons/${sr._id}.jpeg`;
       await request(server)
         .post(`/subreddit/${sr._id}/icon`)
         .attach('icon', __dirname + '/test/photos/testingPhoto.jpeg');

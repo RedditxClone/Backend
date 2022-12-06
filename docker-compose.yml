@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  backend:
+    container_name: back
+    build:
+      context: .
+      dockerfile: devops.Dockerfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - DB_CONNECTION_STRING
+      - JWT_SECRET
+      - FORGET_PASSWORD_SECRET
+      - SU_PASS
+      - SU_EMAIL
+      - SU_USERNAME
+    networks:
+      - db-network
+      - proxy-network
+    restart: always
+
+networks:
+  db-network:
+    external: true
+  proxy-network:
+    external: true

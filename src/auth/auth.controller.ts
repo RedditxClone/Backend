@@ -1,30 +1,32 @@
 import {
-  Controller,
-  Post,
   Body,
-  Res,
+  Controller,
   Patch,
-  UseGuards,
+  Post,
   Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProperty,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Response } from 'express';
+
+import { CreateUserDto, ReturnedUserDto } from '../user/dto';
 import { AuthService } from './auth.service';
+import { ForgetUsernameDto } from './dto';
 import {
   ChangeForgottenPasswordDto,
   ChangePasswordDto,
-} from './dto/changePassword.dto';
-import { ForgetPasswordDto } from './dto/forgetPassword.dto';
+} from './dto/change-password.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { LoginDto } from './dto/login.dto';
-import { CreateUserDto } from '../user/dto';
-import { Response } from 'express';
-import { ForgetUsernameDto, SigninDto } from './dto';
 import { JWTUserGuard } from './guards';
 import { JWTForgetPasswordGuard } from './guards/forget-password.guard';
 
@@ -36,31 +38,32 @@ export class AuthController {
   @ApiOperation({ description: 'Login user to his account' })
   @ApiCreatedResponse({
     description: 'Autherized Successfully',
-    type: SigninDto,
+    type: ReturnedUserDto,
   })
   @ApiUnauthorizedResponse({ description: 'Wrong email or password' })
   @Post('login')
   async login(@Body() dto: LoginDto, @Res() res: Response) {
-    return await this.authService.login(dto, res);
+    return this.authService.login(dto, res);
   }
 
   @ApiOperation({ description: 'Create a new user account' })
   @ApiCreatedResponse({
     description: 'Account created successfully',
-    type: SigninDto,
+    type: ReturnedUserDto,
   })
   @ApiForbiddenResponse({ description: 'The email is used' })
   @Post('signup')
   async signup(@Body() dto: CreateUserDto, @Res() res: Response) {
-    return await this.authService.signup(dto, res);
+    return this.authService.signup(dto, res);
   }
+
   @ApiOperation({ description: 'Recover the password of an account' })
   @ApiCreatedResponse({
     description: 'An email will be sent if the user exists in the database',
   })
   @Post('forget-password')
   async forgetPassword(@Body() dto: ForgetPasswordDto) {
-    return await this.authService.forgetPassword(dto);
+    return this.authService.forgetPassword(dto);
   }
 
   @ApiOperation({ description: 'Recover the password of an account' })
@@ -78,13 +81,15 @@ export class AuthController {
     await this.authService.forgetUsername(forgetUsernameDto, res);
   }
 
+  @ApiProperty({ description: 'after sending token to the user in email' })
+  @ApiCreatedResponse({ description: 'password changed successfully' })
   @UseGuards(JWTForgetPasswordGuard)
   @Post('change-forgotten-password')
   async changeForgottenPassword(
     @Body() dto: ChangeForgottenPasswordDto,
     @Req() req: any,
   ) {
-    return await this.authService.changePasswordUsingToken(
+    return this.authService.changePasswordUsingToken(
       req.user._id,
       dto.password,
     );
@@ -101,7 +106,7 @@ export class AuthController {
     @Res() res: Response,
     @Req() req,
   ) {
-    return await this.authService.changePassword(
+    return this.authService.changePassword(
       req.user._id,
       changePasswordDto,
       res,

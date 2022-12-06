@@ -1,11 +1,14 @@
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { AvailableUsernameDto, PrefsDto } from './dto';
-import { UserController } from './user.controller';
-import { UserDocument } from './user.schema';
-import { UserService } from './user.service';
-import { stubUser } from './test/stubs/user.stub';
 import { createRequest, createResponse } from 'node-mocks-http';
+
+import { stubBlock } from '../block/test/stubs/blocked-users.stub';
+import type { AvailableUsernameDto } from './dto';
+import { PrefsDto } from './dto';
+import { stubUser } from './test/stubs/user.stub';
+import { UserController } from './user.controller';
+import type { UserDocument } from './user.schema';
+import { UserService } from './user.service';
 
 jest.mock('./user.service');
 describe('UserControllerSpec', () => {
@@ -67,6 +70,18 @@ describe('UserControllerSpec', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+
+  describe('block', () => {
+    test('it should block successfully', async () => {
+      const req = createRequest();
+      const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
+      req.user = { id };
+      const res: any = await userController.getBlockedUsers({
+        user: { _id: id },
+      });
+      expect(res).toEqual(stubBlock());
+    });
+  });
   describe('unblock', () => {
     test('it should unblock successfully', async () => {
       const req = createRequest();
@@ -97,13 +112,15 @@ describe('UserControllerSpec', () => {
       req.user = { id };
       const res: any = await userController.getUserPrefs(req);
       const usr = stubUser();
-      delete usr['username'];
-      delete usr['hashPassword'];
-      delete usr['email'];
-      delete usr['authType'];
-      delete usr['accountClosed'];
-      delete usr['savedPosts'];
       expect(res).toEqual(usr);
+      const {
+        username: _username,
+        email: _email,
+        authType: _authType,
+        hashPassword: _hashPassword,
+        ...user
+      } = stubUser();
+      expect(res).toEqual(user);
     });
   });
   describe('patch prefs', () => {
@@ -123,8 +140,30 @@ describe('UserControllerSpec', () => {
       const req = createRequest();
       const id: Types.ObjectId = new Types.ObjectId(1);
       req.user = { id };
-      const res: any = await userController.deleteAccount(req);
-      expect(res).toEqual({ status: 'success' });
+      expect(await userController.deleteAccount(req)).toEqual({
+        status: 'success',
+      });
+    });
+  });
+  describe('upload profile photo', () => {
+    it('must be uploaded successfully', async () => {
+      const req = createRequest();
+      const _id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { _id };
+      expect(await userController.uploadProfilePhoto(req, null)).toEqual({
+        photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
+      });
+    });
+  });
+
+  describe('upload cover photo', () => {
+    it('must be uploaded successfully', async () => {
+      const req = createRequest();
+      const _id: Types.ObjectId = new Types.ObjectId(1);
+      req.user = { _id };
+      expect(await userController.uploadCoverPhoto(req, null)).toEqual({
+        photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
+      });
     });
   });
   describe('save post', () => {

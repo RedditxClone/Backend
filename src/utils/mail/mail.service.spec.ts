@@ -1,8 +1,10 @@
-import { EmailService } from './mail.service';
-import { Test, TestingModule } from '@nestjs/testing';
-import { MailerService } from '@nestjs-modules/mailer';
-import { MailerServiceMock } from '../__mocks__/mailer.service';
 import { HttpException } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { MailerService } from '@nestjs-modules/mailer';
+
+import { MailerServiceMock } from '../__mocks__/mailer.service';
+import { EmailService } from './mail.service';
 /**
  * Test for Mail Service
  */

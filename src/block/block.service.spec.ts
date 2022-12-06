@@ -1,16 +1,19 @@
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from '../user/user.service';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { Types } from 'mongoose';
+
+import { FollowSchema } from '../follow/follow.schema';
+import { FollowService } from '../follow/follow.service';
 import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
+import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
-} from '../utils/mongooseInMemory';
+} from '../utils/mongoose-in-memory';
 import { BlockSchema } from './block.schema';
 import { BlockService } from './block.service';
-import { Types } from 'mongoose';
-import { FollowService } from '../follow/follow.service';
-import { FollowSchema } from '../follow/follow.schema';
 
 describe('BlockService', () => {
   let service: BlockService;
@@ -21,6 +24,7 @@ describe('BlockService', () => {
     module = await Test.createTestingModule({
       imports: [
         rootMongooseTestModule(),
+        ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'Block', schema: BlockSchema },
           { name: 'User', schema: UserSchema },
@@ -31,20 +35,18 @@ describe('BlockService', () => {
     }).compile();
     service = module.get<BlockService>(BlockService);
     const userService: UserService = module.get<UserService>(UserService);
-    id1 = (
-      await userService.createUser({
-        email: 'email@example.com',
-        password: '12345678',
-        username: 'username',
-      })
-    )._id;
-    id2 = (
-      await userService.createUser({
-        email: 'email2@example.com',
-        password: '12345678',
-        username: 'username2',
-      })
-    )._id;
+    const user1 = await userService.createUser({
+      email: 'email@example.com',
+      password: '12345678',
+      username: 'username',
+    });
+    id1 = user1._id;
+    const user2 = await userService.createUser({
+      email: 'email2@example.com',
+      password: '12345678',
+      username: 'username2',
+    });
+    id2 = user2._id;
   });
 
   it('should be defined', () => {
@@ -77,6 +79,24 @@ describe('BlockService', () => {
       }).rejects.toThrow(`you are not allowed to block yourself`);
     });
   });
+  describe('getBlockedUsers', () => {
+    it('should return blocked users successfully', async () => {
+      const res = await service.getBlockedUsers(id1);
+      expect(res.length).toEqual(1);
+      expect(res[0].blocked).toEqual(
+        expect.objectContaining({
+          _id: id2,
+          username: 'username2',
+          profilePhoto: '',
+        }),
+      );
+    });
+    it('should return an empty array', async () => {
+      const res = await service.getBlockedUsers(id2);
+      expect(res.length).toEqual(0);
+    });
+  });
+
   describe('unblock', () => {
     it('should unblock successfully', async () => {
       const unblockRes = await service.unblock({
@@ -98,6 +118,6 @@ describe('BlockService', () => {
   });
   afterAll(async () => {
     await closeInMongodConnection();
-    module.close();
+    await module.close();
   });
 });
