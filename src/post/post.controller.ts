@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -24,6 +23,7 @@ import {
 import { Types } from 'mongoose';
 import { diskStorage } from 'multer';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { uniqueFileName } from '../utils';
@@ -62,8 +62,11 @@ export class PostController {
   })
   @UseGuards(JWTUserGuard)
   @Post('/submit')
-  async create(@Req() req, @Body() createPostDto: CreatePostDto) {
-    return this.postService.create(req.user._id, createPostDto);
+  async create(
+    @User('_id') userId: Types.ObjectId,
+    @Body() createPostDto: CreatePostDto,
+  ) {
+    return this.postService.create(userId, createPostDto);
   }
 
   @ApiOperation({ description: 'upload a post media.' })
@@ -92,8 +95,11 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
   @UseGuards(JWTUserGuard)
-  remove(@Req() req, @Param('id', ParseObjectIdPipe) user_id: Types.ObjectId) {
-    return this.postCommentService.remove(user_id, req.user._id, 'Post');
+  remove(
+    @User('_id') userId: Types.ObjectId,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.postCommentService.remove(id, userId, 'Post');
   }
 
   @ApiOperation({ description: 'Edit the body text of a post.' })
@@ -108,9 +114,9 @@ export class PostController {
   update(
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() dto: UpdatePostDto,
-    @Req() { user },
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.postCommentService.update(id, dto, user._id);
+    return this.postCommentService.update(id, dto, userId);
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
