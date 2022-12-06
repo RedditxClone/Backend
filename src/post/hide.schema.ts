@@ -12,7 +12,7 @@ export class Hide {
   userId: Types.ObjectId;
 }
 
-export const FollowSchema = (() => {
+export const HideSchema = (() => {
   const schema = SchemaFactory.createForClass(Hide);
   schema.index({ userId: 1, postId: 1 }, { unique: true });
 

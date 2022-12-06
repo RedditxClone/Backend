@@ -140,10 +140,10 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post hide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/hide')
-  //todo
-  hide(@Param('id') id: string) {
-    return id;
+  @UseGuards(JWTUserGuard)
+  @Post(':post/hide')
+  hide(@Param('post', ParseObjectIdPipe) postId: Types.ObjectId, @Req() req) {
+    return this.postService.hide(postId, req.user._id);
   }
 
   @ApiOperation({
@@ -152,10 +152,10 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post unhide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/unhide')
-  //todo
-  unhide(@Param('id') id: string) {
-    return id;
+  @UseGuards(JWTUserGuard)
+  @Post(':post/unhide')
+  unhide(@Param('post', ParseObjectIdPipe) postId: Types.ObjectId, @Req() req) {
+    return this.postService.unhide(postId, req.user._id);
   }
 
   @ApiOperation({
@@ -165,7 +165,6 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Patch(':id/lock')
-  //todo
   lock(@Param('id') id: string) {
     return id;
   }
