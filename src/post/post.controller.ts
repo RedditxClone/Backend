@@ -13,12 +13,14 @@ import {
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
@@ -318,5 +320,29 @@ export class PostController {
     insightsPostDto.insightsCount = 0;
 
     return insightsPostDto;
+  }
+
+  @ApiOperation({
+    description: 'upvote post',
+  })
+  @ApiCreatedResponse({ description: 'upvoted successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:post/upvote')
+  upvote(@Param('post', ParseObjectIdPipe) postId, @Req() req) {
+    return this.postCommentService.upvote(postId, req.user._id);
+  }
+
+  @ApiOperation({
+    description: 'downvote post',
+  })
+  @ApiCreatedResponse({ description: 'upvoted successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:post/downvote')
+  downvote(@Param('post', ParseObjectIdPipe) postId, @Req() req) {
+    return this.postCommentService.downvote(postId, req.user._id);
   }
 }

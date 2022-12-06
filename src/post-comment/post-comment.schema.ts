@@ -12,10 +12,7 @@ export class PostComment {
   text: string;
 
   @Prop({ default: 0 })
-  upvotesCount: number;
-
-  @Prop({ default: 0 })
-  downvotesCount: number;
+  votesCount: number;
 
   @Prop({ default: Date.now })
   createdDate: Date;

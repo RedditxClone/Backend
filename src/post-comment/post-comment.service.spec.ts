@@ -23,6 +23,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { PostComment } from './post-comment.schema';
 import { PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
@@ -62,6 +63,10 @@ describe('PostCommentService', () => {
           {
             name: 'UserSubreddit',
             schema: SubredditUserSchema,
+          },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
           },
         ]),
       ],
@@ -242,6 +247,7 @@ describe('PostCommentService', () => {
       ).rejects.toThrow(UnauthorizedException);
     });
   });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
