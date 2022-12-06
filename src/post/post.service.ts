@@ -80,16 +80,11 @@ export class PostService {
   private async getUserTimeLine(user: UserWithId) {
     return this.postModel.aggregate([
       {
-        $project: {
+        $set: {
           postId: { $toObjectId: '$_id' },
           subredditId: {
             $toObjectId: '$subredditId',
           },
-          title: 1,
-          text: 1,
-          upvotesCount: 1,
-          downvotesCount: 1,
-          images: 1,
           userId: {
             $toObjectId: '$userId',
           },
@@ -139,6 +134,8 @@ export class PostService {
           downvotesCount: 1,
           images: 1,
           postId: 1,
+          commentCount: 1,
+          publishedDate: 1,
           subreddit: {
             id: '$subredditId',
             name: '$subreddit.name',
@@ -158,6 +155,44 @@ export class PostService {
         $unwind: '$user',
       },
       {
+        $lookup: {
+          from: 'blocks',
+          as: 'block',
+          let: {
+            userId: '$userId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ['$blocked', user._id] },
+                        { $eq: ['$blocker', '$$userId'] },
+                      ],
+                    },
+                    {
+                      $and: [
+                        { $eq: ['$blocker', user._id] },
+                        { $eq: ['$blocked', '$$userId'] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$block', []],
+          },
+        },
+      },
+      {
         $project: {
           text: 1,
           title: 1,
@@ -166,6 +201,8 @@ export class PostService {
           subreddit: 1,
           upvotesCount: 1,
           downvotesCount: 1,
+          commentCount: 1,
+          publishedDate: 1,
           images: 1,
           user: {
             id: '$user._id',
