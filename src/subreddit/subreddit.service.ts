@@ -196,6 +196,21 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  async leaveSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const deleted = await this.userSubredditModel.findOneAndDelete({
+      userId,
+      subredditId,
+    });
+
+    if (!deleted) {
+      throw new BadRequestException(
+        `user with id ${userId} not joined subreddit with id ${subredditId}`,
+      );
+    }
+
+    return { status: 'success' };
+  }
+
   getHotSubreddits(_subreddit: string) {
     return 'Waiting for api features to use the sort function';
   }

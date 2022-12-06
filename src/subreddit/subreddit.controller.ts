@@ -110,6 +110,8 @@ export class SubredditController {
 
   @ApiProperty({ description: 'join subreddit' })
   @ApiCreatedResponse({ description: 'joined successfully' })
+  @ApiUnauthorizedResponse({ description: 'must be logged in' })
+  @ApiBadRequestResponse({ description: 'wrong subreddit id' })
   @UseGuards(JWTUserGuard)
   @Post('/:subreddit/join')
   joinSubreddit(
@@ -117,6 +119,19 @@ export class SubredditController {
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
   ) {
     return this.subredditService.joinSubreddit(req.user._id, subreddit);
+  }
+
+  @ApiProperty({ description: 'leave subreddit' })
+  @ApiCreatedResponse({ description: 'left successfully' })
+  @ApiUnauthorizedResponse({ description: 'must be logged in' })
+  @ApiBadRequestResponse({ description: 'user is not inside subreddit' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/leave')
+  leaveSubreddit(
+    @Req() req,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.leaveSubreddit(req.user._id, subreddit);
   }
 
   @ApiOperation({ description: 'create a post flair in a subreddit' })

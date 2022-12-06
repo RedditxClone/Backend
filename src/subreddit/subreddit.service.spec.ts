@@ -308,10 +308,6 @@ describe('SubredditService', () => {
   });
 
   describe('join subreddit', () => {
-    // let user_id: Types.ObjectId;
-    // beforeAll(() => {
-    //   user_id = new Types.ObjectId(31);
-    // });
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);
       await expect(
@@ -333,7 +329,24 @@ describe('SubredditService', () => {
       ).rejects.toThrow('duplicate key');
     });
   });
+  describe('leave subreddit', () => {
+    it('should throw bad exception', async () => {
+      const subId = new Types.ObjectId(1);
+      await expect(
+        subredditService.leaveSubreddit(userId, subId),
+      ).rejects.toThrow(
+        `user with id ${userId} not joined subreddit with id ${subId}`,
+      );
+    });
 
+    it('should leave successfully', async () => {
+      const res = await subredditService.leaveSubreddit(
+        userId,
+        new Types.ObjectId(id),
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
