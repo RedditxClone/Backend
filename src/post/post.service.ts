@@ -4,11 +4,33 @@ import { Model, Types } from 'mongoose';
 
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
+import type { Hide } from './hide.schema';
 import type { Post } from './post.schema';
 
 @Injectable()
 export class PostService {
-  constructor(@InjectModel('Post') private readonly postModel: Model<Post>) {}
+  constructor(
+    @InjectModel('Post') private readonly postModel: Model<Post>,
+    @InjectModel('Hide') private readonly hideModel: Model<Hide>,
+  ) {}
+
+  async hide(postId: Types.ObjectId, userId: Types.ObjectId) {
+    await this.hideModel.create({
+      postId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
+
+  async unhide(postId: Types.ObjectId, userId: Types.ObjectId) {
+    await this.hideModel.deleteOne({
+      postId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
 
   /**
    * Create a post in a subreddit.
