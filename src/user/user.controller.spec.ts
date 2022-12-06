@@ -111,13 +111,12 @@ describe('UserControllerSpec', () => {
       const id: Types.ObjectId = new Types.ObjectId('exampleOfId1');
       req.user = { id };
       const res: any = await userController.getUserPrefs(req);
-      const usr = stubUser();
-      expect(res).toEqual(usr);
       const {
         username: _username,
         email: _email,
         authType: _authType,
         hashPassword: _hashPassword,
+        savedPosts: _savedPosts,
         ...user
       } = stubUser();
       expect(res).toEqual(user);

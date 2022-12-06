@@ -425,7 +425,7 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Post('/post/:post_id/save')
   async savePost(@Req() { user, params }) {
-    return await this.userService.savePost(user._id, params.post_id);
+    return this.userService.savePost(user._id, params.post_id);
   }
 
   @ApiOperation({
@@ -438,6 +438,6 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Get('/post/save')
   async getSavedPosts(@Req() { user }) {
-    return await this.userService.getSavedPosts(user._id);
+    return this.userService.getSavedPosts(user._id);
   }
 }

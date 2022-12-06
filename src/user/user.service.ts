@@ -10,18 +10,14 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import type { Response } from 'express';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
-import { BlockService, BlockService } from '../block/block.service';
+import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
-import {
-  throwGeneralException,
-  throwIfNullObject,
-} from '../utils/throwException';
 import type {
   AvailableUsernameDto,
   CreateUserDto,
@@ -29,7 +25,6 @@ import type {
   UserAccountDto,
 } from './dto';
 import { PrefsDto } from './dto';
-import type { FilterUserDto } from './dto/user-filter.dto';
 import type { User, UserDocument, UserWithId } from './user.schema';
 
 @Global()
@@ -392,7 +387,7 @@ export class UserService {
       )
       .select('');
 
-    if (data.modifiedCount == 0) {
+    if (data.modifiedCount === 0) {
       throw new BadRequestException('the post already saved');
     }
 
