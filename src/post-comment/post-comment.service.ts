@@ -203,4 +203,17 @@ export class PostCommentService {
 
     return { status: 'success' };
   }
+
+  async unvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+    const res = await this.voteModel.findOneAndDelete(
+      { thingId, userId },
+      { new: false },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
+    console.log(res);
+
+    return { status: 'success' };
+  }
 }
