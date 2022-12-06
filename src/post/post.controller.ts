@@ -115,7 +115,7 @@ export class PostController {
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Get(':id')
-  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+  async get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.postCommentService.get(id, 'Post');
   }
 

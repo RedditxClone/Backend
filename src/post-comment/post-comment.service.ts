@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
+import type { FilterPostCommentDto } from './dto/filter-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
 
@@ -80,6 +81,73 @@ export class PostCommentService {
       throw new BadRequestException(
         `Requested a ${type} but the id belongs to ${thing.type}`,
       );
+    }
+
+    return thing;
+  };
+
+  /**
+   * Gets a graph of comments/posts
+   * @param filter the filter of the parent
+   * @returns and array of things with an array of comments
+   */
+  getThings = async (filter: FilterPostCommentDto) => {
+    if (!filter.subredditId || !filter.userId) {
+      filter.type = 'Post';
+    }
+
+    const thing: PostComment[] | null = await this.postCommentModel.aggregate([
+      { $match: filter }, // filter
+      {
+        $graphLookup: {
+          from: 'postcomments',
+          startWith: '$_id',
+          connectFromField: '_id',
+          connectToField: 'parentId',
+          depthField: 'depth',
+          as: 'comments',
+          restrictSearchWithMatch: {
+            isDeleted: false,
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$comments',
+        },
+      },
+      {
+        //todo need to add sort filter ex. hot, rising, ...
+        $sort: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          'comments.depth': 1,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          'comments.createdDate': 1,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            body: '$body',
+            _id: '$_id',
+          },
+          comments: {
+            $push: '$comments',
+          },
+        },
+      },
+      {
+        $project: {
+          body: '$_id.body',
+          _id: '$_id._id',
+          comments: '$comments',
+        },
+      },
+    ]);
+
+    //! may need to be removed
+    if (!Array.isArray(thing) || thing.length === 0) {
+      throw new NotFoundException(`The filter sent resulted in no outputs`);
     }
 
     return thing;
