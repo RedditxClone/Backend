@@ -52,7 +52,7 @@ export class PostController {
   ) {}
 
   @Get('timeline')
-  // @UseGuards(JWTUserIfExistGuard)
+  @UseGuards(JWTUserIfExistGuard)
   getTimeLine(@Req() req) {
     return this.postService.getTimeLine(req);
   }

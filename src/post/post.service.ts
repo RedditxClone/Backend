@@ -77,7 +77,85 @@ export class PostService {
     ]);
   }
 
-  private async getUserTimeLine(user: UserWithId) {}
+  private async getUserTimeLine(user: UserWithId) {
+    return this.postModel.aggregate([
+      {
+        $project: {
+          postId: { $toObjectId: '$_id' },
+          subredditId: {
+            $toObjectId: '$subredditId',
+          },
+          title: 1,
+          _id: 0,
+        },
+      },
+      {
+        $lookup: {
+          from: 'subreddits',
+          as: 'PostSubreddit',
+          localField: 'subredditId',
+          foreignField: '_id',
+        },
+      },
+      {
+        $unwind: '$PostSubreddit',
+      },
+
+      // {
+      //   $lookup: {
+
+      //   },
+      // },
+      // {
+      //   $lookup: {
+      //     from: 'Subreddit',
+      //     let: { subredditId: '$Subreddit._id', postId: '$Post._id' },
+      //     pipeline: [
+      //       {
+      //         $match: {
+      //           $expr: {
+      //             $eq: ['$subredditId', '$$subredditId'],
+      //           },
+      //         },
+      //       },
+      //       {
+      //         $project: {},
+      //       },
+      //     ],
+      //     as: 'postSubreddit',
+      //   },
+      // },
+      // {
+      //   $project: {
+
+      //   },
+      // },
+      // {
+      //   $lookup: {
+      //     from: 'UserSubreddit',
+      //     localField: 'PostSubreddit._id',
+      //     foreignField: 'UserSubreddit.subredditId',
+      //     as: 'postUserSubreddit',
+      //     pipeline: [
+      //       {
+      //         $match: {
+      //           $and: [
+      //             {
+      //               $expr: { $eq: ['UserSubreddit.userId', user._id] },
+      //             },
+      //             {
+      //               $expr: {
+      //                 $eq: ['UserSubreddit.subredditId', 'postSubreddit._id'],
+      //               },
+      //             },
+      //           ],
+      //         },
+      //       },
+      //     ],
+      //   },
+      // },
+    ]);
+  }
 
   async getTimeLine(req: Request & { user: UserWithId | undefined }) {
     if (!req.user) {
