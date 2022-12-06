@@ -193,6 +193,24 @@ export class PostService {
         },
       },
       {
+        $lookup: {
+          from: 'vote',
+          as: 'vote',
+          let: {
+            postId: '$postId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$$postId', '$thingId'] }, { $eq: [] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
         $project: {
           text: 1,
           title: 1,
