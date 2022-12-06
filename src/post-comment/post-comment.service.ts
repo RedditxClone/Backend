@@ -161,13 +161,21 @@ export class PostCommentService {
     lastStatus: number,
     curStatus: number,
   ) {
-    if (lastStatus === curStatus) {
-      return;
+    const res = await this.postCommentModel.findByIdAndUpdate(
+      thingId,
+      {
+        $inc: { votesCount: curStatus - lastStatus },
+      },
+      { new: true },
+    );
+
+    if (!res) {
+      throw new NotFoundException(
+        `there is no post or comment with id ${thingId}`,
+      );
     }
 
-    await this.postCommentModel.findByIdAndUpdate(thingId, {
-      $inc: { votesCount: curStatus - lastStatus },
-    });
+    return { votesCount: res.votesCount };
   }
 
   private getVotesNum(isUpvote: boolean | undefined) {
@@ -185,10 +193,7 @@ export class PostCommentService {
       { upsert: true, new: false },
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1);
-
-    return { status: 'success' };
+    return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1).then();
   }
 
   async downvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
@@ -198,10 +203,7 @@ export class PostCommentService {
       { upsert: true, new: false },
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), -1);
-
-    return { status: 'success' };
+    return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), -1);
   }
 
   async unvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
@@ -210,10 +212,6 @@ export class PostCommentService {
       { new: false },
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
-    console.log(res);
-
-    return { status: 'success' };
+    return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
 }

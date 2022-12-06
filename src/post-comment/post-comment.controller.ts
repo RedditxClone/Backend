@@ -13,9 +13,9 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { JWTUserGuard } from 'auth/guards';
-import { ParseObjectIdPipe } from 'utils/utils.service';
 
+import { JWTUserGuard } from '../auth/guards';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
 
