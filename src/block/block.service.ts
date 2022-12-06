@@ -74,6 +74,6 @@ export class BlockService {
   }
 
   async getBlockerUsersIds(user_id: Types.ObjectId) {
-    return this.blockModel.find({ blocked: user_id }).select('blocker');
+    return this.blockModel.find({ blocked: user_id }).select('-_id blocker');
   }
 }

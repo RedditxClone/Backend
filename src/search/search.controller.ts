@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { GeneralSearchDto } from './dto/general-search.dto';
 import { GetSearchDto } from './dto/get-search-dto';
 import { SubredditSearchDto } from './dto/subreddit-search.dto';
@@ -27,6 +28,13 @@ export class SearchController {
     return {
       searchResult: [],
     };
+  }
+
+  @UseGuards(IsUserExistGuard)
+  @ApiProperty({ description: 'search for people' })
+  @Get('/people')
+  searchPeople(@Query('word') word, @Req() req) {
+    return this.searchService.searchPeople(word, 10, req._id);
   }
 
   @ApiProperty({ description: 'get subreddit search results' })
