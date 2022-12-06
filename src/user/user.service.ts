@@ -14,9 +14,11 @@ import { plainToInstance } from 'class-transformer';
 import type { Response } from 'express';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
+import { PostComment } from 'post-comment/post-comment.schema';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type {
   AvailableUsernameDto,
@@ -34,6 +36,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly followService: FollowService,
     private readonly blockService: BlockService,
+    private readonly postCommentService: PostCommentService,
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
@@ -394,8 +397,8 @@ export class UserService {
     return { status: 'success' };
   }
 
-  async getSavedPosts(user_id: Types.ObjectId) {
-    return this.userModel.findById(user_id).select('savedPosts');
+  async getSavedPosts(savedPosts: Types.ObjectId[]) {
+    return this.postCommentService.getSavedPosts(savedPosts);
   }
 
   uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {

@@ -170,8 +170,7 @@ describe('UserControllerSpec', () => {
       const id1: Types.ObjectId = new Types.ObjectId(1);
       const id2: Types.ObjectId = new Types.ObjectId(2);
       const user = { _id: id1 };
-      const params = { _id: id2 };
-      const res: any = await userController.savePost({ user, params });
+      const res: any = await userController.savePost(id2, { user });
       expect(res).toEqual({ status: 'success' });
     });
   });

@@ -12,6 +12,9 @@ import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
+import type { Post } from '../post/post.schema';
+import { PostService } from '../post/post.service';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -30,6 +33,7 @@ jest.mock('../block/block.service.ts');
 jest.mock('../utils/imagesHandler/images-handler.service');
 describe('UserService', () => {
   let service: UserService;
+  let postService: PostService;
   let module: TestingModule;
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -37,6 +41,7 @@ describe('UserService', () => {
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
@@ -44,6 +49,7 @@ describe('UserService', () => {
       providers: [UserService, UserStrategy],
     }).compile();
     service = module.get<UserService>(UserService);
+    postService = module.get<PostService>(PostService);
   });
 
   it('should be defined', () => {
@@ -358,13 +364,18 @@ describe('UserService', () => {
   });
 
   describe('get saved posts', () => {
-    // it('should return saved posts successfully', async () => {
-    //   const res = await service.getSavedPosts(id);
-    //   expect(res).toMatchObject({
-    //     _id: id,
-    //     savedPosts: [id],
-    //   });
-    // });
+    let post: Post & { _id };
+    beforeAll(async () => {
+      post = await postService.create(new Types.ObjectId(1), {
+        subredditId: new Types.ObjectId(2),
+        title: 'title',
+        text: 'text',
+      });
+    });
+    it('should return saved posts successfully', async () => {
+      const res: any = await service.getSavedPosts([post._id]);
+      expect(res[0]).toMatchObject({ _id: post._id });
+    });
   });
 
   describe('uploadIcon', () => {

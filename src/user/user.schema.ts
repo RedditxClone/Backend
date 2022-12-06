@@ -149,8 +149,7 @@ export class User {
   @Prop({ default: [] })
   whitelisted: string[];
 
-  // TODO: It should ref the post model but first it has to be created.
-  @Prop({ default: [] })
+  @Prop({ default: [], ref: 'PostComment' })
   savedPosts: Types.ObjectId[];
 
   //Miscellaneous

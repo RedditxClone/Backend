@@ -153,4 +153,7 @@ export class PostCommentService {
 
     return { status: 'success', timestamp: new Date() };
   };
+
+  getSavedPosts = (savedPosts: Types.ObjectId[]) =>
+    this.postCommentModel.find({ _id: { $in: savedPosts }, isDeleted: false });
 }

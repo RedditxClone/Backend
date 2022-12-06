@@ -424,8 +424,11 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(JWTUserGuard)
   @Post('/post/:post_id/save')
-  async savePost(@Req() { user, params }) {
-    return this.userService.savePost(user._id, params.post_id);
+  async savePost(
+    @Param('post_id', ParseObjectIdPipe) post_id: Types.ObjectId,
+    @Req() { user },
+  ) {
+    return this.userService.savePost(user._id, post_id);
   }
 
   @ApiOperation({
@@ -438,6 +441,6 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Get('/post/save')
   async getSavedPosts(@Req() { user }) {
-    return this.userService.getSavedPosts(user._id);
+    return this.userService.getSavedPosts(user.savedPosts);
   }
 }
