@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { VoteController } from './vote.controller';
 import { VoteSchema } from './vote.schema';
-import { VoteService } from './vote.service';
 
 @Module({
   imports: [
@@ -14,7 +12,5 @@ import { VoteService } from './vote.service';
       },
     ]),
   ],
-  controllers: [VoteController],
-  providers: [VoteService],
 })
 export class VoteModule {}

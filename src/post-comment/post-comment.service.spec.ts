@@ -7,7 +7,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { uptime } from 'process';
 
 import type { Comment } from '../comment/comment.schema';
 import { CommentSchema } from '../comment/comment.schema';
