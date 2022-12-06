@@ -57,6 +57,14 @@ export class UserService {
     return 'delete a friend';
   }
 
+  searchUserQuery = (usersBlockedMe, searchPhrase) =>
+    this.userModel
+      .find({
+        username: new RegExp(`^${searchPhrase}`),
+        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+      })
+      .select('username profilePhoto about');
+
   /**
    *
    * @param dto look at CreateUserDto

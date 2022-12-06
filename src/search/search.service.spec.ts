@@ -1,28 +1,22 @@
-import * as mongoose from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 
 import { BlockModule } from '../block/block.module';
-import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
 import type { CreateCommentDto } from '../comment/dto';
-import { FollowModule } from '../follow/follow.module';
 import type { CreatePostDto } from '../post/dto';
-import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
-import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import type { CreateSubredditDto } from '../subreddit/dto/create-subreddit.dto';
-// import { PostSchema } from '../post/post.schema';
-import { SubredditSchema } from '../subreddit/subreddit.schema';
+import { SubredditModule } from '../subreddit/subreddit.module';
 import { SubredditService } from '../subreddit/subreddit.service';
-import { UserSchema } from '../user/user.schema';
+import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
-import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
-import { rootMongooseTestModule } from '../utils/mongoose-in-memory';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
+import { rootMongooseTestModule } from '../utils/mongoose-in-memory';
 
 describe('SearchService', () => {
   let searchService: SearchService;
@@ -78,42 +72,14 @@ describe('SearchService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        rootMongooseTestModule(),
-        mongoose.MongooseModule.forFeature([
-          { name: 'User', schema: UserSchema },
-        ]),
-        mongoose.MongooseModule.forFeature([
-          { name: 'Subreddit', schema: SubredditSchema },
-        ]),
-        FollowModule,
         BlockModule,
-        ImagesHandlerModule,
-        mongoose.MongooseModule.forFeature([
-          {
-            name: 'PostComment',
-            schema: PostCommentSchema,
-            discriminators: [
-              {
-                name: 'Post',
-                schema: PostSchema,
-              },
-              {
-                name: 'Comment',
-                schema: CommentSchema,
-              },
-            ],
-          },
-        ]),
+        UserModule,
+        PostCommentModule,
+        SubredditModule,
+        rootMongooseTestModule(),
       ],
       controllers: [SearchController],
-      providers: [
-        SearchService,
-        ApiFeaturesService,
-        UserService,
-        SubredditService,
-        PostService,
-        CommentService,
-      ],
+      providers: [SearchService, ApiFeaturesService],
     }).compile();
 
     searchService = module.get<SearchService>(SearchService);

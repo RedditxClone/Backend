@@ -37,11 +37,11 @@ export class SearchController {
     return this.searchService.searchPeople(word, 10, req._id);
   }
 
-  @ApiProperty({ description: 'search for people' })
-  @Get('/communities')
-  searchCommunities(@Query('word') word) {
-    return this.searchService.searchCommunities(word, 10);
-  }
+  // @ApiProperty({ description: 'search for people' })
+  // @Get('/communities')
+  // searchCommunities(@Query('word') word) {
+  //   return this.searchService.searchCommunities(word, 10);
+  // }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for people' })

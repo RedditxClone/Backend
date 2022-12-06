@@ -214,4 +214,57 @@ export class PostCommentService {
 
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
+
+  searchPostQuery = (searchPhrase: string, usersBlockedMe) =>
+    this.postCommentModel
+      .find({
+        $or: [
+          { title: { $regex: searchPhrase } },
+          { text: { $regex: searchPhrase } },
+        ],
+        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+      })
+      .populate([
+        {
+          path: 'subredditId',
+          model: 'Subreddit',
+          select: 'name',
+        },
+        {
+          path: 'userId',
+          model: 'User',
+          select: 'username profilePhoto',
+        },
+      ]);
+
+  searchCommentQuery = (searchPhrase: string, usersBlockedMe) =>
+    this.postCommentModel
+      .find({
+        text: { $regex: searchPhrase },
+        userId: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+      })
+      .populate([
+        {
+          path: 'postId',
+          model: 'Post',
+          select: 'title publishedDate',
+          populate: [
+            {
+              path: 'subredditId',
+              model: 'Subreddit',
+              select: 'name',
+            },
+            {
+              path: 'userId',
+              model: 'User',
+              select: 'username profilePhoto',
+            },
+          ],
+        },
+        {
+          path: 'userId',
+          model: 'User',
+          select: 'username profilePhoto',
+        },
+      ]);
 }
