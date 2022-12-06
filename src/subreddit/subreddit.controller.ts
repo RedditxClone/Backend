@@ -22,12 +22,15 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProperty,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 import { JWTUserGuard } from '../auth/guards/user.guard';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -103,6 +106,17 @@ export class SubredditController {
     file,
   ) {
     return this.subredditService.uploadIcon(subreddit, file);
+  }
+
+  @ApiProperty({ description: 'join subreddit' })
+  @ApiCreatedResponse({ description: 'joined successfully' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/join')
+  joinSubreddit(
+    @Req() req,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.joinSubreddit(req.user._id, subreddit);
   }
 
   @ApiOperation({ description: 'create a post flair in a subreddit' })

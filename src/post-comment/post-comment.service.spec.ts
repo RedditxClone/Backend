@@ -17,6 +17,7 @@ import { PostService } from '../post/post.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
+import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -57,6 +58,10 @@ describe('PostCommentService', () => {
           {
             name: 'Subreddit',
             schema: SubredditSchema,
+          },
+          {
+            name: 'UserSubreddit',
+            schema: SubredditUserSchema,
           },
         ]),
       ],

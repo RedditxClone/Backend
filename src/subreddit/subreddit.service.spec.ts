@@ -18,6 +18,7 @@ import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
+import { SubredditUserSchema } from './subreddit-user.schema';
 
 jest.mock('../utils/imagesHandler/images-handler.service');
 describe('SubredditService', () => {
@@ -73,6 +74,7 @@ describe('SubredditService', () => {
         ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
+          { name: 'UserSubreddit', schema: SubredditUserSchema },
         ]),
       ],
       providers: [SubredditService],
@@ -302,6 +304,33 @@ describe('SubredditService', () => {
       await expect(
         subredditService.removeIcon(new Types.ObjectId(1).toString()),
       ).rejects.toThrowError('No subreddit with such id');
+    });
+  });
+
+  describe('join subreddit', () => {
+    // let user_id: Types.ObjectId;
+    // beforeAll(() => {
+    //   user_id = new Types.ObjectId(31);
+    // });
+    it('should throw bad exception', async () => {
+      const subId = new Types.ObjectId(1);
+      await expect(
+        subredditService.joinSubreddit(userId, subId),
+      ).rejects.toThrow(`there is no subreddit with id ${subId}`);
+    });
+
+    it('should join successfully', async () => {
+      const res = await subredditService.joinSubreddit(
+        userId,
+        new Types.ObjectId(id),
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+
+    it('should throw duplicate error', async () => {
+      await expect(
+        subredditService.joinSubreddit(userId, new Types.ObjectId(id)),
+      ).rejects.toThrow('duplicate key');
     });
   });
 
