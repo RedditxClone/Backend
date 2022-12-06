@@ -86,74 +86,94 @@ export class PostService {
             $toObjectId: '$subredditId',
           },
           title: 1,
-          _id: 0,
+          text: 1,
+          upvotesCount: 1,
+          downvotesCount: 1,
+          images: 1,
+          userId: {
+            $toObjectId: '$userId',
+          },
         },
       },
       {
         $lookup: {
+          from: 'usersubreddits',
+          as: 'PostUserSubreddit',
+          let: {
+            subredditId: '$subredditId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$subredditId', '$$subredditId'] },
+                    { $eq: ['$userId', user._id] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: '$PostUserSubreddit',
+      },
+      {
+        $lookup: {
           from: 'subreddits',
-          as: 'PostSubreddit',
+          as: 'subreddit',
           localField: 'subredditId',
           foreignField: '_id',
         },
       },
       {
-        $unwind: '$PostSubreddit',
+        $unwind: '$subreddit',
       },
-
-      // {
-      //   $lookup: {
-
-      //   },
-      // },
-      // {
-      //   $lookup: {
-      //     from: 'Subreddit',
-      //     let: { subredditId: '$Subreddit._id', postId: '$Post._id' },
-      //     pipeline: [
-      //       {
-      //         $match: {
-      //           $expr: {
-      //             $eq: ['$subredditId', '$$subredditId'],
-      //           },
-      //         },
-      //       },
-      //       {
-      //         $project: {},
-      //       },
-      //     ],
-      //     as: 'postSubreddit',
-      //   },
-      // },
-      // {
-      //   $project: {
-
-      //   },
-      // },
-      // {
-      //   $lookup: {
-      //     from: 'UserSubreddit',
-      //     localField: 'PostSubreddit._id',
-      //     foreignField: 'UserSubreddit.subredditId',
-      //     as: 'postUserSubreddit',
-      //     pipeline: [
-      //       {
-      //         $match: {
-      //           $and: [
-      //             {
-      //               $expr: { $eq: ['UserSubreddit.userId', user._id] },
-      //             },
-      //             {
-      //               $expr: {
-      //                 $eq: ['UserSubreddit.subredditId', 'postSubreddit._id'],
-      //               },
-      //             },
-      //           ],
-      //         },
-      //       },
-      //     ],
-      //   },
-      // },
+      {
+        $project: {
+          text: 1,
+          title: 1,
+          userId: 1,
+          upvotesCount: 1,
+          downvotesCount: 1,
+          images: 1,
+          postId: 1,
+          subreddit: {
+            id: '$subredditId',
+            name: '$subreddit.name',
+            type: '$subreddit.type',
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          text: 1,
+          title: 1,
+          userId: 1,
+          postId: 1,
+          subreddit: 1,
+          upvotesCount: 1,
+          downvotesCount: 1,
+          images: 1,
+          user: {
+            id: '$user._id',
+            photo: '$user.profilePhoto',
+            username: '$user.username',
+          },
+        },
+      },
     ]);
   }
 
