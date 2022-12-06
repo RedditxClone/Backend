@@ -5,10 +5,14 @@ import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.modul
 import { SubredditController } from './subreddit.controller';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
+import { SubredditUserSchema } from './subreddit-user.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Subreddit', schema: SubredditSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Subreddit', schema: SubredditSchema },
+      { name: 'UserSubreddit', schema: SubredditUserSchema },
+    ]),
     ImagesHandlerModule,
   ],
   controllers: [SubredditController],

@@ -10,6 +10,8 @@ pipeline {
 				SU_USERNAME = credentials('SU_USERNAME')
 				SU_EMAIL = credentials('SU_EMAIL')
 				SU_PASS = credentials('SU_PASS')
+        EMAIL_USER = credentials('EMAIL_USER')
+				EMAIL_PASS = credentials('EMAIL_PASS')
     		}
             steps {
 				sh  '''

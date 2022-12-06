@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -13,10 +14,13 @@ import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
+import type { SubredditUser } from './subreddit-user.schema';
 @Injectable()
 export class SubredditService {
   constructor(
     @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('UserSubreddit')
+    private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
@@ -166,6 +170,42 @@ export class SubredditService {
 
     if (!flair) {
       throw new NotFoundException('No subreddit with such id');
+    }
+
+    return { status: 'success' };
+  }
+
+  private async subredditExist(subredditId): Promise<boolean> {
+    return (await this.subredditModel.count({ _id: subredditId })) > 0;
+  }
+
+  async joinSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const subredditExist = await this.subredditExist(subredditId);
+
+    if (!subredditExist) {
+      throw new BadRequestException(
+        `there is no subreddit with id ${subredditId}`,
+      );
+    }
+
+    await this.userSubredditModel.create({
+      subredditId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
+
+  async leaveSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const deleted = await this.userSubredditModel.findOneAndDelete({
+      userId,
+      subredditId,
+    });
+
+    if (!deleted) {
+      throw new BadRequestException(
+        `user with id ${userId} not joined subreddit with id ${subredditId}`,
+      );
     }
 
     return { status: 'success' };
