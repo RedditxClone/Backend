@@ -194,7 +194,7 @@ export class PostService {
       },
       {
         $lookup: {
-          from: 'vote',
+          from: 'votes',
           as: 'vote',
           let: {
             postId: '$postId',
@@ -203,12 +203,18 @@ export class PostService {
             {
               $match: {
                 $expr: {
-                  $and: [{ $eq: ['$$postId', '$thingId'] }, { $eq: [] }],
+                  $and: [
+                    { $eq: ['$$postId', '$thingId'] },
+                    { $eq: ['$userId', user._id] },
+                  ],
                 },
               },
             },
           ],
         },
+      },
+      {
+        $unwind: '$vote',
       },
       {
         $project: {
@@ -221,6 +227,12 @@ export class PostService {
           downvotesCount: 1,
           commentCount: 1,
           publishedDate: 1,
+          isVoting: {
+            $cond: [{ $eq: ['$vote', []] }, false, true],
+          },
+          voteType: {
+            $cond: [{ $eq: ['$vote.isUpvote', true] }, 'upvote', 'downvote'],
+          },
           images: 1,
           user: {
             id: '$user._id',
