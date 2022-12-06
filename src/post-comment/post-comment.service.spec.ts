@@ -23,6 +23,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { PostComment } from './post-comment.schema';
 import { PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
@@ -62,6 +63,10 @@ describe('PostCommentService', () => {
           {
             name: 'UserSubreddit',
             schema: SubredditUserSchema,
+          },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
           },
         ]),
       ],
@@ -240,6 +245,58 @@ describe('PostCommentService', () => {
       await expect(
         service.remove(comment._id, new Types.ObjectId(1), 'Comment'),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+  describe('vote', () => {
+    let post: Post & { _id: Types.ObjectId };
+    let comment: Comment & { _id: Types.ObjectId };
+    let userId: Types.ObjectId;
+    let user2Id: Types.ObjectId;
+    beforeAll(async () => {
+      // post = await postService.create();
+      userId = new Types.ObjectId(1);
+      user2Id = new Types.ObjectId(2);
+      post = await postService.create(userId, {
+        subredditId: subreddit._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+      comment = await commentService.create(userId, {
+        subredditId: subreddit._id,
+        parentId: post._id,
+        postId: post._id,
+        text: 'top level comment',
+      });
+    });
+    it('should upvote successfully', async () => {
+      const res = await service.upvote(comment._id, userId);
+      expect(res).toEqual({ votesCount: 1 });
+    });
+    it('should upvote successfully', async () => {
+      const res = await service.upvote(comment._id, user2Id);
+      expect(res).toEqual({ votesCount: 2 });
+    });
+
+    it('should downvote successfully', async () => {
+      const res = await service.downvote(comment._id, userId);
+      expect(res).toEqual({ votesCount: 0 });
+    });
+    it('should upvote with no effect', async () => {
+      const res = await service.upvote(comment._id, user2Id);
+      expect(res).toEqual({ votesCount: 0 });
+    });
+
+    it('should unvote successfully', async () => {
+      const res = await service.unvote(comment._id, user2Id);
+      expect(res).toEqual({ votesCount: -1 });
+    });
+
+    it('should throw an error', async () => {
+      const wrongId = new Types.ObjectId(1);
+      await expect(service.upvote(wrongId, userId)).rejects.toThrow(
+        `there is no post or comment with id ${wrongId}`,
+      );
     });
   });
   afterAll(async () => {

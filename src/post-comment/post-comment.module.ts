@@ -7,6 +7,7 @@ import { CommentService } from '../comment/comment.service';
 import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
+import { VoteSchema } from '../vote/vote.schema';
 import { PostCommentController } from './post-comment.controller';
 import { PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
@@ -27,6 +28,10 @@ import { PostCommentService } from './post-comment.service';
             schema: CommentSchema,
           },
         ],
+      },
+      {
+        name: 'Vote',
+        schema: VoteSchema,
       },
     ]),
   ],
