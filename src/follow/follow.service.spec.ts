@@ -7,6 +7,7 @@ import { BlockSchema } from '../block/block.schema';
 import { BlockService } from '../block/block.service';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -31,7 +32,7 @@ describe('FollowService', () => {
           { name: 'Block', schema: BlockSchema },
         ]),
       ],
-      providers: [FollowService, UserService, BlockService],
+      providers: [FollowService, UserService, BlockService, ApiFeaturesService],
     }).compile();
     service = module.get<FollowService>(FollowService);
     const userService: UserService = module.get<UserService>(UserService);
