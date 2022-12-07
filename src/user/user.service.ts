@@ -17,6 +17,7 @@ import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type {
   AvailableUsernameDto,
@@ -35,6 +36,7 @@ export class UserService {
     private readonly followService: FollowService,
     private readonly blockService: BlockService,
     private readonly imagesHandlerService: ImagesHandlerService,
+    private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
   getFriends() {
