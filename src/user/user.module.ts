@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserIfExistStrategy } from 'auth/strategies/user-if-exist.strategy';
 
 import { AdminStrategy } from '../auth/strategies/admin.strategy';
 import { UserStrategy } from '../auth/strategies/user.strategy';
+import { UserIfExistStrategy } from '../auth/strategies/user-if-exist.strategy';
 import { BlockModule } from '../block/block.module';
 import { FollowModule } from '../follow/follow.module';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
