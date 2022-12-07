@@ -1,19 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import type { UserWithId } from 'user/user.schema';
 
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
+import type { Hide } from './hide.schema';
 import type { Post } from './post.schema';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectModel('Post') private readonly postModel: Model<Post>,
-    private readonly apiFeatures: ApiFeaturesService,
+    @InjectModel('Hide') private readonly hideModel: Model<Hide>,
   ) {}
+
+  async hide(postId: Types.ObjectId, userId: Types.ObjectId) {
+    await this.hideModel.create({
+      postId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
+
+  async unhide(postId: Types.ObjectId, userId: Types.ObjectId) {
+    await this.hideModel.deleteOne({
+      postId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
 
   /**
    * Create a post in a subreddit.
@@ -77,8 +94,13 @@ export class PostService {
     ]);
   }
 
-  private async getUserTimeLine(user: UserWithId) {
+  private async getUserTimeLine(userId: Types.ObjectId) {
     return this.postModel.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+        },
+      },
       {
         $set: {
           postId: { $toObjectId: '$_id' },
@@ -103,7 +125,7 @@ export class PostService {
                 $expr: {
                   $and: [
                     { $eq: ['$subredditId', '$$subredditId'] },
-                    { $eq: ['$userId', user._id] },
+                    { $eq: ['$userId', userId] },
                   ],
                 },
               },
@@ -113,6 +135,72 @@ export class PostService {
       },
       {
         $unwind: '$PostUserSubreddit',
+      },
+      {
+        $lookup: {
+          from: 'hides',
+          as: 'hide',
+          let: {
+            postId: '$postId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$$postId', '$postId'] },
+                    { $eq: ['$userId', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$hide', []],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'blocks',
+          as: 'block',
+          let: {
+            userId: '$userId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ['$blocked', userId] },
+                        { $eq: ['$blocker', '$$userId'] },
+                      ],
+                    },
+                    {
+                      $and: [
+                        { $eq: ['$blocker', userId] },
+                        { $eq: ['$blocked', '$$userId'] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$block', []],
+          },
+        },
       },
       {
         $lookup: {
@@ -131,11 +219,12 @@ export class PostService {
           title: 1,
           userId: 1,
           upvotesCount: 1,
-          downvotesCount: 1,
           images: 1,
           postId: 1,
           commentCount: 1,
           publishedDate: 1,
+          votesCount: 1,
+          flair: 1,
           subreddit: {
             id: '$subredditId',
             name: '$subreddit.name',
@@ -156,44 +245,6 @@ export class PostService {
       },
       {
         $lookup: {
-          from: 'blocks',
-          as: 'block',
-          let: {
-            userId: '$userId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    {
-                      $and: [
-                        { $eq: ['$blocked', user._id] },
-                        { $eq: ['$blocker', '$$userId'] },
-                      ],
-                    },
-                    {
-                      $and: [
-                        { $eq: ['$blocker', user._id] },
-                        { $eq: ['$blocked', '$$userId'] },
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$block', []],
-          },
-        },
-      },
-      {
-        $lookup: {
           from: 'votes',
           as: 'vote',
           let: {
@@ -205,7 +256,7 @@ export class PostService {
                 $expr: {
                   $and: [
                     { $eq: ['$$postId', '$thingId'] },
-                    { $eq: ['$userId', user._id] },
+                    { $eq: ['$userId', userId] },
                   ],
                 },
               },
@@ -214,24 +265,28 @@ export class PostService {
         },
       },
       {
-        $unwind: '$vote',
-      },
-      {
         $project: {
           text: 1,
           title: 1,
           userId: 1,
           postId: 1,
           subreddit: 1,
-          upvotesCount: 1,
-          downvotesCount: 1,
+          votesCount: 1,
           commentCount: 1,
           publishedDate: 1,
-          isVoting: {
-            $cond: [{ $eq: ['$vote', []] }, false, true],
-          },
+          flair: 1,
           voteType: {
-            $cond: [{ $eq: ['$vote.isUpvote', true] }, 'upvote', 'downvote'],
+            $cond: [
+              { $eq: ['$vote', []] },
+              undefined,
+              {
+                $cond: [
+                  { $eq: ['$vote.isUpvote', [true]] },
+                  'upvote',
+                  'downvote',
+                ],
+              },
+            ],
           },
           images: 1,
           user: {
@@ -244,11 +299,11 @@ export class PostService {
     ]);
   }
 
-  async getTimeLine(req: Request & { user: UserWithId | undefined }) {
-    if (!req.user) {
+  async getTimeLine(userId: Types.ObjectId | undefined) {
+    if (!userId) {
       return this.getRandomTimeLine();
     }
 
-    return this.getUserTimeLine(req.user);
+    return this.getUserTimeLine(userId);
   }
 }
