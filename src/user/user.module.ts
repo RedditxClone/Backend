@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AdminStrategy } from '../auth/strategies/admin.strategy';
 import { UserStrategy } from '../auth/strategies/user.strategy';
+import { UserIfExistStrategy } from '../auth/strategies/user-if-exist.strategy';
 import { BlockModule } from '../block/block.module';
 import { FollowModule } from '../follow/follow.module';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -17,7 +18,11 @@ import { UserService } from './user.service';
     ImagesHandlerModule,
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
-  providers: [UserService, UserStrategy, AdminStrategy, ApiFeaturesService],
+
+  providers: [UserService, UserStrategy, AdminStrategy, ApiFeaturesService, UserIfExistStrategy],
+
+
+
   controllers: [UserController],
   exports: [UserService],
 })

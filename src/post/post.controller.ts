@@ -25,6 +25,7 @@ import { diskStorage } from 'multer';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { JWTUserIfExistGuard } from '../auth/guards/user-if-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { uniqueFileName } from '../utils';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -49,6 +50,12 @@ export class PostController {
     private readonly postService: PostService,
     private readonly postCommentService: PostCommentService,
   ) {}
+
+  @Get('timeline')
+  @UseGuards(JWTUserIfExistGuard)
+  getTimeLine(@User('_id') userId: Types.ObjectId) {
+    return this.postService.getTimeLine(userId);
+  }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
   @ApiCreatedResponse({
@@ -146,10 +153,13 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post hide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/hide')
-  //todo
-  hide(@Param('id') id: string) {
-    return id;
+  @UseGuards(JWTUserGuard)
+  @Post(':post/hide')
+  hide(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.hide(postId, userId);
   }
 
   @ApiOperation({
@@ -158,10 +168,13 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post unhide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/unhide')
-  //todo
-  unhide(@Param('id') id: string) {
-    return id;
+  @UseGuards(JWTUserGuard)
+  @Post(':post/unhide')
+  unhide(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.unhide(postId, userId);
   }
 
   @ApiOperation({
@@ -171,7 +184,6 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Patch(':id/lock')
-  //todo
   lock(@Param('id') id: string) {
     return id;
   }

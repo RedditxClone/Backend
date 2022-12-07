@@ -18,6 +18,7 @@ import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
+import { SubredditUserSchema } from './subreddit-user.schema';
 
 jest.mock('../utils/imagesHandler/images-handler.service');
 describe('SubredditService', () => {
@@ -73,6 +74,7 @@ describe('SubredditService', () => {
         ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
+          { name: 'UserSubreddit', schema: SubredditUserSchema },
         ]),
       ],
       providers: [SubredditService],
@@ -305,6 +307,46 @@ describe('SubredditService', () => {
     });
   });
 
+  describe('join subreddit', () => {
+    it('should throw bad exception', async () => {
+      const subId = new Types.ObjectId(1);
+      await expect(
+        subredditService.joinSubreddit(userId, subId),
+      ).rejects.toThrow(`there is no subreddit with id ${subId}`);
+    });
+
+    it('should join successfully', async () => {
+      const res = await subredditService.joinSubreddit(
+        userId,
+        new Types.ObjectId(id),
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+
+    it('should throw duplicate error', async () => {
+      await expect(
+        subredditService.joinSubreddit(userId, new Types.ObjectId(id)),
+      ).rejects.toThrow('duplicate key');
+    });
+  });
+  describe('leave subreddit', () => {
+    it('should throw bad exception', async () => {
+      const subId = new Types.ObjectId(1);
+      await expect(
+        subredditService.leaveSubreddit(userId, subId),
+      ).rejects.toThrow(
+        `user with id ${userId} not joined subreddit with id ${subId}`,
+      );
+    });
+
+    it('should leave successfully', async () => {
+      const res = await subredditService.leaveSubreddit(
+        userId,
+        new Types.ObjectId(id),
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

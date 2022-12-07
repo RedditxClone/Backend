@@ -13,6 +13,8 @@ services:
       - SU_PASS
       - SU_EMAIL
       - SU_USERNAME
+      - EMAIL_USER
+      - EMAIL_PASS
     networks:
       - db-network
       - proxy-network

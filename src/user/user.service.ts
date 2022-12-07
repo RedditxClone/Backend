@@ -59,6 +59,14 @@ export class UserService {
     return 'delete a friend';
   }
 
+  searchUserQuery = (usersBlockedMe, searchPhrase) =>
+    this.userModel
+      .find({
+        username: new RegExp(`^${searchPhrase}`),
+        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+      })
+      .select('username profilePhoto about');
+
   /**
    *
    * @param dto look at CreateUserDto
@@ -364,6 +372,24 @@ export class UserService {
     }
 
     return { status: 'success' };
+  }
+
+  async getUserIfExist(
+    id: Types.ObjectId,
+  ): Promise<UserWithId | null | undefined> {
+    return this.userModel.findById(id);
+  }
+
+  async getUserTimeLine() {
+    // await this.userModel.aggregate([
+    //   {
+    //     $lookup: {
+    //       from: 'user-subreddit',
+    //       localField: '_id',
+    //       foreignField: 'user_id',
+    //     },
+    //   },
+    // ]);
   }
 
   async deleteAccount(user: any) {

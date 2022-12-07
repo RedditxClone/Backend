@@ -8,7 +8,6 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -22,12 +21,16 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProperty,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards/user.guard';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -48,9 +51,9 @@ export class SubredditController {
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
-    @Req() req,
+    @User('_id') userId: Types.ObjectId,
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto, req.user._id);
+    return this.subredditService.create(createSubredditDto, userId);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
@@ -103,6 +106,32 @@ export class SubredditController {
     file,
   ) {
     return this.subredditService.uploadIcon(subreddit, file);
+  }
+
+  @ApiProperty({ description: 'join subreddit' })
+  @ApiCreatedResponse({ description: 'joined successfully' })
+  @ApiUnauthorizedResponse({ description: 'must be logged in' })
+  @ApiBadRequestResponse({ description: 'wrong subreddit id' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/join')
+  joinSubreddit(
+    @User('_id') userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.joinSubreddit(userId, subreddit);
+  }
+
+  @ApiProperty({ description: 'leave subreddit' })
+  @ApiCreatedResponse({ description: 'left successfully' })
+  @ApiUnauthorizedResponse({ description: 'must be logged in' })
+  @ApiBadRequestResponse({ description: 'user is not inside subreddit' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/leave')
+  leaveSubreddit(
+    @User('_id') userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.leaveSubreddit(userId, subreddit);
   }
 
   @ApiOperation({ description: 'create a post flair in a subreddit' })

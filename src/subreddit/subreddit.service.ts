@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -13,10 +14,13 @@ import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
+import type { SubredditUser } from './subreddit-user.schema';
 @Injectable()
 export class SubredditService {
   constructor(
     @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('UserSubreddit')
+    private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
@@ -171,7 +175,84 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  private async subredditExist(subredditId): Promise<boolean> {
+    return (await this.subredditModel.count({ _id: subredditId })) > 0;
+  }
+
+  async joinSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const subredditExist = await this.subredditExist(subredditId);
+
+    if (!subredditExist) {
+      throw new BadRequestException(
+        `there is no subreddit with id ${subredditId}`,
+      );
+    }
+
+    await this.userSubredditModel.create({
+      subredditId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
+
+  async leaveSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const deleted = await this.userSubredditModel.findOneAndDelete({
+      userId,
+      subredditId,
+    });
+
+    if (!deleted) {
+      throw new BadRequestException(
+        `user with id ${userId} not joined subreddit with id ${subredditId}`,
+      );
+    }
+
+    return { status: 'success' };
+  }
+
   getHotSubreddits(_subreddit: string) {
     return 'Waiting for api features to use the sort function';
+  }
+
+  getSearchSubredditAggregation(
+    searchPhrase: string,
+    page,
+    numberOfData: number,
+  ) {
+    const pageNumber = page ?? 1;
+
+    return this.subredditModel.aggregate([
+      {
+        $match: {
+          $or: [
+            { name: { $regex: searchPhrase } },
+            { description: { $regex: searchPhrase } },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'usersubreddits',
+          localField: '_id',
+          foreignField: 'subredditId',
+          as: 'users',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          users: { $size: '$users' },
+        },
+      },
+      {
+        $skip: (pageNumber - 1) * numberOfData,
+      },
+      {
+        $limit: numberOfData,
+      },
+    ]);
   }
 }
