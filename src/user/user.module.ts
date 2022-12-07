@@ -19,9 +19,13 @@ import { UserService } from './user.service';
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
 
-  providers: [UserService, UserStrategy, AdminStrategy, ApiFeaturesService, UserIfExistStrategy],
-
-
+  providers: [
+    UserService,
+    UserStrategy,
+    AdminStrategy,
+    ApiFeaturesService,
+    UserIfExistStrategy,
+  ],
 
   controllers: [UserController],
   exports: [UserService],
