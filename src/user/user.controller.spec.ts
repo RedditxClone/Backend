@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { createResponse } from 'node-mocks-http';
 
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
+import { FollowService } from '../follow/follow.service';
 import type { AvailableUsernameDto } from './dto';
 import { PrefsDto } from './dto';
 import { stubUser } from './test/stubs/user.stub';
@@ -10,13 +11,14 @@ import { UserController } from './user.controller';
 import type { UserDocument } from './user.schema';
 import { UserService } from './user.service';
 
+jest.mock('../follow/follow.service.ts');
 jest.mock('./user.service');
 describe('UserControllerSpec', () => {
   let userController: UserController;
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [UserController],
-      providers: [UserService],
+      providers: [UserService, FollowService],
     }).compile();
     userController = moduleRef.get<UserController>(UserController);
     jest.clearAllMocks();

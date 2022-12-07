@@ -12,6 +12,7 @@ import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -41,7 +42,7 @@ describe('UserService', () => {
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
       ],
-      providers: [UserService, UserStrategy],
+      providers: [UserService, UserStrategy, ApiFeaturesService],
     }).compile();
     service = module.get<UserService>(UserService);
   });

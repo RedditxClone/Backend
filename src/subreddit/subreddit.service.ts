@@ -214,4 +214,45 @@ export class SubredditService {
   getHotSubreddits(_subreddit: string) {
     return 'Waiting for api features to use the sort function';
   }
+
+  getSearchSubredditAggregation(
+    searchPhrase: string,
+    page,
+    numberOfData: number,
+  ) {
+    const pageNumber = page ?? 1;
+
+    return this.subredditModel.aggregate([
+      {
+        $match: {
+          $or: [
+            { name: { $regex: searchPhrase } },
+            { description: { $regex: searchPhrase } },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'usersubreddits',
+          localField: '_id',
+          foreignField: 'subredditId',
+          as: 'users',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          users: { $size: '$users' },
+        },
+      },
+      {
+        $skip: (pageNumber - 1) * numberOfData,
+      },
+      {
+        $limit: numberOfData,
+      },
+    ]);
+  }
 }
