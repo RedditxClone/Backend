@@ -223,6 +223,7 @@ export class PostCommentService {
           { text: { $regex: searchPhrase } },
         ],
         _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+        type: 'Post',
       })
       .populate([
         {
@@ -242,6 +243,7 @@ export class PostCommentService {
       .find({
         text: { $regex: searchPhrase },
         userId: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+        type: 'Comment',
       })
       .populate([
         {
@@ -249,11 +251,6 @@ export class PostCommentService {
           model: 'Post',
           select: 'title publishedDate',
           populate: [
-            {
-              path: 'subredditId',
-              model: 'Subreddit',
-              select: 'name',
-            },
             {
               path: 'userId',
               model: 'User',
@@ -265,6 +262,11 @@ export class PostCommentService {
           path: 'userId',
           model: 'User',
           select: 'username profilePhoto',
+        },
+        {
+          path: 'subredditId',
+          model: 'Subreddit',
+          select: 'name',
         },
       ]);
 }

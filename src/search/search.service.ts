@@ -22,6 +22,7 @@ export class SearchService {
 
   searchPeople = async (
     data: string,
+    page,
     numberOfData: number,
     blocker: Types.ObjectId,
   ) => {
@@ -29,47 +30,68 @@ export class SearchService {
 
     return this.apiFeaturesService.processQuery(
       this.userService.searchUserQuery(usersBlockedMe, data),
-      { limit: numberOfData },
+      { limit: numberOfData, page },
       { pagination: true },
     );
   };
 
-  // searchCommunities = async (data: string, numberOfData: number) => {
-  //   await this.apiFeaturesService.processQuery(
-  //     this.subredditModel.find(
-  //       { name: new RegExp(`^${data}`) },
-  //       { description: { $regex: data } },
-  //     ),
-  //     { limit: numberOfData },
-  //     { pagination: true },
-  //   );
-  // };
+  searchCommunities = async (data: string, page, numberOfData) =>
+    this.subredditService.getSearchSubredditAggregation(
+      data,
+      page,
+      numberOfData,
+    );
 
   searchPosts = async (
     data: string,
+    page,
     numberOfData: number,
     blocker: Types.ObjectId,
   ) => {
     const usersBlockedMe = await this.getUsersBlockedMe(blocker);
-
-    return this.apiFeaturesService.processQuery(
+    const unformattedData = await this.apiFeaturesService.processQuery(
       this.postCommentService.searchPostQuery(data, usersBlockedMe),
-      { limit: numberOfData },
+      { limit: numberOfData, page },
       { pagination: true },
     );
+
+    return unformattedData.map((el) => {
+      const { _doc } = el;
+      _doc.user = _doc.userId;
+      _doc.subreddit = _doc.subredditId;
+      delete _doc.userId;
+      delete _doc.subredditId;
+
+      return _doc;
+    });
   };
 
   searchComments = async (
     data: string,
+    page,
     numberOfData: number,
     blocker: Types.ObjectId,
   ) => {
     const usersBlockedMe = await this.getUsersBlockedMe(blocker);
 
-    return this.apiFeaturesService.processQuery(
+    const unformattedData = await this.apiFeaturesService.processQuery(
       this.postCommentService.searchCommentQuery(data, usersBlockedMe),
-      { limit: numberOfData },
+      { limit: numberOfData, page },
       { pagination: true },
     );
+
+    return unformattedData.map((el) => {
+      const { _doc } = el;
+      _doc.user = _doc.userId;
+      _doc.subreddit = _doc.subredditId;
+      delete _doc.userId;
+      delete _doc.subredditId;
+      _doc.postId.user = _doc.postId._doc.userId;
+      delete _doc.postId._doc.userId;
+      _doc.post = _doc.postId;
+      delete _doc.postId;
+
+      return _doc;
+    });
   };
 }

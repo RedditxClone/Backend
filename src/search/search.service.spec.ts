@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
@@ -14,9 +15,9 @@ import { SubredditService } from '../subreddit/subreddit.service';
 import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import { rootMongooseTestModule } from '../utils/mongoose-in-memory';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
-import { rootMongooseTestModule } from '../utils/mongoose-in-memory';
 
 describe('SearchService', () => {
   let searchService: SearchService;
@@ -72,11 +73,12 @@ describe('SearchService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot(),
+        rootMongooseTestModule(),
         BlockModule,
         UserModule,
         PostCommentModule,
         SubredditModule,
-        rootMongooseTestModule(),
       ],
       controllers: [SearchController],
       providers: [SearchService, ApiFeaturesService],
@@ -104,6 +106,10 @@ describe('SearchService', () => {
     postData.subredditId = subredditId1;
     const p = await postService.create(id2, postData);
 
+    await subredditService.joinSubreddit(id1, subredditId1);
+    await subredditService.joinSubreddit(id2, subredditId1);
+    await subredditService.joinSubreddit(id1, subredditId2);
+
     commentData.postId = p._id;
     commentData.subredditId = subredditId1;
 
@@ -118,56 +124,98 @@ describe('SearchService', () => {
 
   describe('search for people', () => {
     it('should find the user successfully', async () => {
-      const data = await searchService.searchPeople('far', 3, id1);
+      const data = await searchService.searchPeople('far', 1, 3, id1);
       expect(data.length).toBe(2);
-      expect(data[0]._id.toString()).toEqual(id2.toString());
+      expect(data[0]._id).toEqual(id2);
+    });
+    it('should find only 1 user', async () => {
+      const data = await searchService.searchPeople('far', 1, 1, id1);
+      expect(data.length).toBe(1);
     });
     it('should find nothing', async () => {
-      const data = await searchService.searchPeople('farid', 3, id1);
+      const data = await searchService.searchPeople('farid', 1, 3, id1);
       expect(data.length).toBe(0);
     });
   });
 
   describe('search for posts', () => {
     it('should find the post successfully', async () => {
-      const data = await searchService.searchPosts('ref', 3, id2);
+      const data = await searchService.searchPosts('ref', 1, 3, id2);
       expect(data.length).toBe(1);
-      expect(data[0]._id.toString()).toEqual(postId.toString());
-      expect(data[0].userId._id.toString()).toEqual(id2.toString());
-      expect(data[0].subredditId._id.toString()).toEqual(
-        postData.subredditId.toString(),
-      );
+      expect(data[0]._id).toEqual(postId);
+      expect(data[0].user._id).toEqual(id2);
+      expect(data[0].subreddit._id).toEqual(postData.subredditId);
     });
 
     it('should find nothing', async () => {
-      const data = await searchService.searchPosts('arref', 3, id1);
+      const data = await searchService.searchPosts('ref', 2, 1, id2);
+      expect(data.length).toBe(0);
+    });
+
+    it('should find nothing', async () => {
+      const data = await searchService.searchPosts('arref', 1, 3, id1);
       expect(data.length).toBe(0);
     });
   });
 
   describe('search for comments', () => {
-    it('should find the post successfully', async () => {
-      const data = await searchService.searchComments('com', 3, id2);
-      console.log(data);
-      // expect(data.length).toBe(1);
-      // expect(data[0]._id.toString()).toEqual(postId.toString());
-      // expect(data[0].userId._id.toString()).toEqual(id2.toString());
-      // expect(data[0].subredditId._id.toString()).toEqual(
-      //   postData.subredditId.toString(),
-      // );
+    it('should find the comment successfully', async () => {
+      const data = await searchService.searchComments('com', 1, 3, id2);
+      expect(data.length).toBe(1);
+      expect(data[0]._id).toEqual(commentId);
+      expect(data[0].post._id).toEqual(postId);
+      expect(data[0].user._id).toEqual(id1);
+      expect(data[0].subreddit._id).toEqual(postData.subredditId);
     });
-
-    // it('should find nothing', async () => {
-    //   const data = await searchService.searchPosts('arref', 3, id1);
-    //   expect(data.length).toBe(0);
-    // });
+    it('should find nothing', async () => {
+      const data = await searchService.searchComments('com', 2, 1, id2);
+      expect(data.length).toBe(0);
+    });
+    it('should find nothing', async () => {
+      const data = await searchService.searchPosts('arref', 1, 3, id1);
+      expect(data.length).toBe(0);
+    });
   });
 
-  describe('search for subreddits', () => {
-    it('should find the subreddit successfully', async () => {
-      // const data = await searchService.searchCommunities('11', 3);
-      // expect(data.length).toBe(2);
-      // expect(data[0]._id.toString()).toEqual(id2.toString());
+  describe('search for communities', () => {
+    it('should find the communities successfully', async () => {
+      const data = await searchService.searchCommunities('11', 1, 10);
+      expect(data).toEqual([
+        expect.objectContaining({
+          _id: subredditId1,
+          name: subreddit1.name,
+          users: 2,
+        }),
+        expect.objectContaining({
+          _id: subredditId2,
+          name: subreddit2.name,
+          users: 1,
+        }),
+      ]);
+    });
+    it('should find only 1', async () => {
+      const data = await searchService.searchCommunities('11', 2, 1);
+      expect(data).toEqual([
+        expect.objectContaining({
+          _id: subredditId2,
+          name: subreddit2.name,
+          users: 1,
+        }),
+      ]);
+    });
+    it('should find only 1', async () => {
+      const data = await searchService.searchCommunities('11s', 1, 10);
+      expect(data).toEqual([
+        expect.objectContaining({
+          _id: subredditId1,
+          name: subreddit1.name,
+          users: 2,
+        }),
+      ]);
+    });
+    it('should find nothing', async () => {
+      const data = await searchService.searchCommunities('arref', 1, 20);
+      expect(data.length).toBe(0);
     });
   });
 });
