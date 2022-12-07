@@ -35,7 +35,7 @@ export class SearchService {
     );
   };
 
-  searchCommunities = async (data: string, page, numberOfData) =>
+  searchCommunities = (data: string, page, numberOfData) =>
     this.subredditService.getSearchSubredditAggregation(
       data,
       page,
