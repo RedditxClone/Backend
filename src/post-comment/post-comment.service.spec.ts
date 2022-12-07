@@ -11,6 +11,7 @@ import { Types } from 'mongoose';
 import type { Comment } from '../comment/comment.schema';
 import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
+import { HideSchema } from '../post/hide.schema';
 import type { Post } from '../post/post.schema';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
@@ -67,6 +68,10 @@ describe('PostCommentService', () => {
           {
             name: 'Vote',
             schema: VoteSchema,
+          },
+          {
+            name: 'Hide',
+            schema: HideSchema,
           },
         ]),
       ],

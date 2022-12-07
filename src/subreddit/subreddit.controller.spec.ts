@@ -39,7 +39,7 @@ describe('subredditControllerSpec', () => {
       req.user = { id };
       const subreddit = await subredditController.createSubreddit(
         subredditDto,
-        req,
+        id,
       );
       expect(subreddit).toEqual(stubSubreddit());
     });

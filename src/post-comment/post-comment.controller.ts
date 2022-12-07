@@ -13,7 +13,9 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
@@ -46,8 +48,11 @@ export class PostCommentController {
   @ApiBadRequestResponse({ description: 'invalid mongo id' })
   @UseGuards(JWTUserGuard)
   @Post('/:thing/upvote')
-  upvote(@Param('thing', ParseObjectIdPipe) thingId, @Req() req) {
-    return this.postCommentService.upvote(thingId, req.user._id);
+  upvote(
+    @Param('thing', ParseObjectIdPipe) thingId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postCommentService.upvote(thingId, userId);
   }
 
   @ApiOperation({
@@ -58,8 +63,11 @@ export class PostCommentController {
   @ApiBadRequestResponse({ description: 'invalid mongo id' })
   @UseGuards(JWTUserGuard)
   @Post('/:thing/downvote')
-  downvote(@Param('thing', ParseObjectIdPipe) thingId, @Req() req) {
-    return this.postCommentService.downvote(thingId, req.user._id);
+  downvote(
+    @Param('thing', ParseObjectIdPipe) thingId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postCommentService.downvote(thingId, userId);
   }
 
   @ApiOperation({
@@ -70,7 +78,10 @@ export class PostCommentController {
   @ApiBadRequestResponse({ description: 'invalid mongo id' })
   @UseGuards(JWTUserGuard)
   @Post('/:thing/unvote')
-  unvote(@Param('thing', ParseObjectIdPipe) thingId, @Req() req) {
-    return this.postCommentService.unvote(thingId, req.user._id);
+  unvote(
+    @Param('thing', ParseObjectIdPipe) thingId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postCommentService.unvote(thingId, userId);
   }
 }

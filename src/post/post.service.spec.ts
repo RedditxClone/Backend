@@ -40,7 +40,6 @@ describe('PostService', () => {
   };
   let subredditService: SubredditService;
   let userService: UserService;
-  let blockService: BlockService;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -81,7 +80,6 @@ describe('PostService', () => {
     service = module.get<PostService>(PostService);
     subredditService = module.get<SubredditService>(SubredditService);
     userService = module.get<UserService>(UserService);
-    blockService = module.get<BlockService>(BlockService);
   });
 
   let id: Types.ObjectId;

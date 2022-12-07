@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -24,6 +23,7 @@ import {
 import { Types } from 'mongoose';
 import { diskStorage } from 'multer';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
 import { JWTUserIfExistGuard } from '../auth/guards/user-if-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
@@ -53,8 +53,8 @@ export class PostController {
 
   @Get('timeline')
   @UseGuards(JWTUserIfExistGuard)
-  getTimeLine(@Req() req) {
-    return this.postService.getTimeLine(req);
+  getTimeLine(@User('_id') userId: Types.ObjectId) {
+    return this.postService.getTimeLine(userId);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
@@ -69,8 +69,11 @@ export class PostController {
   })
   @UseGuards(JWTUserGuard)
   @Post('/submit')
-  async create(@Req() req, @Body() createPostDto: CreatePostDto) {
-    return this.postService.create(req.user._id, createPostDto);
+  async create(
+    @User('_id') userId: Types.ObjectId,
+    @Body() createPostDto: CreatePostDto,
+  ) {
+    return this.postService.create(userId, createPostDto);
   }
 
   @ApiOperation({ description: 'upload a post media.' })
@@ -99,8 +102,11 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
   @UseGuards(JWTUserGuard)
-  remove(@Req() req, @Param('id', ParseObjectIdPipe) user_id: Types.ObjectId) {
-    return this.postCommentService.remove(user_id, req.user._id, 'Post');
+  remove(
+    @User('_id') userId: Types.ObjectId,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.postCommentService.remove(id, userId, 'Post');
   }
 
   @ApiOperation({ description: 'Edit the body text of a post.' })
@@ -115,9 +121,9 @@ export class PostController {
   update(
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() dto: UpdatePostDto,
-    @Req() { user },
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.postCommentService.update(id, dto, user._id);
+    return this.postCommentService.update(id, dto, userId);
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
@@ -147,10 +153,13 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post hide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/hide')
-  //todo
-  hide(@Param('id') id: string) {
-    return id;
+  @UseGuards(JWTUserGuard)
+  @Post(':post/hide')
+  hide(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.hide(postId, userId);
   }
 
   @ApiOperation({
@@ -159,10 +168,13 @@ export class PostController {
   @ApiOkResponse({ description: `Successful post unhide` })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/unhide')
-  //todo
-  unhide(@Param('id') id: string) {
-    return id;
+  @UseGuards(JWTUserGuard)
+  @Post(':post/unhide')
+  unhide(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.unhide(postId, userId);
   }
 
   @ApiOperation({
@@ -172,7 +184,6 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @Patch(':id/lock')
-  //todo
   lock(@Param('id') id: string) {
     return id;
   }

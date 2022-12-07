@@ -6,6 +6,7 @@ import { ApiFeaturesService } from 'utils/apiFeatures/api-features.service';
 import { CommentController } from '../comment/comment.controller';
 import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
+import { HideSchema } from '../post/hide.schema';
 import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
@@ -34,6 +35,10 @@ import { PostCommentService } from './post-comment.service';
       {
         name: 'Vote',
         schema: VoteSchema,
+      },
+      {
+        name: 'Hide',
+        schema: HideSchema,
       },
     ]),
   ],
