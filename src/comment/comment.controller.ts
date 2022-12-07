@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -47,8 +47,11 @@ export class CommentController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
   @Post('submit')
-  async create(@Req() req, @Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(req.user._id, createCommentDto);
+  async create(
+    @User('_id') userId: Types.ObjectId,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
+    return this.commentService.create(userId, createCommentDto);
   }
 
   @ApiOperation({ description: 'Deletes a comment.' })
@@ -57,8 +60,11 @@ export class CommentController {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @Delete(':id')
   @UseGuards(JWTUserGuard)
-  remove(@Req() req, @Param('id', ParseObjectIdPipe) user_id: Types.ObjectId) {
-    return this.postCommentService.remove(user_id, req.user._id, 'Comment');
+  remove(
+    @User('_id') userId: Types.ObjectId,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.postCommentService.remove(id, userId, 'Comment');
   }
 
   @ApiOperation({ description: 'Edit the body text of a comment.' })
@@ -73,9 +79,9 @@ export class CommentController {
   update(
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() dto: UpdateCommentDto,
-    @Req() { user },
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.postCommentService.update(id, dto, user._id);
+    return this.postCommentService.update(id, dto, userId);
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })

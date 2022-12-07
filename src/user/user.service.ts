@@ -372,6 +372,24 @@ export class UserService {
     return { status: 'success' };
   }
 
+  async getUserIfExist(
+    id: Types.ObjectId,
+  ): Promise<UserWithId | null | undefined> {
+    return this.userModel.findById(id);
+  }
+
+  async getUserTimeLine() {
+    // await this.userModel.aggregate([
+    //   {
+    //     $lookup: {
+    //       from: 'user-subreddit',
+    //       localField: '_id',
+    //       foreignField: 'user_id',
+    //     },
+    //   },
+    // ]);
+  }
+
   async deleteAccount(user: any) {
     await this.userModel
       .updateOne(
