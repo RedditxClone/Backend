@@ -16,7 +16,6 @@ import { FollowModule } from '../follow/follow.module';
 import type { Post } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
-import { SubredditModule } from '../subreddit/subreddit.module';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
