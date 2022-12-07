@@ -1,7 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { Global, Injectable } from '@nestjs/common/decorators';
+import type { Aggregate } from 'mongoose';
 import { Query } from 'mongoose';
 
+import type { PaginatedResponseDto, PaginationParamsDto } from './dto';
+import { PaginationMetaDto } from './dto';
 import type { ApiFeaturesOptionsDto } from './dto/api-features.dto';
 @Global()
 @Injectable()
@@ -28,6 +31,67 @@ export class ApiFeaturesService {
     this.fields(mongoQuery, query, queryOptions?.fields ?? true);
 
     return mongoQuery;
+  }
+
+  async getPaginatedResponseFromQuery(
+    mongoQuery: Query<any, any>,
+    reqQuery: any,
+    queryOptions?: ApiFeaturesOptionsDto,
+  ) {
+    queryOptions = queryOptions ?? {};
+    queryOptions.pagination = true;
+
+    const countQuery = mongoQuery.clone().count();
+
+    const paginatedQuery = this.processQuery(
+      mongoQuery,
+      reqQuery,
+      queryOptions,
+    );
+    const itemCount = await countQuery;
+    const paginationData = await paginatedQuery;
+
+    return this.createPaginatedResponse(reqQuery, paginationData, itemCount);
+  }
+
+  async getPaginatedResponseFromAggregate(
+    mongoAggregate: Aggregate<any>,
+    reqQuery: any,
+  ) {
+    const [paginatedAggregate] = await mongoAggregate
+      .facet({
+        data: [
+          { $skip: (reqQuery.page - 1) * reqQuery.limit },
+          { $limit: reqQuery.limit },
+        ],
+        itemCount: [{ $count: 'count' }],
+      })
+      .unwind({ path: '$itemCount' })
+      .project({ data: '$data', itemCount: '$itemCount.count' });
+
+    return this.createPaginatedResponse(
+      reqQuery,
+      paginatedAggregate?.data ?? [],
+      paginatedAggregate?.itemCount ?? 0,
+    );
+  }
+
+  private createPaginatedResponse(
+    reqQuery: PaginationParamsDto,
+    paginationData,
+    itemCount: number,
+  ) {
+    const paginationMeta = new PaginationMetaDto(
+      reqQuery.page,
+      reqQuery.limit,
+      itemCount,
+    );
+    const paginatedResponse: PaginatedResponseDto = {
+      data: paginationData,
+      meta: paginationMeta,
+    };
+
+    return paginatedResponse;
   }
 
   private searchBy(mongoQuery: Query<any, any>, query: any, apply: boolean) {
