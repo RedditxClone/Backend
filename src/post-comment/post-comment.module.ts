@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { JWTUserIfExistGuard } from 'auth/guards/user-if-exist.guard';
+import { ApiFeaturesService } from 'utils/apiFeatures/api-features.service';
 
 import { CommentController } from '../comment/comment.controller';
 import { CommentSchema } from '../comment/comment.schema';
@@ -41,7 +43,13 @@ import { PostCommentService } from './post-comment.service';
     ]),
   ],
   controllers: [PostCommentController, PostController, CommentController],
-  providers: [PostCommentService, PostService, CommentService],
+  providers: [
+    PostCommentService,
+    PostService,
+    CommentService,
+    ApiFeaturesService,
+    JWTUserIfExistGuard,
+  ],
   exports: [PostCommentService],
 })
 export class PostCommentModule {}

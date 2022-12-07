@@ -8,7 +8,6 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -29,6 +28,7 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
@@ -51,9 +51,9 @@ export class SubredditController {
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
-    @Req() req,
+    @User('_id') userId: Types.ObjectId,
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto, req.user._id);
+    return this.subredditService.create(createSubredditDto, userId);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
@@ -115,10 +115,10 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   @Post('/:subreddit/join')
   joinSubreddit(
-    @Req() req,
+    @User('_id') userId: Types.ObjectId,
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
   ) {
-    return this.subredditService.joinSubreddit(req.user._id, subreddit);
+    return this.subredditService.joinSubreddit(userId, subreddit);
   }
 
   @ApiProperty({ description: 'leave subreddit' })
@@ -128,10 +128,10 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   @Post('/:subreddit/leave')
   leaveSubreddit(
-    @Req() req,
+    @User('_id') userId: Types.ObjectId,
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
   ) {
-    return this.subredditService.leaveSubreddit(req.user._id, subreddit);
+    return this.subredditService.leaveSubreddit(userId, subreddit);
   }
 
   @ApiOperation({ description: 'create a post flair in a subreddit' })
