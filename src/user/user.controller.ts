@@ -475,7 +475,11 @@ export class UserController {
   })
   @UseGuards(JWTUserGuard)
   @Get('/post/save')
-  async getSavedPosts(@Req() { user }) {
-    return this.userService.getSavedPosts(user.savedPosts);
+  async getSavedPosts(
+    @User('_id') userId: Types.ObjectId,
+    @User('savedPosts') savedPosts: Types.ObjectId[],
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.userService.getSavedPosts(userId, savedPosts, paginationParams);
   }
 }

@@ -4,6 +4,7 @@ import { createResponse } from 'node-mocks-http';
 
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowService } from '../follow/follow.service';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { AvailableUsernameDto } from './dto';
 import { PrefsDto } from './dto';
 import { stubUser } from './test/stubs/user.stub';
@@ -158,8 +159,11 @@ describe('UserControllerSpec', () => {
   describe('get saved post', () => {
     it('must be returned successfully', async () => {
       const id1: Types.ObjectId = new Types.ObjectId(1);
-      const user = { _id: id1 };
-      const res: any = await userController.getSavedPosts({ user });
+      const res: any = await userController.getSavedPosts(
+        id1,
+        [id1],
+        new PaginationParamsDto(),
+      );
       expect(res).toEqual({
         _id: '6366f73606cdac163ace51b1',
         savedPosts: ['636a7faa18454a10a4791426'],

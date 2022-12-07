@@ -10,12 +10,19 @@ import { createResponse } from 'node-mocks-http';
 
 import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import { BlockService } from '../block/block.service';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
 import type { Post } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
+import { SubredditModule } from '../subreddit/subreddit.module';
+import type { SubredditDocument } from '../subreddit/subreddit.schema';
+import { SubredditSchema } from '../subreddit/subreddit.schema';
+import { SubredditService } from '../subreddit/subreddit.service';
+import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -35,6 +42,7 @@ jest.mock('../utils/imagesHandler/images-handler.service');
 describe('UserService', () => {
   let service: UserService;
   let postService: PostService;
+  let subredditService: SubredditService;
   let module: TestingModule;
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -45,16 +53,29 @@ describe('UserService', () => {
         PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
-        MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+        MongooseModule.forFeature([
+          { name: 'Subreddit', schema: SubredditSchema },
+          { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'User', schema: UserSchema },
+        ]),
       ],
-      providers: [UserService, UserStrategy, ApiFeaturesService],
+      providers: [
+        UserService,
+        UserStrategy,
+        ApiFeaturesService,
+        SubredditService,
+        BlockService,
+      ],
     }).compile();
     service = module.get<UserService>(UserService);
     postService = module.get<PostService>(PostService);
+    subredditService = module.get<SubredditService>(SubredditService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(postService).toBeDefined();
+    expect(subredditService).toBeDefined();
   });
 
   let id: Types.ObjectId;
@@ -365,17 +386,81 @@ describe('UserService', () => {
   });
 
   describe('get saved posts', () => {
-    let post: Post & { _id };
+    let user1: UserDocument;
+    let user2: UserDocument;
+    const subreddits: SubredditDocument[] = [];
+    const posts: Array<Post & { _id: Types.ObjectId }> = [];
     beforeAll(async () => {
-      post = await postService.create(new Types.ObjectId(1), {
-        subredditId: new Types.ObjectId(2),
-        title: 'title',
-        text: 'text',
+      user1 = await service.createUser({
+        email: 'email@gmail.com',
+        username: 'username',
+        password: '12345678',
       });
+      user2 = await service.createUser({
+        email: 'email@gmail.com',
+        username: 'username2',
+        password: '12345678',
+      });
+      const sr1 = await subredditService.create(
+        {
+          name: 'sr1',
+          over18: true,
+          type: 'type',
+        },
+        user1._id,
+      );
+      const sr2 = await subredditService.create(
+        {
+          name: 'sr2',
+          over18: true,
+          type: 'type',
+        },
+        user1._id,
+      );
+      subreddits.push(sr1, sr2);
+
+      await subredditService.joinSubreddit(user1._id, sr1._id);
+      await subredditService.joinSubreddit(user1._id, sr2._id);
+
+      const post1 = await postService.create(user2._id, {
+        title: 'post1 title',
+        text: 'post1 text',
+        subredditId: sr1._id,
+      });
+      const post2 = await postService.create(user2._id, {
+        title: 'post2 title',
+        text: 'post2 text',
+        subredditId: sr2._id,
+      });
+
+      posts.push(post1, post2);
+      user1.savedPosts = [post1._id, post2._id];
     });
-    it('should return saved posts successfully', async () => {
-      const res: any = await service.getSavedPosts([post._id]);
-      expect(res[0]).toMatchObject({ _id: post._id });
+    it('should return 2 posts successfully', async () => {
+      const res = await service.getSavedPosts(
+        user1._id,
+        user1.savedPosts,
+        new PaginationParamsDto(),
+      );
+      expect(res.data.length).toEqual(2);
+      expect(res.data[0]).toEqual(
+        expect.objectContaining({
+          _id: posts[0]._id,
+          text: posts[0].text,
+          title: posts[0].title,
+          voteType: null,
+          subreddit: {
+            id: subreddits[0]._id,
+            name: subreddits[0].name,
+            type: subreddits[0].type,
+          },
+          user: {
+            id: user2._id,
+            photo: '',
+            username: user2.username,
+          },
+        }),
+      );
     });
   });
 

@@ -19,6 +19,7 @@ import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type {
   AvailableUsernameDto,
@@ -424,8 +425,17 @@ export class UserService {
     return { status: 'success' };
   }
 
-  async getSavedPosts(savedPosts: Types.ObjectId[]) {
-    return this.postCommentService.getSavedPosts(savedPosts);
+  async getSavedPosts(
+    userId: Types.ObjectId,
+    savedPosts: Types.ObjectId[],
+    paginationParams: PaginationParamsDto,
+  ) {
+    const aggregate = this.postCommentService.getSavedPosts(userId, savedPosts);
+
+    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
+      aggregate,
+      paginationParams,
+    );
   }
 
   uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {
