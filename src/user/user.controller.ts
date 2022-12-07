@@ -8,6 +8,7 @@ import {
   ParseFilePipeBuilder,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -24,10 +25,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Response } from 'express';
 import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
+import { FollowService } from '../follow/follow.service';
+import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
@@ -38,14 +42,18 @@ import {
   UserCommentsDto,
   UserOverviewDto,
   UserPostsDto,
+  UserSimpleDto,
 } from './dto';
-import type { UserWithId } from './user.schema';
+import { UserWithId } from './user.schema';
 import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly followService: FollowService,
+  ) {}
 
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
@@ -118,8 +126,8 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   @UseGuards(JWTUserGuard)
-  getCurrentUser(@Req() req: Request & { user: UserWithId }): UserAccountDto {
-    return this.userService.getUserInfo(req.user);
+  getCurrentUser(@User() user: UserWithId): UserAccountDto {
+    return this.userService.getUserInfo(user);
   }
 
   @ApiOperation({ description: 'generate list of random usernames' })
@@ -140,8 +148,8 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
-  async getUserPrefs(@Req() request) {
-    return this.userService.getUserPrefs(request.user._id);
+  async getUserPrefs(@User('_id') userId: Types.ObjectId) {
+    return this.userService.getUserPrefs(userId);
   }
 
   @ApiOperation({ description: 'Update user preferences' })
@@ -149,8 +157,11 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
-  async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
-    return this.userService.updateUserPrefs(request.user._id, prefsDto);
+  async updateUserPrefs(
+    @User('_id') userId: Types.ObjectId,
+    @Body() prefsDto: PrefsDto,
+  ) {
+    return this.userService.updateUserPrefs(userId, prefsDto);
   }
 
   @ApiOperation({ description: 'Get information about the user' })
@@ -227,7 +238,7 @@ export class UserController {
   @Post('/check-available-username')
   async checkAvailableUsername(
     @Body() availableUsernameDto: AvailableUsernameDto,
-    @Res() res: Response,
+    @Res() res,
   ) {
     return this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
@@ -247,9 +258,9 @@ export class UserController {
   @Post('/:user_id/follow')
   async followUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.userService.follow(request.user._id, user_id);
+    return this.userService.follow(userId, user_id);
   }
 
   @ApiOperation({ description: 'unfollow specific user' })
@@ -267,9 +278,33 @@ export class UserController {
   @Post('/:user_id/unfollow')
   async unfollowUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') requestingUserId: Types.ObjectId,
   ) {
-    return this.userService.unfollow(request.user._id, user_id);
+    return this.userService.unfollow(requestingUserId, user_id);
+  }
+
+  @ApiOperation({ description: 'get list of users you are following' })
+  @ApiPaginatedOkResponse(UserSimpleDto, 'Users returned successfully')
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/following')
+  getFollowingUsers(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.followService.getFollowingUsers(userId, paginationParams);
+  }
+
+  @ApiOperation({ description: 'get list of users that are following you' })
+  @ApiPaginatedOkResponse(UserSimpleDto, 'Users returned successfully')
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/followed')
+  getFollowedUsers(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.followService.getFollowedUsers(userId, paginationParams);
   }
 
   @ApiOperation({ description: 'User block another user' })
@@ -282,9 +317,9 @@ export class UserController {
   @Post('/:user_id/block')
   async blockUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') requestingUserId: Types.ObjectId,
   ): Promise<any> {
-    return this.userService.block(request.user._id, user_id);
+    return this.userService.block(requestingUserId, user_id);
   }
 
   @ApiOperation({ description: 'User unblock another user' })
@@ -297,9 +332,9 @@ export class UserController {
   @Post('/:user_id/unblock')
   async unblockUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') requestingUserId: Types.ObjectId,
   ): Promise<any> {
-    return this.userService.unblock(request.user._id, user_id);
+    return this.userService.unblock(requestingUserId, user_id);
   }
 
   @ApiOperation({ description: 'get list of blocked users' })
@@ -307,8 +342,8 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Get('block')
-  getBlockedUsers(@Req() { user }): Promise<any> {
-    return this.userService.getBlockedUsers(user._id);
+  getBlockedUsers(@User('_id') userId: Types.ObjectId): Promise<any> {
+    return this.userService.getBlockedUsers(userId);
   }
 
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
@@ -352,8 +387,8 @@ export class UserController {
   })
   @UseGuards(JWTUserGuard)
   @Delete('/me')
-  async deleteAccount(@Req() request) {
-    return this.userService.deleteAccount(request.user);
+  async deleteAccount(@User() user) {
+    return this.userService.deleteAccount(user);
   }
 
   @ApiOperation({ description: 'get user info by user id' })
@@ -377,7 +412,7 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Post('/me/profile')
   uploadProfilePhoto(
-    @Req() request,
+    @User('_id') userId: Types.ObjectId,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
@@ -387,7 +422,7 @@ export class UserController {
     )
     file,
   ) {
-    return this.userService.uploadPhoto(request.user._id, file, 'profilePhoto');
+    return this.userService.uploadPhoto(userId, file, 'profilePhoto');
   }
 
   @UseInterceptors(FileInterceptor('photo'))
@@ -401,7 +436,7 @@ export class UserController {
   @UseGuards(JWTUserGuard)
   @Post('/me/cover')
   uploadCoverPhoto(
-    @Req() request,
+    @User('_id') userId: Types.ObjectId,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
@@ -411,7 +446,7 @@ export class UserController {
     )
     file,
   ) {
-    return this.userService.uploadPhoto(request.user._id, file, 'coverPhoto');
+    return this.userService.uploadPhoto(userId, file, 'coverPhoto');
   }
 
   @ApiOperation({

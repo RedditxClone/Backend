@@ -2,7 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
+import type { UserSimpleDto } from 'user/dto';
+import type {
+  PaginatedResponseDto,
+  PaginationParamsDto,
+} from 'utils/apiFeatures/dto';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { FollowDto } from './dto/follow.dto';
 import type { Follow } from './follow.schema';
 
@@ -10,6 +16,7 @@ import type { Follow } from './follow.schema';
 export class FollowService {
   constructor(
     @InjectModel('Follow') private readonly followModel: Model<Follow>,
+    private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
   /**
@@ -71,5 +78,81 @@ export class FollowService {
     });
 
     return followRes.deletedCount === 1;
+  }
+
+  /**
+   * get list of users the user is following
+   * @param userId id of the requesting user
+   * @param paginationParams parameters of pagination
+   * @returns paginated response containing list of users
+   */
+  async getFollowingUsers(
+    userId: Types.ObjectId,
+    paginationParams: PaginationParamsDto,
+  ): Promise<PaginatedResponseDto<UserSimpleDto>> {
+    const aggregateQuery = this.followModel.aggregate([
+      { $match: { follower: userId } },
+      {
+        $lookup: {
+          from: 'users',
+          as: 'user',
+          localField: 'followed',
+          foreignField: '_id',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$user._id',
+          username: '$user.username',
+          profilePhoto: '$user.profilePhoto',
+        },
+      },
+    ]);
+
+    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
+      aggregateQuery,
+      paginationParams,
+    );
+  }
+
+  /**
+   * get list of users that are following this user
+   * @param userId id of the requesting user
+   * @param paginationParams parameters of pagination
+   * @returns paginated response containing list of users
+   */
+  async getFollowedUsers(
+    userId: Types.ObjectId,
+    paginationParams: PaginationParamsDto,
+  ): Promise<PaginatedResponseDto<UserSimpleDto>> {
+    const aggregateQuery = this.followModel.aggregate([
+      { $match: { followed: userId } },
+      {
+        $lookup: {
+          from: 'users',
+          as: 'user',
+          localField: 'follower',
+          foreignField: '_id',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$user._id',
+          username: '$user.username',
+          profilePhoto: '$user.profilePhoto',
+        },
+      },
+    ]);
+
+    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
+      aggregateQuery,
+      paginationParams,
+    );
   }
 }

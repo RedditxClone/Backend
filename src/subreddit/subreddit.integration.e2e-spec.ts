@@ -31,6 +31,7 @@ import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import { SubredditController } from './subreddit.controller';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
+import { SubredditUserSchema } from './subreddit-user.schema';
 
 jest.mock('../utils/mail/mail.service.ts');
 
@@ -111,6 +112,7 @@ describe('subredditController (e2e)', () => {
         ImagesHandlerModule,
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
+          { name: 'UserSubreddit', schema: SubredditUserSchema },
         ]),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
         JwtModule.register({

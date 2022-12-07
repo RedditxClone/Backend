@@ -14,11 +14,11 @@ import { plainToInstance } from 'class-transformer';
 import type { Response } from 'express';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import { PostComment } from 'post-comment/post-comment.schema';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type {
   AvailableUsernameDto,
@@ -38,6 +38,7 @@ export class UserService {
     private readonly blockService: BlockService,
     private readonly postCommentService: PostCommentService,
     private readonly imagesHandlerService: ImagesHandlerService,
+    private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
   getFriends() {
@@ -59,6 +60,14 @@ export class UserService {
   unFriend() {
     return 'delete a friend';
   }
+
+  searchUserQuery = (usersBlockedMe, searchPhrase) =>
+    this.userModel
+      .find({
+        username: new RegExp(`^${searchPhrase}`),
+        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+      })
+      .select('username profilePhoto about');
 
   /**
    *
@@ -365,6 +374,24 @@ export class UserService {
     }
 
     return { status: 'success' };
+  }
+
+  async getUserIfExist(
+    id: Types.ObjectId,
+  ): Promise<UserWithId | null | undefined> {
+    return this.userModel.findById(id);
+  }
+
+  async getUserTimeLine() {
+    // await this.userModel.aggregate([
+    //   {
+    //     $lookup: {
+    //       from: 'user-subreddit',
+    //       localField: '_id',
+    //       foreignField: 'user_id',
+    //     },
+    //   },
+    // ]);
   }
 
   async deleteAccount(user: any) {

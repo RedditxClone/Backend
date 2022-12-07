@@ -9,6 +9,7 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
+import type { Vote } from '../vote/vote.schema';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
@@ -19,6 +20,7 @@ export class PostCommentService {
   constructor(
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
+    @InjectModel('Vote') private readonly voteModel: Model<Vote>,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -156,4 +158,118 @@ export class PostCommentService {
 
   getSavedPosts = (savedPosts: Types.ObjectId[]) =>
     this.postCommentModel.find({ _id: { $in: savedPosts }, isDeleted: false });
+
+  private async changeVotes(
+    thingId: Types.ObjectId,
+    lastStatus: number,
+    curStatus: number,
+  ) {
+    const res = await this.postCommentModel.findByIdAndUpdate(
+      thingId,
+      {
+        $inc: { votesCount: curStatus - lastStatus },
+      },
+      { new: true },
+    );
+
+    if (!res) {
+      throw new NotFoundException(
+        `there is no post or comment with id ${thingId}`,
+      );
+    }
+
+    return { votesCount: res.votesCount };
+  }
+
+  private getVotesNum(isUpvote: boolean | undefined) {
+    if (isUpvote === undefined) {
+      return 0;
+    }
+
+    return isUpvote ? 1 : -1;
+  }
+
+  async upvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+    const res = await this.voteModel.findOneAndUpdate(
+      { thingId, userId },
+      { isUpvote: true },
+      { upsert: true, new: false },
+    );
+
+    return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1).then();
+  }
+
+  async downvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+    const res = await this.voteModel.findOneAndUpdate(
+      { thingId, userId },
+      { isUpvote: false },
+      { upsert: true, new: false },
+    );
+
+    return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), -1);
+  }
+
+  async unvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+    const res = await this.voteModel.findOneAndDelete(
+      { thingId, userId },
+      { new: false },
+    );
+
+    return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
+  }
+
+  searchPostQuery = (searchPhrase: string, usersBlockedMe) =>
+    this.postCommentModel
+      .find({
+        $or: [
+          { title: { $regex: searchPhrase } },
+          { text: { $regex: searchPhrase } },
+        ],
+        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+        type: 'Post',
+      })
+      .populate([
+        {
+          path: 'subredditId',
+          model: 'Subreddit',
+          select: 'name',
+        },
+        {
+          path: 'userId',
+          model: 'User',
+          select: 'username profilePhoto',
+        },
+      ]);
+
+  searchCommentQuery = (searchPhrase: string, usersBlockedMe) =>
+    this.postCommentModel
+      .find({
+        text: { $regex: searchPhrase },
+        userId: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
+        type: 'Comment',
+      })
+      .populate([
+        {
+          path: 'postId',
+          model: 'Post',
+          select: 'title publishedDate',
+          populate: [
+            {
+              path: 'userId',
+              model: 'User',
+              select: 'username profilePhoto',
+            },
+          ],
+        },
+        {
+          path: 'userId',
+          model: 'User',
+          select: 'username profilePhoto',
+        },
+        {
+          path: 'subredditId',
+          model: 'Subreddit',
+          select: 'name',
+        },
+      ]);
 }

@@ -14,6 +14,7 @@ import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService, EmailServiceMock } from '../utils';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -42,7 +43,7 @@ describe('AuthService', () => {
         PostCommentModule,
         ImagesHandlerModule,
       ],
-      providers: [AuthService, UserService, EmailService],
+      providers: [AuthService, UserService, EmailService, ApiFeaturesService],
     })
       .overrideProvider(EmailService)
       .useValue(EmailServiceMock)

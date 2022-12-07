@@ -8,6 +8,7 @@ import { BlockService } from '../block/block.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -21,6 +22,10 @@ describe('FollowService', () => {
   let module: TestingModule;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
+  let id3: Types.ObjectId;
+  let user1;
+  let user2;
+  let user3;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -33,22 +38,28 @@ describe('FollowService', () => {
           { name: 'Block', schema: BlockSchema },
         ]),
       ],
-      providers: [FollowService, UserService, BlockService],
+      providers: [FollowService, UserService, BlockService, ApiFeaturesService],
     }).compile();
     service = module.get<FollowService>(FollowService);
     const userService: UserService = module.get<UserService>(UserService);
-    const user1 = await userService.createUser({
+    user1 = await userService.createUser({
       email: 'email@example.com',
       password: '12345678',
       username: 'username',
     });
     id1 = user1._id;
-    const user2 = await userService.createUser({
+    user2 = await userService.createUser({
       email: 'email2@example.com',
       password: '12345678',
       username: 'username2',
     });
     id2 = user2._id;
+    user3 = await userService.createUser({
+      email: 'email3@example.com',
+      password: '12345678',
+      username: 'username3',
+    });
+    id3 = user3._id;
   });
 
   it('should be defined', () => {
@@ -100,6 +111,54 @@ describe('FollowService', () => {
       );
     });
   });
+
+  describe('get following list', () => {
+    it('should return list of users following', async () => {
+      await service.follow({
+        follower: id1,
+        followed: id2,
+      });
+      await service.follow({
+        follower: id1,
+        followed: id3,
+      });
+      const findRes1 = await service.getFollowingUsers(id1, {
+        page: 1,
+        limit: 2,
+      });
+      expect(findRes1.data).toEqual([
+        { _id: id2, username: user2.username, profilePhoto: '' },
+        { _id: id3, username: user3.username, profilePhoto: '' },
+      ]);
+
+      const findRes3 = await service.getFollowingUsers(id3, {
+        page: 1,
+        limit: 2,
+      });
+
+      expect(findRes3.data).toHaveLength(0);
+    });
+  });
+
+  describe('get followed list', () => {
+    it('should return list of users followed', async () => {
+      const findRes1 = await service.getFollowedUsers(id2, {
+        page: 1,
+        limit: 2,
+      });
+      expect(findRes1.data).toEqual([
+        { _id: id1, username: user1.username, profilePhoto: '' },
+      ]);
+
+      const findRes3 = await service.getFollowedUsers(id1, {
+        page: 1,
+        limit: 2,
+      });
+
+      expect(findRes3.data).toHaveLength(0);
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

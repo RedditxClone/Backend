@@ -128,6 +128,120 @@ describe('apiFeaturesService', () => {
     });
   });
 
+  describe('create paginated response', () => {
+    it('should return paginated response based on query', async () => {
+      const model = modelTestService.getTestModel();
+      const result = await apiFeaturesService.getPaginatedResponseFromQuery(
+        model.find().sort({ name: 'asc' }),
+        { limit: 5, page: 2 },
+      );
+      expect(result.data).toHaveLength(5);
+      expect(result.data[0]).toEqual(
+        expect.objectContaining({
+          name: 'test_15',
+          age: 15,
+          birthDate: result.data[0].birthDate,
+          _id: result.data[0]._id,
+          __v: result.data[0].__v,
+        }),
+      );
+      expect(result.data[4]).toEqual(
+        expect.objectContaining({
+          name: 'test_19',
+          age: 19,
+          birthDate: result.data[0].birthDate,
+          _id: result.data[4]._id,
+          __v: result.data[4].__v,
+        }),
+      );
+      expect(result.meta).toEqual(
+        expect.objectContaining({
+          page: 2,
+          limit: 5,
+          itemCount: 90,
+          pageCount: 18,
+          hasPreviousPage: true,
+          hasNextPage: true,
+        }),
+      );
+    });
+
+    it('should return empty paginated response based on query', async () => {
+      const model = modelTestService.getTestModel();
+      const result = await apiFeaturesService.getPaginatedResponseFromQuery(
+        model.find({ name: 'not found' }),
+        { limit: 5, page: 1 },
+      );
+      expect(result.data).toHaveLength(0);
+      expect(result.meta).toEqual(
+        expect.objectContaining({
+          page: 1,
+          limit: 5,
+          itemCount: 0,
+          pageCount: 0,
+          hasPreviousPage: false,
+          hasNextPage: false,
+        }),
+      );
+    });
+
+    it('should return paginated response based on aggregate', async () => {
+      const model = modelTestService.getTestModel();
+      const result = await apiFeaturesService.getPaginatedResponseFromAggregate(
+        model.aggregate().sort({ name: 'asc' }),
+        { limit: 5, page: 2 },
+      );
+      expect(result.data).toHaveLength(5);
+      expect(result.data[0]).toEqual(
+        expect.objectContaining({
+          name: 'test_15',
+          age: 15,
+          birthDate: result.data[0].birthDate,
+          _id: result.data[0]._id,
+          __v: result.data[0].__v,
+        }),
+      );
+      expect(result.data[4]).toEqual(
+        expect.objectContaining({
+          name: 'test_19',
+          age: 19,
+          birthDate: result.data[0].birthDate,
+          _id: result.data[4]._id,
+          __v: result.data[4].__v,
+        }),
+      );
+      expect(result.meta).toEqual(
+        expect.objectContaining({
+          page: 2,
+          limit: 5,
+          itemCount: 90,
+          pageCount: 18,
+          hasPreviousPage: true,
+          hasNextPage: true,
+        }),
+      );
+    });
+  });
+
+  it('should return empty paginated response based on aggregate', async () => {
+    const model = modelTestService.getTestModel();
+    const result = await apiFeaturesService.getPaginatedResponseFromAggregate(
+      model.aggregate().match({ name: 'not found' }),
+      { limit: 5, page: 2 },
+    );
+    expect(result.data).toHaveLength(0);
+    expect(result.meta).toEqual(
+      expect.objectContaining({
+        page: 2,
+        limit: 5,
+        itemCount: 0,
+        pageCount: 0,
+        hasPreviousPage: true,
+        hasNextPage: false,
+      }),
+    );
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
