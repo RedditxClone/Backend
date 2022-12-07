@@ -161,6 +161,10 @@ export class User {
 
   @Prop({ default: false })
   unSubscribe: boolean;
+
+  // google auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGoogleAccount: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

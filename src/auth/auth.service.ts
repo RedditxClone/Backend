@@ -3,10 +3,13 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import type { Response } from 'express';
+import type { TokenPayload } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { CreateUserDto } from '../user/dto';
+import type { CreateUserFacebookGoogleDto } from '../user/dto/create-user-facebook-google.dto';
 import type { User, UserDocument } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../utils';
@@ -193,5 +196,61 @@ export class AuthService {
         .status(HttpStatus.UNAUTHORIZED)
         .json({ status: "couldn't send message" });
     }
+  };
+
+  verfiyUserGmailData = async (token: string) => {
+    try {
+      const client = new OAuth2Client();
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: [
+          process.env.GOOGLE_CREDIENTIALS_CLIENT_ID_web ?? '',
+          process.env.GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_web ?? '',
+          process.env.GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_android ?? '',
+        ],
+      });
+
+      return ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Unautherized account');
+    }
+  };
+
+  /** Create a user that doesn't have an account connected to that mail.
+   *
+   * @param userData the data of the user taken from the token.
+   * @returns the data of the user created.
+   */
+  createUserWithGmail = async (userData: TokenPayload | undefined) => {
+    const newAccount: CreateUserFacebookGoogleDto = {
+      email: userData?.email ?? '',
+      username: await this.userService.generateRandomUsernames(1)[0],
+      continueWithGoogleAccount: userData?.email ?? '',
+    };
+
+    return this.userModel.create({
+      ...newAccount,
+    });
+  };
+
+  /**
+   * register a new user using google account
+   * @param token Id token sent by the client for authentication.
+   * @res the response.
+   */
+  continueWithGoogle = async (token: string, res: Response) => {
+    const userData = await this.verfiyUserGmailData(token);
+
+    let user = await this.userModel.findOne({
+      continueWithGoogleAccount: userData?.email,
+    });
+
+    if (!user) {
+      user = await this.createUserWithGmail(userData);
+    }
+
+    await this.sendAuthToken(user, res);
+
+    return user;
   };
 }
