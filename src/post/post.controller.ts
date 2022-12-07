@@ -51,6 +51,10 @@ export class PostController {
     private readonly postCommentService: PostCommentService,
   ) {}
 
+  @ApiOkResponse({
+    description: 'posts returned successfully',
+    type: ReturnPostDto,
+  })
   @Get('timeline')
   @UseGuards(JWTUserIfExistGuard)
   getTimeLine(@User('_id') userId: Types.ObjectId) {
