@@ -16,6 +16,7 @@ import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import type { UserDocument } from '../user/user.schema';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -74,6 +75,7 @@ describe('PostService', () => {
         UserService,
         FollowService,
         BlockService,
+        ApiFeaturesService,
       ],
     }).compile();
 
