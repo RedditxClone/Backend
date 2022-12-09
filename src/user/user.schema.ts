@@ -164,11 +164,11 @@ export class User {
 
   // google auth
   @Prop({ unique: true, sparse: true })
-  continueWithGoogleAccount: string;
+  continueWithGoogleAccount?: string;
 
   // github auth
   @Prop({ unique: true, sparse: true })
-  continueWithGithubAccount: string;
+  continueWithGithubAccount?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import type { Response } from 'express';
 import type { TokenPayload } from 'google-auth-library';
@@ -241,21 +242,19 @@ export class AuthService {
 
   verfiyUserGithubData = async (token: string) => {
     try {
-      const data = await fetch('https://api.github.com/user', {
-        method: 'GET',
+      const { data } = await axios.get('https://api.github.com/user', {
         headers: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           Authorization: `Bearer ${token}`,
         },
       });
-      const userData = await data.json();
 
-      if (!userData.login) {
+      if (!data.login) {
         throw new UnauthorizedException('Unautherized account');
       }
 
       return {
-        email: userData.login,
+        email: data.login,
       };
     } catch {
       throw new UnauthorizedException('Unautherized account');
