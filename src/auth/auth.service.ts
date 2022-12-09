@@ -221,7 +221,7 @@ export class AuthService {
     });
   };
 
-  verfiyUserGmailData = async (token: string) => {
+  verfiyUserGmailData: any = async (token: string) => {
     try {
       const client = new OAuth2Client();
       const ticket = await client.verifyIdToken({
@@ -249,6 +249,10 @@ export class AuthService {
         },
       });
       const userData = await data.json();
+
+      if (!userData.login) {
+        throw new UnauthorizedException('Unautherized account');
+      }
 
       return {
         email: userData.login,
