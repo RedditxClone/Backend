@@ -7,6 +7,7 @@ import {
   ParseFilePipeBuilder,
   Patch,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -26,6 +27,9 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
+import { FollowService } from '../follow/follow.service';
+import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
@@ -36,6 +40,7 @@ import {
   UserCommentsDto,
   UserOverviewDto,
   UserPostsDto,
+  UserSimpleDto,
 } from './dto';
 import { UserWithId } from './user.schema';
 import { UserService } from './user.service';
@@ -43,7 +48,10 @@ import { UserService } from './user.service';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly followService: FollowService,
+  ) {}
 
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
@@ -271,6 +279,30 @@ export class UserController {
     @User('_id') requestingUserId: Types.ObjectId,
   ) {
     return this.userService.unfollow(requestingUserId, user_id);
+  }
+
+  @ApiOperation({ description: 'get list of users you are following' })
+  @ApiPaginatedOkResponse(UserSimpleDto, 'Users returned successfully')
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/following')
+  getFollowingUsers(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.followService.getFollowingUsers(userId, paginationParams);
+  }
+
+  @ApiOperation({ description: 'get list of users that are following you' })
+  @ApiPaginatedOkResponse(UserSimpleDto, 'Users returned successfully')
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/followed')
+  getFollowedUsers(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.followService.getFollowedUsers(userId, paginationParams);
   }
 
   @ApiOperation({ description: 'User block another user' })

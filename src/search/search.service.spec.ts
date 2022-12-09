@@ -15,7 +15,10 @@ import { SubredditService } from '../subreddit/subreddit.service';
 import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
-import { rootMongooseTestModule } from '../utils/mongoose-in-memory';
+import {
+  closeInMongodConnection,
+  rootMongooseTestModule,
+} from '../utils/mongoose-in-memory';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
 
@@ -70,8 +73,9 @@ describe('SearchService', () => {
     over18: false,
   };
 
+  let module: TestingModule;
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
@@ -217,5 +221,9 @@ describe('SearchService', () => {
       const data = await searchService.searchCommunities('arref', 1, 20);
       expect(data.length).toBe(0);
     });
+  });
+  afterAll(async () => {
+    await closeInMongodConnection();
+    await module.close();
   });
 });

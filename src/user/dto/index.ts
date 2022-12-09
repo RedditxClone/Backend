@@ -10,3 +10,4 @@ export * from './user-comments.dto';
 export * from './user-filter.dto';
 export * from './user-overview.dto';
 export * from './user-posts.dto';
+export * from './user-simple.dto';
