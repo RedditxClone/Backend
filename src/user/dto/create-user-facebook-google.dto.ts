@@ -8,5 +8,8 @@ export class CreateUserFacebookGoogleDto {
   username: string;
 
   @IsEmail(undefined, { message: 'must be a valid email' })
-  continueWithGoogleAccount: string;
+  continueWithGoogleAccount?: string;
+
+  @IsEmail(undefined, { message: 'must be a valid email' })
+  continueWithGithubAccount?: string;
 }

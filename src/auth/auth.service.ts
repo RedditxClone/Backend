@@ -198,6 +198,29 @@ export class AuthService {
     }
   };
 
+  /** Create a user that doesn't have an account connected to that mail.
+   *
+   * @param userData the data of the user taken from the token.
+   * @returns the data of the user created.
+   */
+  createUserAccountWithoutPassword = async (
+    userData: TokenPayload | undefined,
+    accountType: string,
+  ) => {
+    const name = await this.userService.generateRandomUsernames(1);
+
+    const newAccount: CreateUserFacebookGoogleDto = {
+      email: userData?.email ?? '',
+      username: name[0],
+    };
+
+    newAccount[accountType] = userData?.email ?? '';
+
+    return this.userModel.create({
+      ...newAccount,
+    });
+  };
+
   verfiyUserGmailData = async (token: string) => {
     try {
       const client = new OAuth2Client();
@@ -216,41 +239,44 @@ export class AuthService {
     }
   };
 
-  /** Create a user that doesn't have an account connected to that mail.
-   *
-   * @param userData the data of the user taken from the token.
-   * @returns the data of the user created.
-   */
-  createUserWithGmail = async (userData: TokenPayload | undefined) => {
-    const newAccount: CreateUserFacebookGoogleDto = {
-      email: userData?.email ?? '',
-      username: await this.userService.generateRandomUsernames(1)[0],
-      continueWithGoogleAccount: userData?.email ?? '',
-    };
+  verfiyUserGithubData = async (token: string) => {
+    try {
+      const data = await fetch('https://api.github.com/user', {
+        method: 'GET',
+        headers: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const userData = await data.json();
 
-    return this.userModel.create({
-      ...newAccount,
-    });
+      return {
+        email: userData.login,
+      };
+    } catch {
+      throw new UnauthorizedException('Unautherized account');
+    }
   };
 
-  /**
-   * register a new user using google account
-   * @param token Id token sent by the client for authentication.
-   * @res the response.
-   */
-  continueWithGoogle = async (token: string, res: Response) => {
-    const userData = await this.verfiyUserGmailData(token);
+  continueAuth = async (
+    token: string,
+    res: Response,
+    accountTypeField: string,
+    verfiyFunction: (TOKEN: string) => Promise<any>,
+  ) => {
+    const userData = await verfiyFunction(token);
 
     let user = await this.userModel.findOne({
-      continueWithGoogleAccount: userData?.email,
+      continueWithGithubAccount: userData?.email,
     });
 
     if (!user) {
-      user = await this.createUserWithGmail(userData);
+      user = await this.createUserAccountWithoutPassword(
+        userData,
+        accountTypeField,
+      );
     }
 
     await this.sendAuthToken(user, res);
-
-    return user;
   };
 }

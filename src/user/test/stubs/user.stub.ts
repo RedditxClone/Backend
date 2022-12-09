@@ -60,6 +60,8 @@ export const stubUser = (): User => ({
   chatRequest: true,
   newFollower: false,
   unSubscribe: false,
+  continueWithGoogleAccount: 'email@example.com',
+  continueWithGithubAccount: 'email@example.com',
 });
 
 export const stubUserFresh = (): User => ({
@@ -118,4 +120,6 @@ export const stubUserFresh = (): User => ({
   chatRequest: true,
   newFollower: false,
   unSubscribe: false,
+  continueWithGoogleAccount: 'email@example.com',
+  continueWithGithubAccount: 'email@example.com',
 });
