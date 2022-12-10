@@ -293,7 +293,15 @@ export class SubredditController {
   @ApiOperation({ description: 'Get subreddits randomally' })
   @ApiOkResponse({ description: 'The random subreddits returned successfully' })
   @Get('/category/:category')
-  getSubredditsWithCategory(@Param('category') category: string) {
-    return this.subredditService.getSubredditsWithCategory(category);
+  getSubredditsWithCategory(
+    @Param('category') category: string,
+    @Query() query,
+  ) {
+    // eslint-disable-next-line no-console
+    return this.subredditService.getSubredditsWithCategory(
+      category,
+      query.page,
+      query.limit,
+    );
   }
 }

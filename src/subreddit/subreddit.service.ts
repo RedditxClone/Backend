@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
@@ -22,6 +23,7 @@ export class SubredditService {
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
+    private readonly apiFeatureService: ApiFeaturesService,
   ) {}
 
   async create(
@@ -280,9 +282,13 @@ export class SubredditService {
     };
   }
 
-  getSubredditsWithCategory(category: string) {
-    return this.subredditModel.find({
-      categories: category,
-    });
+  getSubredditsWithCategory(category: string, page?: number, limit?: number) {
+    return this.apiFeatureService.processQuery(
+      this.subredditModel.find({
+        categories: category,
+      }),
+      { page, limit },
+      { pagination: true },
+    );
   }
 }
