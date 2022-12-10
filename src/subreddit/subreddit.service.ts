@@ -255,4 +255,34 @@ export class SubredditService {
       },
     ]);
   }
+
+  async addSubredditCategories(
+    subreddit: Types.ObjectId,
+    userId: Types.ObjectId,
+    categories: string[],
+  ) {
+    const sr = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: userId,
+      },
+      {
+        $addToSet: { categories: { $each: categories } },
+      },
+    );
+
+    if (!sr.modifiedCount) {
+      throw new BadRequestException();
+    }
+
+    return {
+      status: 'success',
+    };
+  }
+
+  getSubredditsWithCategory(category: string) {
+    return this.subredditModel.find({
+      categories: category,
+    });
+  }
 }

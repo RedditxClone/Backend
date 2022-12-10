@@ -329,6 +329,51 @@ describe('SubredditService', () => {
       ).rejects.toThrow('duplicate key');
     });
   });
+
+  describe('add categories', () => {
+    it('should add cateogries successfully', async () => {
+      const res = await subredditService.addSubredditCategories(
+        subredditDocument._id,
+        userId,
+        ['sport', 'news'],
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+
+    it('should add cateogries successfully', async () => {
+      await subredditService.addSubredditCategories(
+        subredditDocument._id,
+        userId,
+        ['finance', 'news'],
+      );
+      const sr = await subredditService.findSubreddit(subredditDocument._id);
+
+      expect(sr.categories).toEqual(['sport', 'news', 'finance']);
+    });
+
+    it('should throw error', async () => {
+      await expect(
+        subredditService.addSubredditCategories(subredditDocument._id, userId, [
+          'sport',
+        ]),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('get categories', () => {
+    it('should get cateogries successfully', async () => {
+      const res = await subredditService.getSubredditsWithCategory('sport');
+      expect(res.length).toEqual(1);
+      expect(res[0]._id).toEqual(subredditDocument._id);
+      expect(res[0].categories.length).toEqual(3);
+    });
+
+    it('should return empty array', async () => {
+      const res = await subredditService.getSubredditsWithCategory('notExist');
+      expect(res.length).toEqual(0);
+    });
+  });
+
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);

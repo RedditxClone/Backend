@@ -273,4 +273,27 @@ export class SubredditController {
   getRandomSubreddits(@Param('subreddit') _subreddit: string) {
     // TODO
   }
+
+  @ApiOperation({ description: 'Get subreddits randomally' })
+  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/category')
+  addSubredditsWithCategories(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+    @Body('categories') categories: string[],
+  ) {
+    return this.subredditService.addSubredditCategories(
+      subreddit,
+      userId,
+      categories,
+    );
+  }
+
+  @ApiOperation({ description: 'Get subreddits randomally' })
+  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  @Get('/category/:category')
+  getSubredditsWithCategory(@Param('category') category: string) {
+    return this.subredditService.getSubredditsWithCategory(category);
+  }
 }
