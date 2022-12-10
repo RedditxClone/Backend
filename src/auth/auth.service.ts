@@ -20,6 +20,7 @@ import type {
   ForgetUsernameDto,
   LoginDto,
 } from './dto';
+import type { ChangeEmailDto } from './dto/change-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -281,5 +282,57 @@ export class AuthService {
     }
 
     await this.sendAuthToken(user, res);
+  };
+
+  changeMailRequestType = async (user: any) => {
+    const userWithHashPassword = await this.userModel
+      .findById(user._id)
+      .select('hashPassword');
+
+    if (!userWithHashPassword?.hashPassword) {
+      return {
+        // To be clear to the clients
+        operationType: 'changePassword',
+      };
+    }
+
+    return {
+      operationType: 'normal',
+    };
+  };
+
+  createPasswordRequest = async (user: any) => {
+    const token: string = await this.createChangePasswordToken(user.username);
+
+    await this.emailService.sendEmail(
+      user.email,
+      'create PASSWORD',
+      `this is a url to a token ${token}`,
+    );
+
+    return { status: 'success' };
+  };
+
+  changeEmail = async (user: any, changeEmailDto: ChangeEmailDto) => {
+    const userWithHashPassword = await this.userModel
+      .findById(user._id)
+      .select('hashPassword');
+
+    const isValidUser = await this.isValidUser(
+      userWithHashPassword,
+      changeEmailDto.password,
+    );
+
+    if (!isValidUser) {
+      throw new UnauthorizedException('Wrong password');
+    }
+
+    await this.userModel.findByIdAndUpdate(user._id, {
+      email: changeEmailDto.email,
+    });
+
+    return {
+      status: 'success',
+    };
   };
 }
