@@ -99,38 +99,4 @@ export class AuthController {
   ) {
     return this.authService.changePassword(userId, changePasswordDto, res);
   }
-
-  @ApiOperation({
-    description: 'Create a new user if account is not used or login normally',
-  })
-  @ApiCreatedResponse({
-    description: 'Request processed successfully',
-  })
-  @ApiForbiddenResponse({ description: 'The token is not valid' })
-  @Post('google')
-  async continueWithGoogle(@Body('token') token, @Res() res: Response) {
-    return this.authService.continueAuth(
-      token,
-      res,
-      'continueWithGoogleAccount',
-      this.authService.verfiyUserGmailData,
-    );
-  }
-
-  @ApiOperation({
-    description: 'Create a new user if account is not used or login normally',
-  })
-  @ApiCreatedResponse({
-    description: 'Request processed successfully',
-  })
-  @ApiForbiddenResponse({ description: 'The token is not valid' })
-  @Post('github')
-  async continueWithGithub(@Body('token') token, @Res() res) {
-    return this.authService.continueAuth(
-      token,
-      res,
-      'continueWithGithubAccount',
-      this.authService.verfiyUserGithubData,
-    );
-  }
 }
