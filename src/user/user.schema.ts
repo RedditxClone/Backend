@@ -163,11 +163,11 @@ export class User {
   unSubscribe: boolean;
 
   // google auth
-  @Prop({ unique: true, sparse: true })
+  @Prop({ sparse: true })
   continueWithGoogleAccount?: string;
 
   // github auth
-  @Prop({ unique: true, sparse: true })
+  @Prop({ sparse: true })
   continueWithGithubAccount?: string;
 }
 
