@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
 import mongoose, { Types } from 'mongoose';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -77,7 +78,7 @@ describe('SubredditService', () => {
           { name: 'UserSubreddit', schema: SubredditUserSchema },
         ]),
       ],
-      providers: [SubredditService],
+      providers: [SubredditService, ApiFeaturesService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
     subredditDocument = await subredditService.create(subredditDefault, userId);
