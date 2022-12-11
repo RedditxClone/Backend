@@ -305,8 +305,9 @@ export class SubredditController {
     );
   }
 
-  @ApiOperation({ description: 'Get subreddits randomally' })
-  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  @ApiOperation({ description: 'Add a new user to the moderators of the sr' })
+  @ApiOkResponse({ description: 'The user was added successfully' })
+  @ApiBadRequestResponse()
   @UseGuards(JWTUserGuard)
   @Post('/:subreddit/moderation/:userId')
   addNewModuratorToSr(
