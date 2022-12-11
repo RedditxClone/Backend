@@ -274,8 +274,8 @@ export class SubredditController {
     // TODO
   }
 
-  @ApiOperation({ description: 'Get subreddits randomally' })
-  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  @ApiOperation({ description: 'Add new categories to a subreddit' })
+  @ApiOkResponse({ description: 'The categories were added successfully' })
   @UseGuards(JWTUserGuard)
   @Post('/:subreddit/category')
   addSubredditsWithCategories(
@@ -290,8 +290,8 @@ export class SubredditController {
     );
   }
 
-  @ApiOperation({ description: 'Get subreddits randomally' })
-  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  @ApiOperation({ description: 'Get subreddits belong to a specific category' })
+  @ApiOkResponse({ description: 'The subreddits returned successfully' })
   @Get('/category/:category')
   getSubredditsWithCategory(
     @Param('category') category: string,
