@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
@@ -290,5 +291,35 @@ export class SubredditService {
       { page, limit },
       { pagination: true },
     );
+  }
+
+  async addNewModerator(
+    moderatorId: Types.ObjectId,
+    newModuratorId: Types.ObjectId,
+    subreddit: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        moderators: moderatorId,
+        _id: subreddit,
+      },
+      {
+        $addToSet: { moderators: newModuratorId },
+      },
+    );
+
+    if (res.matchedCount === 0) {
+      throw new UnauthorizedException();
+    }
+
+    if (res.modifiedCount === 0) {
+      throw new BadRequestException(
+        'You are already a moderator in that subreddit',
+      );
+    }
+
+    return {
+      status: 'success',
+    };
   }
 }

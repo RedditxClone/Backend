@@ -304,4 +304,20 @@ export class SubredditController {
       query.limit,
     );
   }
+
+  @ApiOperation({ description: 'Get subreddits randomally' })
+  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/moderation/:userId')
+  addNewModuratorToSr(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
+    @User('_id') moduratorId: Types.ObjectId,
+  ) {
+    return this.subredditService.addNewModerator(
+      moduratorId,
+      userId,
+      subreddit,
+    );
+  }
 }

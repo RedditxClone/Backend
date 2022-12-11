@@ -29,6 +29,7 @@ describe('SubredditService', () => {
   let subredditDocument: SubredditDocument;
 
   const userId = new Types.ObjectId(1);
+  const userIdNewModerator = new Types.ObjectId(2);
 
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
@@ -372,6 +373,37 @@ describe('SubredditService', () => {
     it('should return empty array', async () => {
       const res = await subredditService.getSubredditsWithCategory('notExist');
       expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('add new moderator', () => {
+    it('should add moderator successfully', async () => {
+      const res = await subredditService.addNewModerator(
+        userId,
+        userIdNewModerator,
+        subredditDocument._id,
+      );
+      const sr = await subredditService.findSubreddit(subredditDocument._id);
+      expect(res).toEqual({ status: 'success' });
+      expect(sr.moderators).toEqual([userId, userIdNewModerator]);
+    });
+    it('should return unauth error', async () => {
+      await expect(
+        subredditService.addNewModerator(
+          new Types.ObjectId(3),
+          userIdNewModerator,
+          subredditDocument._id,
+        ),
+      ).rejects.toThrowError('Unauthorized');
+    });
+    it('should return you are already a moderator', async () => {
+      await expect(
+        subredditService.addNewModerator(
+          userId,
+          userIdNewModerator,
+          subredditDocument._id,
+        ),
+      ).rejects.toThrowError('You are already a moderator in that subreddit');
     });
   });
 
