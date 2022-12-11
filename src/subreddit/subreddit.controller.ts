@@ -321,4 +321,12 @@ export class SubredditController {
       subreddit,
     );
   }
+
+  @ApiOperation({ description: 'Get subreddits the user moderate' })
+  @ApiOkResponse({ description: 'The subreddits returned succesfully' })
+  @UseGuards(JWTUserGuard)
+  @Get('/moderation/me')
+  getSubredditsUserModerate(@User('_id') userId) {
+    return this.subredditService.subredditIModerate(userId);
+  }
 }

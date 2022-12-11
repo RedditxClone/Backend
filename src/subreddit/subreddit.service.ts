@@ -322,4 +322,10 @@ export class SubredditService {
       status: 'success',
     };
   }
+
+  async subredditIModerate(userId: Types.ObjectId) {
+    return this.subredditModel.find({
+      moderators: userId,
+    });
+  }
 }
