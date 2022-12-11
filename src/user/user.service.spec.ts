@@ -351,6 +351,39 @@ describe('UserService', () => {
     });
   });
 
+  describe('canRecieveMessages', () => {
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someRandomUsername'));
+    });
+
+    it('updates prefs', async () => {
+      await service.updateUserPrefs(id, {
+        acceptPms: 'whitelisted',
+        whitelisted: ['someSpecificUsername1', 'someSpecificUsername2'],
+      });
+    });
+
+    it('should return false', async () => {
+      expect(!(await service.canRecieveMessages(id)));
+    });
+
+    it('should return false', async () => {
+      expect(!(await service.canRecieveMessages(id, 'someRandomUsername')));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someSpecificUsername1'));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someSpecificUsername2'));
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
