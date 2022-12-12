@@ -256,7 +256,19 @@ describe('PostService', () => {
       });
     });
     describe('get my posts', () => {
-      it('must get all of my posts');
+      it('must get all of my posts', async () => {
+        const res = await service.getPostsOfUser(user2._id, page, limit);
+        expect(res.length).toEqual(2);
+        expect(res[0].user).toEqual({
+          id: user2._id,
+          username: user2.username,
+          photo: user2.profilePhoto,
+        });
+      });
+      it('must get no posts', async () => {
+        const res = await service.getPostsOfUser(user1._id, page, limit);
+        expect(res.length).toEqual(0);
+      });
     });
   });
   afterAll(async () => {
