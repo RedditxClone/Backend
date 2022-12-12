@@ -118,7 +118,47 @@ describe('PostService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
-  describe('timeline', () => {
+
+  const generateUsers = async () => {
+    const user1 = await userService.createUser({
+      email: 'email@gmail.com',
+      username: 'username',
+      password: '12345678',
+    });
+    const user2 = await userService.createUser({
+      email: 'email@gmail.com',
+      username: 'username2',
+      password: '12345678',
+    });
+
+    return [user1, user2];
+  };
+
+  const generateSRs = async (
+    user1Id: Types.ObjectId,
+    user2Id: Types.ObjectId,
+  ) => {
+    const sr1 = await subredditService.create(
+      {
+        name: 'sr1',
+        over18: true,
+        type: 'type',
+      },
+      user1Id,
+    );
+    const sr2 = await subredditService.create(
+      {
+        name: 'sr2',
+        over18: true,
+        type: 'type',
+      },
+      user2Id,
+    );
+
+    return [sr1, sr2];
+  };
+
+  describe('retrieve posts', () => {
     const page = undefined;
     const limit = undefined;
     let user1: UserDocument;
@@ -126,32 +166,10 @@ describe('PostService', () => {
     const subreddits: SubredditDocument[] = [];
     const posts: Array<Post & { _id: Types.ObjectId }> = [];
     beforeAll(async () => {
-      user1 = await userService.createUser({
-        email: 'email@gmail.com',
-        username: 'username',
-        password: '12345678',
-      });
-      user2 = await userService.createUser({
-        email: 'email@gmail.com',
-        username: 'username2',
-        password: '12345678',
-      });
-      const sr1 = await subredditService.create(
-        {
-          name: 'sr1',
-          over18: true,
-          type: 'type',
-        },
-        user1._id,
-      );
-      const sr2 = await subredditService.create(
-        {
-          name: 'sr2',
-          over18: true,
-          type: 'type',
-        },
-        user1._id,
-      );
+      const users = await generateUsers();
+      user1 = users[0];
+      user2 = users[1];
+      const [sr1, sr2] = await generateSRs(user1._id, user2._id);
       subreddits.push(sr1, sr2);
 
       await subredditService.joinSubreddit(user1._id, sr1._id);
@@ -170,69 +188,87 @@ describe('PostService', () => {
 
       posts.push(post1, post2);
     });
-    it('should return 2 posts successfully', async () => {
-      const timeline = await service.getTimeLine(user1._id, page, limit);
-      expect(timeline.length).toEqual(2);
-      expect(timeline[0]).toEqual(
-        expect.objectContaining({
-          _id: posts[0]._id,
-          text: posts[0].text,
-          title: posts[0].title,
-          voteType: null,
-          subreddit: {
-            id: subreddits[0]._id,
-            name: subreddits[0].name,
-            type: subreddits[0].type,
-          },
-          user: {
-            id: user2._id,
-            photo: '',
-            username: user2.username,
-          },
-        }),
-      );
+
+    describe('timeline', () => {
+      it('should return 2 posts successfully', async () => {
+        const timeline = await service.getTimeLine(user1._id, page, limit);
+        expect(timeline.length).toEqual(2);
+        expect(timeline[0]).toEqual(
+          expect.objectContaining({
+            _id: posts[0]._id,
+            text: posts[0].text,
+            title: posts[0].title,
+            voteType: null,
+            subreddit: {
+              id: subreddits[0]._id,
+              name: subreddits[0].name,
+              type: subreddits[0].type,
+            },
+            user: {
+              id: user2._id,
+              photo: '',
+              username: user2.username,
+            },
+          }),
+        );
+      });
+      it("shouldn't get any post after blocking user", async () => {
+        await userService.block(user1._id, user2._id);
+        const timeline = await service.getTimeLine(user1._id, page, limit);
+        expect(timeline).toEqual([]);
+        await userService.unblock(user1._id, user2._id);
+      });
+      it("it shouldn't get second post before of hiding it", async () => {
+        await service.hide(posts[1]._id, user1._id);
+        const timeline = await service.getTimeLine(user1._id, page, limit);
+        expect(timeline.length).toEqual(1);
+        expect(timeline[0]).toEqual(
+          expect.objectContaining({
+            _id: posts[0]._id,
+            text: posts[0].text,
+            title: posts[0].title,
+            voteType: null,
+            subreddit: {
+              id: subreddits[0]._id,
+              name: subreddits[0].name,
+              type: subreddits[0].type,
+            },
+            user: {
+              id: user2._id,
+              photo: '',
+              username: user2.username,
+            },
+          }),
+        );
+      });
+      it('must get all posts randomly', async () => {
+        const userId = undefined;
+        const timeline = await service.getTimeLine(userId, page, limit);
+        expect(timeline.length).toEqual(2);
+      });
+      it('must limit return to only one post', async () => {
+        const timeline = await service.getTimeLine(user1._id, page, 1);
+        expect(timeline.length).toEqual(1);
+      });
+      it("shouldn't get any post due to not joining any subreddit", async () => {
+        const timeline = await service.getTimeLine(user2._id, page, limit);
+        expect(timeline).toEqual([]);
+      });
     });
-    it("shouldn't get any post after blocking user", async () => {
-      await userService.block(user1._id, user2._id);
-      const timeline = await service.getTimeLine(user1._id, page, limit);
-      expect(timeline).toEqual([]);
-      await userService.unblock(user1._id, user2._id);
-    });
-    it("it shouldn't get second post before of hiding it", async () => {
-      await service.hide(posts[1]._id, user1._id);
-      const timeline = await service.getTimeLine(user1._id, page, limit);
-      expect(timeline.length).toEqual(1);
-      expect(timeline[0]).toEqual(
-        expect.objectContaining({
-          _id: posts[0]._id,
-          text: posts[0].text,
-          title: posts[0].title,
-          voteType: null,
-          subreddit: {
-            id: subreddits[0]._id,
-            name: subreddits[0].name,
-            type: subreddits[0].type,
-          },
-          user: {
-            id: user2._id,
-            photo: '',
-            username: user2.username,
-          },
-        }),
-      );
-    });
-    it('must get all posts randomly', async () => {
-      const userId = undefined;
-      const timeline = await service.getTimeLine(userId, page, limit);
-      expect(timeline.length).toEqual(2);
-    });
-    it('must limit return to only one post', async () => {
-      const timeline = await service.getTimeLine(user1._id, page, 1);
-      expect(timeline.length).toEqual(1);
-    });
-    it("shouldn't get any post due to not joining any subreddit", async () => {
-      const timeline = await service.getTimeLine(user2._id, page, limit);
-      expect(timeline).toEqual([]);
+    describe('get my posts', () => {
+      it('must get all of my posts', async () => {
+        const res = await service.getPostsOfUser(user2._id, page, limit);
+        expect(res.length).toEqual(2);
+        expect(res[0].user).toEqual({
+          id: user2._id,
+          username: user2.username,
+          photo: user2.profilePhoto,
+        });
+      });
+      it('must get no posts', async () => {
+        const res = await service.getPostsOfUser(user1._id, page, limit);
+        expect(res.length).toEqual(0);
+      });
     });
   });
   afterAll(async () => {
