@@ -270,6 +270,17 @@ export class PostService {
     ];
   }
 
+  getPaginatedPost(page = 1, limit = 10) {
+    return [
+      {
+        $skip: ((Number(page) || 1) - 1) * Number(limit),
+      },
+      {
+        $limit: Number(limit),
+      },
+    ];
+  }
+
   getPostProjectParameters() {
     return [
       {
@@ -320,24 +331,42 @@ export class PostService {
     ];
   }
 
-  private getRandomTimeLine() {
+  // will be changed
+  getSortedPost() {
+    return [
+      {
+        $sort: {
+          votesCount: 1,
+        },
+      },
+    ];
+  }
+
+  private getRandomTimeLine(
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
     return this.postModel.aggregate([
       ...this.prepareToGetPost(),
-      {
-        $sample: { size: 15 },
-      },
+      // return random sample
+      { $sample: { size: Number(limit || 10) } },
       ...this.getPostSRInfo(),
       ...this.getPostUserInfo(),
       ...this.getPostProjectParameters(),
     ]);
   }
 
-  private async getUserTimeLine(userId: Types.ObjectId) {
+  private async getUserTimeLine(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
     return this.postModel.aggregate([
       ...this.prepareToGetPost(),
       ...this.getPostsOfMySRs(userId),
       ...this.filterHiddenPosts(userId),
       ...this.filterBlockedPosts(userId),
+      ...this.getPaginatedPost(page, limit),
       ...this.getPostSRInfo(),
       ...this.getPostUserInfo(),
       ...this.getPostVotesInfo(userId),
@@ -345,11 +374,15 @@ export class PostService {
     ]);
   }
 
-  async getTimeLine(userId: Types.ObjectId | undefined) {
+  async getTimeLine(
+    userId: Types.ObjectId | undefined,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
     if (!userId) {
-      return this.getRandomTimeLine();
+      return this.getRandomTimeLine(page, limit);
     }
 
-    return this.getUserTimeLine(userId);
+    return this.getUserTimeLine(userId, page, limit);
   }
 }

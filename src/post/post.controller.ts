@@ -1,11 +1,14 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseGuards,
@@ -58,8 +61,12 @@ export class PostController {
   })
   @Get('timeline')
   @UseGuards(IsUserExistGuard)
-  getTimeLine(@Req() req) {
-    return this.postService.getTimeLine(req._id);
+  getTimeLine(
+    @Req() req,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.getTimeLine(req._id, page, limit);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
