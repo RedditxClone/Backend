@@ -269,9 +269,10 @@ export class AuthService {
   ) => {
     const userData = await verfiyFunction(token);
 
-    let user = await this.userModel.findOne({
-      continueWithGithubAccount: userData?.email,
-    });
+    const searchWith = {};
+    searchWith[accountTypeField] = userData?.email;
+
+    let user = await this.userModel.findOne(searchWith);
 
     if (!user) {
       user = await this.createUserAccountWithoutPassword(

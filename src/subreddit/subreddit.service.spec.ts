@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
 import mongoose, { Types } from 'mongoose';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -28,6 +29,7 @@ describe('SubredditService', () => {
   let subredditDocument: SubredditDocument;
 
   const userId = new Types.ObjectId(1);
+  const userIdNewModerator = new Types.ObjectId(2);
 
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
@@ -77,7 +79,7 @@ describe('SubredditService', () => {
           { name: 'UserSubreddit', schema: SubredditUserSchema },
         ]),
       ],
-      providers: [SubredditService],
+      providers: [SubredditService, ApiFeaturesService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
     subredditDocument = await subredditService.create(subredditDefault, userId);
@@ -329,6 +331,97 @@ describe('SubredditService', () => {
       ).rejects.toThrow('duplicate key');
     });
   });
+
+  describe('add categories', () => {
+    it('should add cateogries successfully', async () => {
+      const res = await subredditService.addSubredditCategories(
+        subredditDocument._id,
+        userId,
+        ['sport', 'news'],
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+
+    it('should add cateogries successfully', async () => {
+      await subredditService.addSubredditCategories(
+        subredditDocument._id,
+        userId,
+        ['finance', 'news'],
+      );
+      const sr = await subredditService.findSubreddit(subredditDocument._id);
+
+      expect(sr.categories).toEqual(['sport', 'news', 'finance']);
+    });
+
+    it('should throw error', async () => {
+      await expect(
+        subredditService.addSubredditCategories(subredditDocument._id, userId, [
+          'sport',
+        ]),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('get categories', () => {
+    it('should get cateogries successfully', async () => {
+      const res = await subredditService.getSubredditsWithCategory('sport');
+      expect(res.length).toEqual(1);
+      expect(res[0]._id).toEqual(subredditDocument._id);
+      expect(res[0].categories.length).toEqual(3);
+    });
+
+    it('should return empty array', async () => {
+      const res = await subredditService.getSubredditsWithCategory('notExist');
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('add new moderator', () => {
+    it('should add moderator successfully', async () => {
+      const res = await subredditService.addNewModerator(
+        userId,
+        userIdNewModerator,
+        subredditDocument._id,
+      );
+      const sr = await subredditService.findSubreddit(subredditDocument._id);
+      expect(res).toEqual({ status: 'success' });
+      expect(sr.moderators).toEqual([userId, userIdNewModerator]);
+    });
+    it('should return unauth error', async () => {
+      await expect(
+        subredditService.addNewModerator(
+          new Types.ObjectId(3),
+          userIdNewModerator,
+          subredditDocument._id,
+        ),
+      ).rejects.toThrowError('Unauthorized');
+    });
+    it('should return you are already a moderator', async () => {
+      await expect(
+        subredditService.addNewModerator(
+          userId,
+          userIdNewModerator,
+          subredditDocument._id,
+        ),
+      ).rejects.toThrowError('You are already a moderator in that subreddit');
+    });
+  });
+
+  describe('get subreddits I moderate', () => {
+    it('should get subreddits successfully', async () => {
+      const res = await subredditService.subredditIModerate(userId);
+      expect(res.length).toEqual(2);
+      expect(res[0]._id).toEqual(subredditDocument._id);
+    });
+
+    it('should return empty array', async () => {
+      const res = await subredditService.subredditIModerate(
+        new Types.ObjectId(91),
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);

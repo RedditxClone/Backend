@@ -3,11 +3,13 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
@@ -22,6 +24,7 @@ export class SubredditService {
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
+    private readonly apiFeatureService: ApiFeaturesService,
   ) {}
 
   async create(
@@ -291,5 +294,75 @@ export class SubredditService {
         $limit: numberOfData,
       },
     ]);
+  }
+
+  async addSubredditCategories(
+    subreddit: Types.ObjectId,
+    userId: Types.ObjectId,
+    categories: string[],
+  ) {
+    const sr = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: userId,
+      },
+      {
+        $addToSet: { categories: { $each: categories } },
+      },
+    );
+
+    if (!sr.modifiedCount) {
+      throw new BadRequestException();
+    }
+
+    return {
+      status: 'success',
+    };
+  }
+
+  getSubredditsWithCategory(category: string, page?: number, limit?: number) {
+    return this.apiFeatureService.processQuery(
+      this.subredditModel.find({
+        categories: category,
+      }),
+      { page, limit },
+      { pagination: true },
+    );
+  }
+
+  async addNewModerator(
+    moderatorId: Types.ObjectId,
+    newModuratorId: Types.ObjectId,
+    subreddit: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        moderators: moderatorId,
+        _id: subreddit,
+      },
+      {
+        $addToSet: { moderators: newModuratorId },
+      },
+    );
+
+    if (res.matchedCount === 0) {
+      throw new UnauthorizedException();
+    }
+
+    if (res.modifiedCount === 0) {
+      throw new BadRequestException(
+        'You are already a moderator in that subreddit',
+      );
+    }
+
+    return {
+      status: 'success',
+    };
+  }
+
+  async subredditIModerate(userId: Types.ObjectId) {
+    return this.subredditModel.find({
+      moderators: userId,
+    });
   }
 }

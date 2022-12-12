@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { SubredditController } from './subreddit.controller';
 import { SubredditSchema } from './subreddit.schema';
@@ -16,7 +17,7 @@ import { SubredditUserSchema } from './subreddit-user.schema';
     ImagesHandlerModule,
   ],
   controllers: [SubredditController],
-  providers: [SubredditService],
+  providers: [SubredditService, ApiFeaturesService],
   exports: [SubredditService],
 })
 export class SubredditModule {}

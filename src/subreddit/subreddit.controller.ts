@@ -273,4 +273,60 @@ export class SubredditController {
   getRandomSubreddits(@Param('subreddit') _subreddit: string) {
     // TODO
   }
+
+  @ApiOperation({ description: 'Add new categories to a subreddit' })
+  @ApiOkResponse({ description: 'The categories were added successfully' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/category')
+  addSubredditsWithCategories(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+    @Body('categories') categories: string[],
+  ) {
+    return this.subredditService.addSubredditCategories(
+      subreddit,
+      userId,
+      categories,
+    );
+  }
+
+  @ApiOperation({ description: 'Get subreddits belong to a specific category' })
+  @ApiOkResponse({ description: 'The subreddits returned successfully' })
+  @Get('/category/:category')
+  getSubredditsWithCategory(
+    @Param('category') category: string,
+    @Query() query,
+  ) {
+    // eslint-disable-next-line no-console
+    return this.subredditService.getSubredditsWithCategory(
+      category,
+      query.page,
+      query.limit,
+    );
+  }
+
+  @ApiOperation({ description: 'Add a new user to the moderators of the sr' })
+  @ApiOkResponse({ description: 'The user was added successfully' })
+  @ApiBadRequestResponse()
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/moderation/:userId')
+  addNewModuratorToSr(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
+    @User('_id') moduratorId: Types.ObjectId,
+  ) {
+    return this.subredditService.addNewModerator(
+      moduratorId,
+      userId,
+      subreddit,
+    );
+  }
+
+  @ApiOperation({ description: 'Get subreddits the user moderate' })
+  @ApiOkResponse({ description: 'The subreddits returned succesfully' })
+  @UseGuards(JWTUserGuard)
+  @Get('/moderation/me')
+  getSubredditsUserModerate(@User('_id') userId) {
+    return this.subredditService.subredditIModerate(userId);
+  }
 }

@@ -19,6 +19,7 @@ import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -78,6 +79,7 @@ describe('PostCommentService', () => {
       providers: [
         PostCommentService,
         PostService,
+        ApiFeaturesService,
         CommentService,
         SubredditService,
       ],
