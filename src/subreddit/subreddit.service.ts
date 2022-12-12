@@ -348,4 +348,46 @@ export class SubredditService {
 
     return subreddits.map((v) => v.subreddit[0]);
   }
+
+  async getSubredditModerators(subreddit: Types.ObjectId) {
+    const subreddits = await this.subredditModel.aggregate([
+      {
+        $match: {
+          _id: subreddit,
+        },
+      },
+      {
+        $project: {
+          moderators: 1,
+        },
+      },
+      {
+        $unset: '_id',
+      },
+      {
+        $unwind: '$moderators',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'moderators',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+          },
+        },
+      },
+    ]);
+
+    return subreddits.map((v) => v.user[0]);
+  }
 }

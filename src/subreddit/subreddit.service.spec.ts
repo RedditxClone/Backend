@@ -6,6 +6,11 @@ import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
 import mongoose, { Types } from 'mongoose';
 
+import { BlockModule } from '../block/block.module';
+import { FollowModule } from '../follow/follow.module';
+import { UserModule } from '../user/user.module';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
@@ -28,8 +33,8 @@ describe('SubredditService', () => {
   let id: string;
   let subredditDocument: SubredditDocument;
 
-  const userId = new Types.ObjectId(1);
-  const userIdNewModerator = new Types.ObjectId(2);
+  let userId;
+  let userIdNewModerator;
 
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
@@ -74,14 +79,29 @@ describe('SubredditService', () => {
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
         ImagesHandlerModule,
+        UserModule,
+        FollowModule,
+        BlockModule,
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'User', schema: UserSchema },
         ]),
       ],
-      providers: [SubredditService, ApiFeaturesService],
+      providers: [SubredditService, ApiFeaturesService, UserService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
+    const userService = module.get<UserService>(UserService);
+    const userData = {
+      username: 'omarfareed',
+      password: '12345678',
+      email: 'email@example.com',
+    };
+    const u1 = await userService.createUser(userData);
+    userData.username = 'aref';
+    const u2 = await userService.createUser(userData);
+    userId = u1._id;
+    userIdNewModerator = u2._id;
     subredditDocument = await subredditService.create(subredditDefault, userId);
     id = subredditDocument._id.toString();
   });
@@ -427,6 +447,22 @@ describe('SubredditService', () => {
       const res = await subredditService.subredditsIJoined(userId);
       expect(res.length).toEqual(1);
       expect(res[0]._id).toEqual(subredditDocument._id);
+    });
+    it('should return empty array', async () => {
+      const res = await subredditService.subredditsIJoined(
+        new Types.ObjectId(13),
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('get subreddit moderators', () => {
+    it('should get moderators successfully', async () => {
+      const res = await subredditService.getSubredditModerators(
+        subredditDocument._id,
+      );
+      expect(res.length).toEqual(2);
+      expect(res[0]._id).toEqual(userId);
     });
     it('should return empty array', async () => {
       const res = await subredditService.subredditsIJoined(

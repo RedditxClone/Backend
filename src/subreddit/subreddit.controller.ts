@@ -337,4 +337,11 @@ export class SubredditController {
   getSubredditsUserJoined(@User('_id') userId) {
     return this.subredditService.subredditsIJoined(userId);
   }
+
+  @ApiOperation({ description: 'Get subreddit moderators' })
+  @ApiOkResponse({ description: 'The moderators returned succesfully' })
+  @Get('/:subreddit/moderation/moderators')
+  getSubredditsModerators(@Param('subreddit', ParseObjectIdPipe) subreddit) {
+    return this.subredditService.getSubredditModerators(subreddit);
+  }
 }
