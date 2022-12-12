@@ -281,6 +281,7 @@ export class PostService {
           subreddit: {
             id: '$subreddit._id',
             name: '$subreddit.name',
+            type: '$subreddit.type',
           },
           votesCount: 1,
           commentCount: 1,

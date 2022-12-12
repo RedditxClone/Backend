@@ -219,6 +219,11 @@ describe('PostService', () => {
         }),
       );
     });
+    it('must get all posts randomly', async () => {
+      const userId = undefined;
+      const timeline = await service.getTimeLine(userId);
+      expect(timeline.length).toEqual(2);
+    });
     it("shouldn't get any post due to not joining any subreddit", async () => {
       const timeline = await service.getTimeLine(user2._id);
       expect(timeline).toEqual([]);
