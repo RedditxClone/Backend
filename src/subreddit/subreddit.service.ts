@@ -226,8 +226,8 @@ export class SubredditService {
       {
         $match: {
           $or: [
-            { name: { $regex: searchPhrase } },
-            { description: { $regex: searchPhrase } },
+            { name: { $regex: searchPhrase, $options: 'i' } },
+            { description: { $regex: searchPhrase, $options: 'i' } },
           ],
         },
       },
@@ -245,6 +245,43 @@ export class SubredditService {
           name: 1,
           description: 1,
           users: { $size: '$users' },
+        },
+      },
+      {
+        $skip: (pageNumber - 1) * numberOfData,
+      },
+      {
+        $limit: numberOfData,
+      },
+    ]);
+  }
+
+  getSearchFlairsAggregate(
+    searchPhrase: string,
+    subreddit: Types.ObjectId,
+    page,
+    numberOfData: number,
+  ) {
+    const pageNumber = page ?? 1;
+
+    return this.subredditModel.aggregate([
+      {
+        $match: {
+          _id: subreddit,
+        },
+      },
+      {
+        $project: {
+          flair: '$flairList',
+        },
+      },
+      {
+        $unwind: '$flair',
+      },
+      {
+        $match: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          'flair.text': { $regex: searchPhrase, $options: 'i' },
         },
       },
       {

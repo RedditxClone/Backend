@@ -10,6 +10,7 @@ import type { CreatePostDto } from '../post/dto';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import type { CreateSubredditDto } from '../subreddit/dto/create-subreddit.dto';
+import type { FlairDto } from '../subreddit/dto/flair.dto';
 import { SubredditModule } from '../subreddit/subreddit.module';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { UserModule } from '../user/user.module';
@@ -72,6 +73,11 @@ describe('SearchService', () => {
     type: 'public',
     over18: false,
   };
+  const flair: FlairDto = {
+    backgroundColor: 'aaa321',
+    textColor: 'fff',
+    text: 'test',
+  };
 
   let module: TestingModule;
   beforeAll(async () => {
@@ -116,6 +122,12 @@ describe('SearchService', () => {
 
     commentData.postId = p._id;
     commentData.subredditId = subredditId1;
+
+    await subredditService.createFlair(subredditId1.toString(), flair);
+    flair.text += 'Ha';
+    await subredditService.createFlair(subredditId1.toString(), flair);
+    flair.text += 'kB';
+    await subredditService.createFlair(subredditId1.toString(), flair);
 
     const c = await commentService.create(id1, commentData);
     commentId = c._id;
@@ -222,6 +234,35 @@ describe('SearchService', () => {
       expect(data.length).toBe(0);
     });
   });
+
+  describe('search for flairs', () => {
+    it('should find the flairs successfully', async () => {
+      const data = await searchService.searchFlairs(
+        'test',
+        subredditId1,
+        1,
+        10,
+      );
+
+      expect(data.length).toBe(3);
+      expect(data[2]).toEqual(expect.objectContaining(flair));
+    });
+    it('should find only 2 flair', async () => {
+      const data = await searchService.searchFlairs('ha', subredditId1, 1, 20);
+      expect(data.length).toBe(2);
+      expect(data[1]).toEqual(expect.objectContaining(flair));
+    });
+    it('should find nothing', async () => {
+      const data = await searchService.searchFlairs(
+        'h3124ka',
+        subredditId1,
+        1,
+        20,
+      );
+      expect(data.length).toBe(0);
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
