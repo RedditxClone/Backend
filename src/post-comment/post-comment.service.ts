@@ -219,8 +219,8 @@ export class PostCommentService {
     this.postCommentModel
       .find({
         $or: [
-          { title: { $regex: searchPhrase } },
-          { text: { $regex: searchPhrase } },
+          { title: { $regex: searchPhrase, $options: 'i' } },
+          { text: { $regex: searchPhrase, $options: 'i' } },
         ],
         _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
         type: 'Post',
@@ -241,7 +241,7 @@ export class PostCommentService {
   searchCommentQuery = (searchPhrase: string, usersBlockedMe) =>
     this.postCommentModel
       .find({
-        text: { $regex: searchPhrase },
+        text: { $regex: searchPhrase, $options: 'i' },
         userId: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
         type: 'Comment',
       })
