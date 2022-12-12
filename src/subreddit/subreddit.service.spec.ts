@@ -425,10 +425,9 @@ describe('SubredditService', () => {
   describe('get subreddits I joined', () => {
     it('should get subreddits successfully', async () => {
       const res = await subredditService.subredditsIJoined(userId);
-      expect(res.length).toEqual(2);
+      expect(res.length).toEqual(1);
       expect(res[0]._id).toEqual(subredditDocument._id);
     });
-
     it('should return empty array', async () => {
       const res = await subredditService.subredditsIJoined(
         new Types.ObjectId(13),
