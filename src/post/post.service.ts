@@ -86,16 +86,8 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  private getRandomTimeLine() {
-    return this.postModel.aggregate([
-      {
-        $sample: { size: 15 },
-      },
-    ]);
-  }
-
-  private async getUserTimeLine(userId: Types.ObjectId) {
-    return this.postModel.aggregate([
+  prepareToGetPost() {
+    return [
       {
         $match: {
           isDeleted: false,
@@ -112,6 +104,11 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  getPostsOfMySRs(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'usersubreddits',
@@ -136,6 +133,11 @@ export class PostService {
       {
         $unwind: '$PostUserSubreddit',
       },
+    ];
+  }
+
+  filterHiddenPosts(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'hides',
@@ -164,6 +166,11 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  filterBlockedPosts(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'blocks',
@@ -202,6 +209,11 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  getPostSRInfo() {
+    return [
       {
         $lookup: {
           from: 'subreddits',
@@ -213,25 +225,11 @@ export class PostService {
       {
         $unwind: '$subreddit',
       },
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          upvotesCount: 1,
-          images: 1,
-          postId: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          votesCount: 1,
-          flair: 1,
-          subreddit: {
-            id: '$subredditId',
-            name: '$subreddit.name',
-            type: '$subreddit.type',
-          },
-        },
-      },
+    ];
+  }
+
+  getPostUserInfo() {
+    return [
       {
         $lookup: {
           from: 'users',
@@ -243,6 +241,11 @@ export class PostService {
       {
         $unwind: '$user',
       },
+    ];
+  }
+
+  getPostVotesInfo(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'votes',
@@ -264,17 +267,40 @@ export class PostService {
           ],
         },
       },
+    ];
+  }
+
+  getPaginatedPost(page = 1, limit = 10) {
+    return [
+      {
+        $skip: ((Number(page) || 1) - 1) * Number(limit),
+      },
+      {
+        $limit: Number(limit),
+      },
+    ];
+  }
+
+  getPostProjectParameters() {
+    return [
       {
         $project: {
           text: 1,
           title: 1,
           userId: 1,
           postId: 1,
-          subreddit: 1,
+          subreddit: {
+            id: '$subreddit._id',
+            name: '$subreddit.name',
+            type: '$subreddit.type',
+          },
           votesCount: 1,
           commentCount: 1,
           publishedDate: 1,
           flair: 1,
+          spoiler: 1,
+          nsfw: 1,
+          // vote: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
@@ -283,7 +309,13 @@ export class PostService {
                 $cond: [
                   { $eq: ['$vote.isUpvote', [true]] },
                   'upvote',
-                  'downvote',
+                  {
+                    $cond: [
+                      { $eq: ['$vote.isUpvote', [false]] },
+                      'downvote',
+                      undefined,
+                    ],
+                  },
                 ],
               },
             ],
@@ -296,14 +328,61 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  // will be changed
+  getSortedPost() {
+    return [
+      {
+        $sort: {
+          votesCount: 1,
+        },
+      },
+    ];
+  }
+
+  private getRandomTimeLine(
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    return this.postModel.aggregate([
+      ...this.prepareToGetPost(),
+      // return random sample
+      { $sample: { size: Number(limit || 10) } },
+      ...this.getPostSRInfo(),
+      ...this.getPostUserInfo(),
+      ...this.getPostProjectParameters(),
     ]);
   }
 
-  async getTimeLine(userId: Types.ObjectId | undefined) {
+  private async getUserTimeLine(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    return this.postModel.aggregate([
+      ...this.prepareToGetPost(),
+      ...this.getPostsOfMySRs(userId),
+      ...this.filterHiddenPosts(userId),
+      ...this.filterBlockedPosts(userId),
+      ...this.getPaginatedPost(page, limit),
+      ...this.getPostSRInfo(),
+      ...this.getPostUserInfo(),
+      ...this.getPostVotesInfo(userId),
+      ...this.getPostProjectParameters(),
+    ]);
+  }
+
+  async getTimeLine(
+    userId: Types.ObjectId | undefined,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
     if (!userId) {
-      return this.getRandomTimeLine();
+      return this.getRandomTimeLine(page, limit);
     }
 
-    return this.getUserTimeLine(userId);
+    return this.getUserTimeLine(userId, page, limit);
   }
 }
