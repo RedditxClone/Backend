@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { ThingFetch } from '../post-comment/post-comment.utils';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
 import type { Hide } from './hide.schema';
@@ -86,283 +87,19 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  prepareToGetPost() {
-    return [
-      {
-        $match: {
-          isDeleted: false,
-        },
-      },
-      {
-        $set: {
-          postId: { $toObjectId: '$_id' },
-          subredditId: {
-            $toObjectId: '$subredditId',
-          },
-          userId: {
-            $toObjectId: '$userId',
-          },
-        },
-      },
-    ];
-  }
-
-  getPostsOfMySRs(userId: Types.ObjectId) {
-    return [
-      {
-        $lookup: {
-          from: 'usersubreddits',
-          as: 'PostUserSubreddit',
-          let: {
-            subredditId: '$subredditId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$subredditId', '$$subredditId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $unwind: '$PostUserSubreddit',
-      },
-    ];
-  }
-
-  filterHiddenPosts(userId: Types.ObjectId) {
-    return [
-      {
-        $lookup: {
-          from: 'hides',
-          as: 'hide',
-          let: {
-            postId: '$postId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$$postId', '$postId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$hide', []],
-          },
-        },
-      },
-    ];
-  }
-
-  filterBlockedPosts(userId: Types.ObjectId) {
-    return [
-      {
-        $lookup: {
-          from: 'blocks',
-          as: 'block',
-          let: {
-            userId: '$userId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    {
-                      $and: [
-                        { $eq: ['$blocked', userId] },
-                        { $eq: ['$blocker', '$$userId'] },
-                      ],
-                    },
-                    {
-                      $and: [
-                        { $eq: ['$blocker', userId] },
-                        { $eq: ['$blocked', '$$userId'] },
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$block', []],
-          },
-        },
-      },
-    ];
-  }
-
-  getPostSRInfo() {
-    return [
-      {
-        $lookup: {
-          from: 'subreddits',
-          as: 'subreddit',
-          localField: 'subredditId',
-          foreignField: '_id',
-        },
-      },
-      {
-        $unwind: '$subreddit',
-      },
-    ];
-  }
-
-  getPostUserInfo() {
-    return [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-      {
-        $unwind: '$user',
-      },
-    ];
-  }
-
-  getPostVotesInfo(userId: Types.ObjectId) {
-    return [
-      {
-        $lookup: {
-          from: 'votes',
-          as: 'vote',
-          let: {
-            postId: '$postId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$$postId', '$thingId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-    ];
-  }
-
-  getPaginatedPost(page = 1, limit = 10) {
-    return [
-      {
-        $skip: ((Number(page) || 1) - 1) * Number(limit),
-      },
-      {
-        $limit: Number(limit),
-      },
-    ];
-  }
-
-  getPostProjectParameters() {
-    return [
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          subreddit: {
-            id: '$subreddit._id',
-            name: '$subreddit.name',
-            type: '$subreddit.type',
-          },
-          votesCount: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          flair: 1,
-          spoiler: 1,
-          nsfw: 1,
-          // vote: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          images: 1,
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
-        },
-      },
-    ];
-  }
-
-  // will be changed
-  getSortedPost() {
-    return [
-      {
-        $sort: {
-          votesCount: 1,
-        },
-      },
-    ];
-  }
-
-  getAggregatedPostsOfUser(userId: Types.ObjectId) {
-    return [
-      {
-        $match: {
-          userId,
-        },
-      },
-    ];
-  }
-
   private getRandomTimeLine(
     page: number | undefined,
     limit: number | undefined,
   ) {
+    const fetcher = new ThingFetch(undefined);
+
     return this.postModel.aggregate([
-      ...this.prepareToGetPost(),
+      ...fetcher.prepare(),
       // return random sample
       { $sample: { size: Number(limit || 10) } },
-      ...this.getPostSRInfo(),
-      ...this.getPostUserInfo(),
-      ...this.getPostProjectParameters(),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.getPostProject(),
     ]);
   }
 
@@ -371,16 +108,18 @@ export class PostService {
     page: number | undefined,
     limit: number | undefined,
   ) {
+    const fetcher = new ThingFetch(userId);
+
     return this.postModel.aggregate([
-      ...this.prepareToGetPost(),
-      ...this.getPostsOfMySRs(userId),
-      ...this.filterHiddenPosts(userId),
-      ...this.filterBlockedPosts(userId),
-      ...this.getPaginatedPost(page, limit),
-      ...this.getPostSRInfo(),
-      ...this.getPostUserInfo(),
-      ...this.getPostVotesInfo(userId),
-      ...this.getPostProjectParameters(),
+      ...fetcher.prepare(),
+      ...fetcher.filterOfMySRs(),
+      ...fetcher.filterHidden(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
     ]);
   }
 
@@ -401,14 +140,16 @@ export class PostService {
     page: number | undefined,
     limit: number | undefined,
   ) {
+    const fetcher = new ThingFetch(userId);
+
     return this.postModel.aggregate([
-      ...this.prepareToGetPost(),
-      ...this.getAggregatedPostsOfUser(userId),
-      ...this.getPaginatedPost(page, limit),
-      ...this.getPostSRInfo(),
-      ...this.getPostUserInfo(),
-      ...this.getPostVotesInfo(userId),
-      ...this.getPostProjectParameters(),
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificUser(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
     ]);
   }
 }

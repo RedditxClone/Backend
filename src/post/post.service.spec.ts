@@ -199,10 +199,9 @@ describe('PostService', () => {
             text: posts[0].text,
             title: posts[0].title,
             voteType: null,
-            subreddit: {
+            subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
-              type: subreddits[0].type,
             },
             user: {
               id: user2._id,
@@ -228,10 +227,9 @@ describe('PostService', () => {
             text: posts[0].text,
             title: posts[0].title,
             voteType: null,
-            subreddit: {
+            subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
-              type: subreddits[0].type,
             },
             user: {
               id: user2._id,
