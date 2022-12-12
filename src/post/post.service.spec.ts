@@ -118,6 +118,46 @@ describe('PostService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+
+  const generateUsers = async () => {
+    const user1 = await userService.createUser({
+      email: 'email@gmail.com',
+      username: 'username',
+      password: '12345678',
+    });
+    const user2 = await userService.createUser({
+      email: 'email@gmail.com',
+      username: 'username2',
+      password: '12345678',
+    });
+
+    return [user1, user2];
+  };
+
+  const generateSRs = async (
+    user1Id: Types.ObjectId,
+    user2Id: Types.ObjectId,
+  ) => {
+    const sr1 = await subredditService.create(
+      {
+        name: 'sr1',
+        over18: true,
+        type: 'type',
+      },
+      user1Id,
+    );
+    const sr2 = await subredditService.create(
+      {
+        name: 'sr2',
+        over18: true,
+        type: 'type',
+      },
+      user2Id,
+    );
+
+    return [sr1, sr2];
+  };
+
   describe('timeline', () => {
     const page = undefined;
     const limit = undefined;
@@ -126,32 +166,10 @@ describe('PostService', () => {
     const subreddits: SubredditDocument[] = [];
     const posts: Array<Post & { _id: Types.ObjectId }> = [];
     beforeAll(async () => {
-      user1 = await userService.createUser({
-        email: 'email@gmail.com',
-        username: 'username',
-        password: '12345678',
-      });
-      user2 = await userService.createUser({
-        email: 'email@gmail.com',
-        username: 'username2',
-        password: '12345678',
-      });
-      const sr1 = await subredditService.create(
-        {
-          name: 'sr1',
-          over18: true,
-          type: 'type',
-        },
-        user1._id,
-      );
-      const sr2 = await subredditService.create(
-        {
-          name: 'sr2',
-          over18: true,
-          type: 'type',
-        },
-        user1._id,
-      );
+      const users = await generateUsers();
+      user1 = users[0];
+      user2 = users[1];
+      const [sr1, sr2] = await generateSRs(user1._id, user2._id);
       subreddits.push(sr1, sr2);
 
       await subredditService.joinSubreddit(user1._id, sr1._id);
@@ -234,6 +252,12 @@ describe('PostService', () => {
       const timeline = await service.getTimeLine(user2._id, page, limit);
       expect(timeline).toEqual([]);
     });
+  });
+  describe('get my posts', () => {
+    let user1: Types.ObjectId;
+    let user2: Types.ObjectId;
+    
+    it();
   });
   afterAll(async () => {
     await closeInMongodConnection();
