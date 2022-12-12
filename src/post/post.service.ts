@@ -86,14 +86,6 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  private getRandomTimeLine() {
-    return this.postModel.aggregate([
-      {
-        $sample: { size: 15 },
-      },
-    ]);
-  }
-
   prepareToGetPost() {
     return [
       {
@@ -318,6 +310,14 @@ export class PostService {
         },
       },
     ];
+  }
+
+  private getRandomTimeLine() {
+    return this.postModel.aggregate([
+      {
+        $sample: { size: 15 },
+      },
+    ]);
   }
 
   private async getUserTimeLine(userId: Types.ObjectId) {

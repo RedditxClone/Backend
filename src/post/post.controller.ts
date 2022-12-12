@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -25,7 +26,7 @@ import { diskStorage } from 'multer';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
-import { JWTUserIfExistGuard } from '../auth/guards/user-if-exist.guard';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { uniqueFileName } from '../utils';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -56,9 +57,9 @@ export class PostController {
     type: ReturnPostDto,
   })
   @Get('timeline')
-  @UseGuards(JWTUserIfExistGuard)
-  getTimeLine(@User('_id') userId: Types.ObjectId) {
-    return this.postService.getTimeLine(userId);
+  @UseGuards(IsUserExistGuard)
+  getTimeLine(@Req() req) {
+    return this.postService.getTimeLine(req._id);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
