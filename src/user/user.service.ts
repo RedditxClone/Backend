@@ -251,7 +251,13 @@ export class UserService {
       );
     }
 
-    return this.followService.follow({ follower, followed });
+    const followerDoc = await this.getUserById(follower);
+
+    return this.followService.follow({
+      follower,
+      followed,
+      followerUsername: followerDoc.username,
+    });
   }
 
   /**

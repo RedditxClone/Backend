@@ -6,6 +6,7 @@ import { Types } from 'mongoose';
 import { BlockModule } from '../block/block.module';
 import { CommentService } from '../comment/comment.service';
 import type { CreateCommentDto } from '../comment/dto';
+import { NotificationModule } from '../notification/notification.module';
 import type { CreatePostDto } from '../post/dto';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
@@ -89,6 +90,7 @@ describe('SearchService', () => {
         UserModule,
         PostCommentModule,
         SubredditModule,
+        NotificationModule,
       ],
       controllers: [SearchController],
       providers: [SearchService, ApiFeaturesService],

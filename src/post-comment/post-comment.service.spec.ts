@@ -11,6 +11,7 @@ import { Types } from 'mongoose';
 import type { Comment } from '../comment/comment.schema';
 import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import type { Post } from '../post/post.schema';
 import { PostSchema } from '../post/post.schema';
@@ -42,6 +43,7 @@ describe('PostCommentService', () => {
     module = await Test.createTestingModule({
       imports: [
         ImagesHandlerModule,
+        NotificationModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           {
