@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -42,40 +34,30 @@ export class SearchController {
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for people' })
   @Get('/peoples')
-  searchPeople(
-    @Query('word') word,
-    @Query('page', ParseIntPipe) page,
-    @Req() req,
-  ) {
-    return this.searchService.searchPeople(word, page, 10, req._id);
+  searchPeople(@Query('word') word, @Query('page') page, @Req() req) {
+    return this.searchService.searchPeople(word, Number(page), 10, req._id);
   }
 
   @ApiProperty({ description: 'search for communities' })
   @Get('/communities')
-  searchCommunities(@Query('word') word, @Query('page', ParseIntPipe) page) {
-    return this.searchService.searchCommunities(word, page, 10);
+  searchCommunities(@Query('word') word, @Query('page') page) {
+    page = Number(page);
+
+    return this.searchService.searchCommunities(word, page ?? 1, 10);
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for posts' })
   @Get('/posts')
-  searchPosts(
-    @Query('word') word,
-    @Query('page', ParseIntPipe) page,
-    @Req() req,
-  ) {
-    return this.searchService.searchPosts(word, page, 10, req._id);
+  searchPosts(@Query('word') word, @Query('page') page, @Req() req) {
+    return this.searchService.searchPosts(word, Number(page), 10, req._id);
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for comments' })
   @Get('/comments')
-  searchComments(
-    @Query('word') word,
-    @Query('page', ParseIntPipe) page,
-    @Req() req,
-  ) {
-    return this.searchService.searchComments(word, page, 10, req._id);
+  searchComments(@Query('word') word, @Query('page') page, @Req() req) {
+    return this.searchService.searchComments(word, Number(page), 10, req._id);
   }
 
   @UseGuards(IsUserExistGuard)
@@ -93,10 +75,18 @@ export class SearchController {
   searchFlairs(
     @Query('word') word,
     @Param('subreddit', ParseObjectIdPipe) subreddit,
-    @Query('page', ParseIntPipe) page,
-    @Query('limit', ParseIntPipe) limit,
+    @Query('page') page,
+    @Query('limit') limit,
   ) {
-    return this.searchService.searchFlairs(word, subreddit, page, limit ?? 50);
+    limit = Number(limit);
+    page = Number(page);
+
+    return this.searchService.searchFlairs(
+      word,
+      subreddit,
+      page ?? 1,
+      limit ?? 50,
+    );
   }
 
   @ApiProperty({ description: 'get subreddit search results' })
