@@ -304,4 +304,21 @@ export class SubredditController {
       query.limit,
     );
   }
+
+  @ApiOperation({ description: 'Add a new user to the moderators of the sr' })
+  @ApiOkResponse({ description: 'The user was added successfully' })
+  @ApiBadRequestResponse()
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/moderation/:userId')
+  addNewModuratorToSr(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
+    @User('_id') moduratorId: Types.ObjectId,
+  ) {
+    return this.subredditService.addNewModerator(
+      moduratorId,
+      userId,
+      subreddit,
+    );
+  }
 }
