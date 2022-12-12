@@ -288,6 +288,7 @@ export class PostService {
           flair: 1,
           spoiler: 1,
           nsfw: 1,
+          // vote: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
@@ -296,7 +297,13 @@ export class PostService {
                 $cond: [
                   { $eq: ['$vote.isUpvote', [true]] },
                   'upvote',
-                  'downvote',
+                  {
+                    $cond: [
+                      { $eq: ['$vote.isUpvote', [false]] },
+                      'downvote',
+                      undefined,
+                    ],
+                  },
                 ],
               },
             ],
