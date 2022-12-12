@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { Document } from 'mongoose';
 import { Types } from 'mongoose';
@@ -15,6 +16,11 @@ export class Flair {
   @Prop({ required: true })
   textColor: string;
 }
+
+// class Category {
+//   @Prop({ unique: true })
+//   data: string;
+// }
 
 @Schema()
 export class Subreddit {
@@ -117,6 +123,9 @@ export class Subreddit {
 
   @Prop()
   icon: string;
+
+  @Prop({ default: [] })
+  categories: string[];
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

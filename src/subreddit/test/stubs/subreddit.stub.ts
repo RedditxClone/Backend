@@ -33,4 +33,5 @@ export const stubSubreddit = (): Subreddit => ({
   icon: '',
   welcomeMessageText: '',
   moderators: [],
+  categories: [],
 });

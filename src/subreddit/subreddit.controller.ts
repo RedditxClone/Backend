@@ -273,4 +273,35 @@ export class SubredditController {
   getRandomSubreddits(@Param('subreddit') _subreddit: string) {
     // TODO
   }
+
+  @ApiOperation({ description: 'Add new categories to a subreddit' })
+  @ApiOkResponse({ description: 'The categories were added successfully' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/category')
+  addSubredditsWithCategories(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+    @Body('categories') categories: string[],
+  ) {
+    return this.subredditService.addSubredditCategories(
+      subreddit,
+      userId,
+      categories,
+    );
+  }
+
+  @ApiOperation({ description: 'Get subreddits belong to a specific category' })
+  @ApiOkResponse({ description: 'The subreddits returned successfully' })
+  @Get('/category/:category')
+  getSubredditsWithCategory(
+    @Param('category') category: string,
+    @Query() query,
+  ) {
+    // eslint-disable-next-line no-console
+    return this.subredditService.getSubredditsWithCategory(
+      category,
+      query.page,
+      query.limit,
+    );
+  }
 }
