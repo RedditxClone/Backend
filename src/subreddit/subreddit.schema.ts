@@ -17,10 +17,22 @@ export class Flair {
   textColor: string;
 }
 
-// class Category {
-//   @Prop({ unique: true })
-//   data: string;
-// }
+export class Rule {
+  @Prop({ required: true })
+  rule: string;
+
+  @Prop({ required: true })
+  to: number;
+
+  @Prop()
+  reason?: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop({ default: Date.now() })
+  createdDate: Date;
+}
 
 @Schema()
 export class Subreddit {
@@ -126,6 +138,12 @@ export class Subreddit {
 
   @Prop({ default: [] })
   categories: string[];
+
+  @Prop({ default: new Date(Date.now()) })
+  createdDate: Date;
+
+  @Prop({ default: [] })
+  rules: Rule[];
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

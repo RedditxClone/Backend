@@ -14,6 +14,7 @@ import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.serv
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
+import type { RuleDto } from './dto/rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
 import type { SubredditUser } from './subreddit-user.schema';
@@ -408,4 +409,49 @@ export class SubredditService {
 
     return Boolean(res);
   }
+
+  async addRule(subreddit: Types.ObjectId, ruleDto: RuleDto) {
+    ruleDto._id = new mongoose.Types.ObjectId();
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+      },
+      {
+        $push: { rules: ruleDto },
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    return { status: 'success' };
+  }
+
+  async deleteRule(subreddit: Types.ObjectId, ruleId: Types.ObjectId) {
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+      },
+      {
+        $pull: {
+          rules: { _id: ruleId },
+        },
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    if (!res.modifiedCount) {
+      throw new NotFoundException('no rule with such id');
+    }
+
+    return { status: 'success' };
+  }
+
+  async updateRule(subreddit: Types.ObjectId, ruleDto: RuleDto) {}
+
+  // async getRules() {}
 }
