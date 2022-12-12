@@ -32,13 +32,13 @@ export class PostComment {
   @Prop({ default: null })
   spammedAt: Date;
 
-  @Prop({ default: null })
+  @Prop({ ref: 'User', default: null })
   approvedBy: Types.ObjectId;
 
   @Prop({ default: null })
   approvedAt: Date;
 
-  @Prop({ default: null })
+  @Prop({ ref: 'User', default: null })
   removedBy: Types.ObjectId;
 
   @Prop({ default: null })
