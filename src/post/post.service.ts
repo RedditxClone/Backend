@@ -314,9 +314,13 @@ export class PostService {
 
   private getRandomTimeLine() {
     return this.postModel.aggregate([
+      ...this.prepareToGetPost(),
       {
         $sample: { size: 15 },
       },
+      ...this.getPostSRInfo(),
+      ...this.getPostUserInfo(),
+      ...this.getPostProjectParameters(),
     ]);
   }
 
