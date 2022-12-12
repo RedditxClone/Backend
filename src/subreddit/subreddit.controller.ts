@@ -344,4 +344,25 @@ export class SubredditController {
   getSubredditsModerators(@Param('subreddit', ParseObjectIdPipe) subreddit) {
     return this.subredditService.getSubredditModerators(subreddit);
   }
+
+  @ApiOperation({ description: 'Is in sr' })
+  @ApiOkResponse({ description: 'true or false response' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/join/me')
+  isJoined(
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.isJoined(userId, subreddit);
+  }
+
+  @ApiOperation({ description: 'Am I a moderator in that sr' })
+  @ApiOkResponse({ description: 'true or false response' })
+  @Get('/:subreddit/moderation/me')
+  isModerator(
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.isModerator(userId, subreddit);
+  }
 }

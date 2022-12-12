@@ -390,4 +390,22 @@ export class SubredditService {
 
     return subreddits.map((v) => v.user[0]);
   }
+
+  async isJoined(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const res = await this.userSubredditModel.findOne({
+      userId,
+      subredditId,
+    });
+
+    return Boolean(res);
+  }
+
+  async isModerator(userId: Types.ObjectId, subreddit: Types.ObjectId) {
+    const res = await this.subredditModel.findOne({
+      moderators: userId,
+      _id: subreddit,
+    });
+
+    return Boolean(res);
+  }
 }

@@ -472,6 +472,43 @@ describe('SubredditService', () => {
     });
   });
 
+  describe('is in a subreddit', () => {
+    it('should be part of that subreddit', async () => {
+      // console.log(userId, ' ', typeof userId);
+      const res = await subredditService.isJoined(
+        userId,
+        subredditDocument._id,
+      );
+      expect(res).toBe(true);
+    });
+
+    it('should not be in that subreddit', async () => {
+      const res = await subredditService.isJoined(
+        userId,
+        new Types.ObjectId(20),
+      );
+      expect(res).toBe(false);
+    });
+  });
+
+  describe('is a moderator in subreddit', () => {
+    it('should be part of that subreddit', async () => {
+      const res = await subredditService.isModerator(
+        userId,
+        subredditDocument._id,
+      );
+      expect(res).toBe(true);
+    });
+
+    it('should not be in that subreddit', async () => {
+      const res = await subredditService.isModerator(
+        userId,
+        new Types.ObjectId(20),
+      );
+      expect(res).toBe(false);
+    });
+  });
+
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);
@@ -490,6 +527,7 @@ describe('SubredditService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
