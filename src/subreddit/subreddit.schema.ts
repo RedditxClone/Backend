@@ -21,7 +21,7 @@ export class Rule {
   @Prop({ required: true })
   rule: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, enum: [0, 1, 2] })
   to: number;
 
   @Prop()
@@ -31,7 +31,10 @@ export class Rule {
   description?: string;
 
   @Prop({ default: Date.now() })
-  createdDate: Date;
+  createdDate?: Date;
+
+  @Prop({ required: true })
+  _id: Types.ObjectId;
 }
 
 @Schema()

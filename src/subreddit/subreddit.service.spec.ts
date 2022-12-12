@@ -20,6 +20,7 @@ import {
 } from '../utils/mongoose-in-memory';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
+import type { RuleDto } from './dto/rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
 import { SubredditSchema } from './subreddit.schema';
@@ -35,6 +36,13 @@ describe('SubredditService', () => {
 
   let userId;
   let userIdNewModerator;
+  let ruleId1;
+  let ruleId2;
+
+  const rule: RuleDto = {
+    rule: 'No photo',
+    to: 2,
+  };
 
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
@@ -506,6 +514,91 @@ describe('SubredditService', () => {
         new Types.ObjectId(20),
       );
       expect(res).toBe(false);
+    });
+  });
+
+  describe('add subreddit rule', () => {
+    it('should add rule successfully', async () => {
+      const res1 = await subredditService.addRule(
+        subredditDocument._id,
+        userId,
+        rule,
+      );
+      expect(res1).toEqual(expect.objectContaining(rule));
+      ruleId1 = res1._id;
+      rule.description = 'test';
+      const res2 = await subredditService.addRule(
+        subredditDocument._id,
+        userId,
+        rule,
+      );
+      expect(res2).toEqual(expect.objectContaining(rule));
+      ruleId2 = res2._id;
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.addRule(new Types.ObjectId(1431), userId, rule),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('update subreddit rule', () => {
+    it('should update rule successfully', async () => {
+      const updateObject = {
+        rule: 'nothing is allowed',
+        to: 0,
+      };
+
+      await subredditService.updateRule(
+        subredditDocument._id,
+        ruleId2,
+        userId,
+        updateObject,
+      );
+
+      const { rules } = await subredditService.findSubreddit(
+        subredditDocument._id,
+      );
+
+      expect(rules[1]).toEqual(
+        expect.objectContaining({
+          ...rule,
+          ...updateObject,
+          _id: ruleId2,
+        }),
+      );
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.updateRule(
+          new Types.ObjectId(1431),
+          ruleId1,
+          userId,
+          rule,
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('delete subreddit rule', () => {
+    it('should delete rule successfully', async () => {
+      await subredditService.deleteRule(subredditDocument._id, ruleId2, userId);
+
+      const { rules } = await subredditService.findSubreddit(
+        subredditDocument._id,
+      );
+
+      expect(rules.length).toEqual(1);
+      expect(rules[0]._id).toEqual(ruleId1);
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.deleteRule(
+          subredditDocument._id,
+          ruleId1,
+          new Types.ObjectId(413),
+        ),
+      ).rejects.toThrowError();
     });
   });
 

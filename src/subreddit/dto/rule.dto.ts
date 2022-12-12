@@ -1,5 +1,5 @@
 import { Optional } from '@nestjs/common';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, Max, Min } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class RuleDto {
@@ -7,16 +7,15 @@ export class RuleDto {
   rule: string;
 
   @IsNotEmpty()
+  @Max(2)
+  @Min(0)
   to: number;
 
-  @IsNotEmpty()
+  @Optional()
   reason?: string;
 
   @Optional()
   description?: string;
-
-  @IsNotEmpty()
-  createdDate: Date;
 
   @Optional()
   _id?: mongoose.Types.ObjectId;

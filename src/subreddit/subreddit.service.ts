@@ -15,6 +15,7 @@ import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { RuleDto } from './dto/rule.dto';
+import type { UpdateRuleDto } from './dto/update-rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
 import type { SubredditUser } from './subreddit-user.schema';
@@ -410,11 +411,16 @@ export class SubredditService {
     return Boolean(res);
   }
 
-  async addRule(subreddit: Types.ObjectId, ruleDto: RuleDto) {
+  async addRule(
+    subreddit: Types.ObjectId,
+    userId: Types.ObjectId,
+    ruleDto: RuleDto,
+  ) {
     ruleDto._id = new mongoose.Types.ObjectId();
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,
+        moderators: userId,
       },
       {
         $push: { rules: ruleDto },
@@ -425,13 +431,18 @@ export class SubredditService {
       throw new NotFoundException('No subreddit with such id');
     }
 
-    return { status: 'success' };
+    return ruleDto;
   }
 
-  async deleteRule(subreddit: Types.ObjectId, ruleId: Types.ObjectId) {
+  async deleteRule(
+    subreddit: Types.ObjectId,
+    ruleId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,
+        moderators: userId,
       },
       {
         $pull: {
@@ -451,7 +462,40 @@ export class SubredditService {
     return { status: 'success' };
   }
 
-  async updateRule(subreddit: Types.ObjectId, ruleDto: RuleDto) {}
+  async updateRule(
+    subreddit: Types.ObjectId,
+    ruleId: Types.ObjectId,
+    userId: Types.ObjectId,
+    ruleDto: UpdateRuleDto,
+  ) {
+    const updatedObject = {};
 
-  // async getRules() {}
+    // eslint-disable-next-line unicorn/no-array-for-each
+    Object.keys(ruleDto).forEach((key) => {
+      updatedObject[`rules.$.${key}`] = ruleDto[key];
+    });
+
+    const queryObject = {
+      _id: subreddit,
+      moderators: userId,
+    };
+
+    queryObject['rules._id'] = ruleId;
+
+    const res = await this.subredditModel.updateOne(
+      queryObject,
+      {
+        $set: updatedObject,
+      },
+      {
+        runValidators: true,
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new NotFoundException();
+    }
+
+    return { status: 'success' };
+  }
 }

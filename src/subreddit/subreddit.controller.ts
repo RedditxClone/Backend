@@ -33,6 +33,8 @@ import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
+import { RuleDto } from './dto/rule.dto';
+import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
@@ -364,5 +366,57 @@ export class SubredditController {
     @User('_id') userId: Types.ObjectId,
   ) {
     return this.subredditService.isModerator(userId, subreddit);
+  }
+
+  @ApiOperation({ description: 'add a rule in a subreddit' })
+  @ApiCreatedResponse({ description: 'The rule was added successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/rule')
+  addRule(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+    @Body() ruleDto: RuleDto,
+  ) {
+    return this.subredditService.addRule(subreddit, userId, ruleDto);
+  }
+
+  @ApiOperation({ description: 'delete a rule in a subreddit' })
+  @ApiCreatedResponse({ description: 'The rule was deleted successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Delete('/:subreddit/rule/:ruleId')
+  deleteRule(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('ruleId', ParseObjectIdPipe) ruleId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.deleteRule(subreddit, ruleId, userId);
+  }
+
+  @ApiOperation({ description: 'update a rule in a subreddit' })
+  @ApiCreatedResponse({ description: 'The rule was update successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Patch('/:subreddit/rule/:ruleId')
+  updateRule(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('ruleId', ParseObjectIdPipe) ruleId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+    @Body() ruleDto: UpdateRuleDto,
+  ) {
+    return this.subredditService.updateRule(subreddit, ruleId, userId, ruleDto);
   }
 }
