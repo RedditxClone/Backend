@@ -46,8 +46,5 @@ export class PostComment {
 
   @Prop({ default: false })
   edited: boolean;
-
-  @Prop({ default: false })
-  visited: boolean;
 }
 export const PostCommentSchema = SchemaFactory.createForClass(PostComment);

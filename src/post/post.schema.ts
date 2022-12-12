@@ -34,5 +34,8 @@ export class Post extends PostComment {
 
   @Prop({ default: false })
   commentsLocked: boolean;
+
+  @Prop({ default: false })
+  visited: boolean;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);
