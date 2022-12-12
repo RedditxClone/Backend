@@ -342,6 +342,16 @@ export class PostService {
     ];
   }
 
+  getAggregatedPostsOfUser(userId: Types.ObjectId) {
+    return [
+      {
+        $match: {
+          userId,
+        },
+      },
+    ];
+  }
+
   private getRandomTimeLine(
     page: number | undefined,
     limit: number | undefined,
@@ -384,5 +394,21 @@ export class PostService {
     }
 
     return this.getUserTimeLine(userId, page, limit);
+  }
+
+  async getPostsOfUser(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    return this.postModel.aggregate([
+      ...this.prepareToGetPost(),
+      ...this.getAggregatedPostsOfUser(userId),
+      ...this.getPaginatedPost(page, limit),
+      ...this.getPostSRInfo(),
+      ...this.getPostUserInfo(),
+      ...this.getPostVotesInfo(userId),
+      ...this.getPostProjectParameters(),
+    ]);
   }
 }
