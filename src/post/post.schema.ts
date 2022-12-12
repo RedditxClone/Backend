@@ -31,8 +31,5 @@ export class Post extends PostComment {
 
   @Prop({ default: false, required: false })
   spoiler: boolean;
-
-  @Prop({ default: false })
-  commentsLocked: boolean;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);
