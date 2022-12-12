@@ -411,4 +411,33 @@ export class PostService {
       ...this.getPostProjectParameters(),
     ]);
   }
+
+  getAggregatedHiddenPosts(userId: Types.ObjectId) {
+    return [
+      this.filterHiddenPosts(userId)[0],
+      {
+        $match: {
+          $expr: {
+            $ne: ['$hide', []],
+          },
+        },
+      },
+    ];
+  }
+
+  async getHiddenPosts(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    return this.postModel.aggregate([
+      ...this.prepareToGetPost(),
+      ...this.getAggregatedHiddenPosts(userId),
+      ...this.getPaginatedPost(page, limit),
+      ...this.getPostSRInfo(),
+      ...this.getPostUserInfo(),
+      ...this.getPostVotesInfo(userId),
+      ...this.getPostProjectParameters(),
+    ]);
+  }
 }
