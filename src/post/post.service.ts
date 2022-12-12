@@ -94,8 +94,8 @@ export class PostService {
     ]);
   }
 
-  private async getUserTimeLine(userId: Types.ObjectId) {
-    return this.postModel.aggregate([
+  prepareToGetPost() {
+    return [
       {
         $match: {
           isDeleted: false,
@@ -112,6 +112,11 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  getPostsOfMySRs(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'usersubreddits',
@@ -136,6 +141,11 @@ export class PostService {
       {
         $unwind: '$PostUserSubreddit',
       },
+    ];
+  }
+
+  filterHiddenPosts(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'hides',
@@ -164,6 +174,11 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  filterBlockedPosts(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'blocks',
@@ -202,6 +217,11 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  getPostSRInfo() {
+    return [
       {
         $lookup: {
           from: 'subreddits',
@@ -213,25 +233,11 @@ export class PostService {
       {
         $unwind: '$subreddit',
       },
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          upvotesCount: 1,
-          images: 1,
-          postId: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          votesCount: 1,
-          flair: 1,
-          subreddit: {
-            id: '$subredditId',
-            name: '$subreddit.name',
-            type: '$subreddit.type',
-          },
-        },
-      },
+    ];
+  }
+
+  getPostUserInfo() {
+    return [
       {
         $lookup: {
           from: 'users',
@@ -243,6 +249,11 @@ export class PostService {
       {
         $unwind: '$user',
       },
+    ];
+  }
+
+  getPostVotesInfo(userId: Types.ObjectId) {
+    return [
       {
         $lookup: {
           from: 'votes',
@@ -264,17 +275,27 @@ export class PostService {
           ],
         },
       },
+    ];
+  }
+
+  getPostProjectParameters() {
+    return [
       {
         $project: {
           text: 1,
           title: 1,
           userId: 1,
           postId: 1,
-          subreddit: 1,
+          subreddit: {
+            id: '$subreddit._id',
+            name: '$subreddit.name',
+          },
           votesCount: 1,
           commentCount: 1,
           publishedDate: 1,
           flair: 1,
+          spoiler: 1,
+          nsfw: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
@@ -296,6 +317,19 @@ export class PostService {
           },
         },
       },
+    ];
+  }
+
+  private async getUserTimeLine(userId: Types.ObjectId) {
+    return this.postModel.aggregate([
+      ...this.prepareToGetPost(),
+      ...this.getPostsOfMySRs(userId),
+      ...this.filterHiddenPosts(userId),
+      ...this.filterBlockedPosts(userId),
+      ...this.getPostSRInfo(),
+      ...this.getPostUserInfo(),
+      ...this.getPostVotesInfo(userId),
+      ...this.getPostProjectParameters(),
     ]);
   }
 
