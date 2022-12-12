@@ -422,6 +422,21 @@ describe('SubredditService', () => {
     });
   });
 
+  describe('get subreddits I joined', () => {
+    it('should get subreddits successfully', async () => {
+      const res = await subredditService.subredditsIJoined(userId);
+      expect(res.length).toEqual(2);
+      expect(res[0]._id).toEqual(subredditDocument._id);
+    });
+
+    it('should return empty array', async () => {
+      const res = await subredditService.subredditsIJoined(
+        new Types.ObjectId(13),
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);
