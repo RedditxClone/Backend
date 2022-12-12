@@ -270,6 +270,18 @@ describe('PostService', () => {
         expect(res.length).toEqual(0);
       });
     });
+    describe('get hidden posts', () => {
+      it('must return on post', async () => {
+        // hidden from the last test
+        const res = await service.getHiddenPosts(user1._id, page, limit);
+        expect(res.length).toEqual(1);
+        await service.unhide(res[0]._id, user1._id);
+      });
+      it('must return empty set', async () => {
+        const res = await service.getHiddenPosts(user1._id, page, limit);
+        expect(res.length).toEqual(0);
+      });
+    });
   });
   afterAll(async () => {
     await closeInMongodConnection();
