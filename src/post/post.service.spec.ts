@@ -226,6 +226,10 @@ describe('PostService', () => {
       const timeline = await service.getTimeLine(userId, page, limit);
       expect(timeline.length).toEqual(2);
     });
+    it('must limit return to only one post', async () => {
+      const timeline = await service.getTimeLine(user1._id, page, 1);
+      expect(timeline.length).toEqual(1);
+    });
     it("shouldn't get any post due to not joining any subreddit", async () => {
       const timeline = await service.getTimeLine(user2._id, page, limit);
       expect(timeline).toEqual([]);
