@@ -147,6 +147,9 @@ export class Subreddit {
 
   @Prop({ default: [] })
   rules: Rule[];
+
+  @Prop({ default: [] })
+  joinList: Types.ObjectId[];
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

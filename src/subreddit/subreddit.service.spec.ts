@@ -36,6 +36,7 @@ describe('SubredditService', () => {
 
   let userId;
   let userIdNewModerator;
+  let userIdNewAskToJoin;
   let ruleId1;
   let ruleId2;
 
@@ -108,8 +109,11 @@ describe('SubredditService', () => {
     const u1 = await userService.createUser(userData);
     userData.username = 'aref';
     const u2 = await userService.createUser(userData);
+    userData.username = 'kamal';
+    const u3 = await userService.createUser(userData);
     userId = u1._id;
     userIdNewModerator = u2._id;
+    userIdNewAskToJoin = u3._id;
     subredditDocument = await subredditService.create(subredditDefault, userId);
     id = subredditDocument._id.toString();
   });
@@ -597,6 +601,87 @@ describe('SubredditService', () => {
           subredditDocument._id,
           ruleId1,
           new Types.ObjectId(413),
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('ask to join a sr', () => {
+    it('should ask to join a sr successfully', async () => {
+      const res = await subredditService.askToJoinSr(
+        subredditDocument._id,
+        userIdNewAskToJoin,
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should return an error', async () => {
+      await expect(
+        subredditService.askToJoinSr(subredditDocument._id, userIdNewAskToJoin),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('getUsersAskToJoin', () => {
+    it('should return users successfully', async () => {
+      const res = await subredditService.getUsersAskingToJoinSubreddit(
+        subredditDocument._id,
+        userId,
+      );
+
+      expect(res.length).toEqual(1);
+      expect(res[0]).toEqual(
+        expect.objectContaining({
+          username: 'kamal',
+          _id: userIdNewAskToJoin,
+        }),
+      );
+    });
+  });
+
+  describe('accept user request to join', () => {
+    it('should return users successfully', async () => {
+      await subredditService.acceptToJoinSr(
+        subredditDocument._id,
+        userId,
+        userIdNewAskToJoin,
+      );
+      expect(
+        await subredditService.isJoined(
+          userIdNewAskToJoin,
+          subredditDocument._id,
+        ),
+      ).toBe(true);
+
+      expect(
+        await subredditService.getUsersAskingToJoinSubreddit(
+          subredditDocument._id,
+          userId,
+        ),
+      ).toEqual([]);
+    });
+
+    it('should return errors', async () => {
+      await expect(
+        subredditService.acceptToJoinSr(
+          subredditDocument._id,
+          userId,
+          userIdNewAskToJoin,
+        ),
+      ).rejects.toThrowError();
+
+      await expect(
+        subredditService.acceptToJoinSr(
+          new Types.ObjectId(186),
+          userId,
+          userIdNewAskToJoin,
+        ),
+      ).rejects.toThrowError();
+
+      await expect(
+        subredditService.acceptToJoinSr(
+          subredditDocument._id,
+          new Types.ObjectId(186),
+          userIdNewAskToJoin,
         ),
       ).rejects.toThrowError();
     });

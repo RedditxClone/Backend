@@ -498,4 +498,113 @@ export class SubredditService {
 
     return { status: 'success' };
   }
+
+  async askToJoinSr(subreddit: Types.ObjectId, userId: Types.ObjectId) {
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+      },
+      {
+        $addToSet: {
+          joinList: userId,
+        },
+      },
+    );
+
+    if (res.modifiedCount === 0) {
+      throw new BadRequestException();
+    }
+
+    return { status: 'success' };
+  }
+
+  async getUsersAskingToJoinSubreddit(
+    subreddit: Types.ObjectId,
+    moderatorId: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [{ _id: subreddit }, { moderators: moderatorId }],
+        },
+      },
+      {
+        $project: {
+          joinList: 1,
+        },
+      },
+      {
+        $unset: '_id',
+      },
+      {
+        $unwind: '$joinList',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'joinList',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+          },
+        },
+      },
+    ]);
+
+    return res.map((v) => v.user[0]);
+  }
+
+  private async deleteUserFromAskingListIfSrExist(
+    subreddit: Types.ObjectId,
+    moderatorId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: moderatorId,
+      },
+      {
+        $pull: {
+          joinList: userId,
+        },
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new BadRequestException();
+    }
+
+    if (!res.modifiedCount) {
+      throw new BadRequestException("User didn't send request to join the sr");
+    }
+  }
+
+  async acceptToJoinSr(
+    subredditId: Types.ObjectId,
+    moderatorId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    await this.deleteUserFromAskingListIfSrExist(
+      subredditId,
+      moderatorId,
+      userId,
+    );
+
+    await this.userSubredditModel.create({
+      subredditId,
+      userId,
+    });
+
+    return { status: 'success' };
+  }
 }

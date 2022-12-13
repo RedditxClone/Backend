@@ -419,4 +419,44 @@ export class SubredditController {
   ) {
     return this.subredditService.updateRule(subreddit, ruleId, userId, ruleDto);
   }
+
+  @ApiOperation({ description: 'Ask to join sr' })
+  @ApiCreatedResponse({ description: 'The request sent successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/join/ask')
+  askToJoinSr(
+    @User('_id') userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.askToJoinSr(subreddit, userId);
+  }
+
+  @ApiOperation({ description: 'Get users ask to join sr' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/join/ask')
+  UsersAskingToJoinSubreddit(
+    @User('_id') userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.getUsersAskingToJoinSubreddit(
+      subreddit,
+      userId,
+    );
+  }
+
+  @ApiOperation({ description: 'Get users ask to join sr' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/user/:userId/join/accept')
+  AcceptAJoinRequest(
+    @User('_id') moderatorId: Types.ObjectId,
+    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.acceptToJoinSr(subreddit, moderatorId, userId);
+  }
 }
