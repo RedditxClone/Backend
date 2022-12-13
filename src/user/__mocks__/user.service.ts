@@ -6,6 +6,12 @@ import { stubUser } from '../test/stubs/user.stub';
 export const UserService = jest.fn().mockReturnValue({
   createUser: jest.fn().mockResolvedValue(stubUser()),
   getUserById: jest.fn().mockResolvedValue(stubUser()),
+  getUserByUsername: jest.fn().mockImplementation((username) => {
+    const user = stubUser();
+    user.username = username;
+
+    return user;
+  }),
   checkAvailableUsername: jest.fn().mockResolvedValue({ status: true }),
   follow: jest.fn().mockResolvedValue({ status: 'success' }),
   unfollow: jest.fn().mockResolvedValue({ status: 'success' }),
@@ -22,4 +28,5 @@ export const UserService = jest.fn().mockReturnValue({
   uploadPhoto: jest.fn().mockResolvedValue({
     photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
   }),
+  canRecieveMessages: jest.fn().mockResolvedValue(true),
 });
