@@ -641,7 +641,7 @@ export class SubredditService {
     return { status: 'success' };
   }
 
-  private getUserInNestedArrayAggregation(
+  private async getUserInNestedArrayAggregation(
     subredditId: Types.ObjectId,
     userId: Types.ObjectId,
     fieldName: string,
@@ -649,82 +649,144 @@ export class SubredditService {
     const prjectField = {};
     prjectField[fieldName] = 1;
 
-    return this.subredditModel.aggregate([
+    // We don't have to check if the request is bad
+    const res = await this.subredditModel.aggregate([
       {
         $match: {
           $and: [{ _id: subredditId }, { moderators: userId }],
         },
       },
       { $project: prjectField },
-      { $unwind: `${fieldName}` },
+      { $unset: '_id' },
+      { $unwind: `$${fieldName}` },
       {
         $lookup: {
           from: 'users',
-          localField: `${fieldName}`,
-          foreignField: '_id',
+          localField: `${fieldName}.username`,
+          foreignField: 'username',
           as: 'user',
         },
       },
       {
-        $unwind: 'user',
-      },
-      {
         $project: {
-          _id: 1,
-          username: 1,
-          profilePhoto: 1,
-          displayName: 1,
-          about: 1,
-          date: 1,
+          mutedUsers: {
+            date: 1,
+          },
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+            date: 1,
+          },
         },
       },
     ]);
+
+    return res.map((v) => ({ date: v.mutedUsers.date, ...v.user[0] }));
   }
 
-  async muteUser(
+  private async removeUserFromListUserDate(
     subredditId: Types.ObjectId,
-    moderatorId: Types.ObjectId,
-    userId: Types.ObjectId,
+    moderatorUsername: string,
+    username: string,
+    fieldName: string,
   ) {
+    const properityObject = {};
+    properityObject[fieldName] = {
+      username,
+    };
+
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [{ _id: subredditId }, { moderators: moderatorUsername }],
+      },
+      {
+        $pull: properityObject,
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
+  }
+
+  private async checkIfUserAlreadyProccessed(
+    username: string,
+    subredditId: Types.ObjectId,
+    fieldName: string,
+  ) {
+    const filter = {};
+    filter[`${fieldName}.username`] = username;
+    const res = await this.subredditModel.exists({
+      ...filter,
+      _id: subredditId,
+    });
+
+    return Boolean(res);
+  }
+
+  private async addUserToListUserDate(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    username: string,
+    fieldName: string,
+  ) {
+    const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
+      username,
+      subredditId,
+      fieldName,
+    );
+
+    if (isUserAlreadyProccessed) {
+      throw new BadRequestException();
+    }
+
+    const properityObject = {};
+    properityObject[fieldName] = {
+      username,
+      date: new Date(),
+    };
+
     const res = await this.subredditModel.updateOne(
       {
         $and: [
           { _id: subredditId },
-          { moderators: moderatorId },
-          { moderators: { $ne: userId } },
+          { moderators: moderatorUsername },
+          { moderators: { $ne: username } },
         ],
       },
       {
-        $push: {
-          mutedUsers: {
-            userId,
-          },
-        },
+        $push: properityObject,
       },
     );
 
     return this.modifiedCountResponse(res.modifiedCount);
   }
 
+  async muteUser(
+    subredditId: Types.ObjectId,
+    moderatorName: string,
+    username: string,
+  ) {
+    return this.addUserToListUserDate(
+      subredditId,
+      moderatorName,
+      username,
+      'mutedUsers',
+    );
+  }
+
   async unMuteUser(
     subredditId: Types.ObjectId,
-    moderatorId: Types.ObjectId,
-    userId: Types.ObjectId,
+    moderatorName: string,
+    username: string,
   ) {
-    const res = await this.subredditModel.updateOne(
-      {
-        $and: [{ _id: subredditId }, { moderators: moderatorId }],
-      },
-      {
-        $pull: {
-          mutedUsers: {
-            userId,
-          },
-        },
-      },
+    return this.removeUserFromListUserDate(
+      subredditId,
+      moderatorName,
+      username,
+      'mutedUsers',
     );
-
-    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async getMutedUsers(subredditId: Types.ObjectId, userId: Types.ObjectId) {

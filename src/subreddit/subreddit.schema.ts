@@ -18,10 +18,10 @@ export class Flair {
 }
 
 class UserDate {
-  @Prop({ required: true })
-  username: Types.ObjectId;
+  @Prop()
+  username: string;
 
-  @Prop({ default: Date.now() })
+  @Prop()
   date: Date;
 }
 

@@ -38,6 +38,8 @@ describe('SubredditService', () => {
   let userIdNewAskToJoin;
   let username;
   let usernameNewModerator;
+  let usernameMuted1;
+  let usernameMuted2;
   let ruleId1;
   let ruleId2;
 
@@ -112,10 +114,16 @@ describe('SubredditService', () => {
     const u2 = await userService.createUser(userData);
     userData.username = 'kamal';
     const u3 = await userService.createUser(userData);
+    userData.username = 'abdelhady';
+    const u4 = await userService.createUser(userData);
+    userData.username = 'assad';
+    const u5 = await userService.createUser(userData);
     userId = u1._id;
     userIdNewAskToJoin = u3._id;
     username = u1.username;
     usernameNewModerator = u2.username;
+    usernameMuted1 = u4.username;
+    usernameMuted2 = u5.username;
     subredditDocument = await subredditService.create(
       subredditDefault,
       username,
@@ -692,6 +700,97 @@ describe('SubredditService', () => {
           userIdNewAskToJoin,
         ),
       ).rejects.toThrowError();
+    });
+  });
+
+  describe('mute a user', () => {
+    it('should mute a user successfully', async () => {
+      const res1 = await subredditService.muteUser(
+        subredditDocument._id,
+        username,
+        usernameMuted1,
+      );
+      expect(res1).toEqual({ status: 'success' });
+
+      const res2 = await subredditService.muteUser(
+        subredditDocument._id,
+        username,
+        usernameMuted2,
+      );
+      expect(res2).toEqual({ status: 'success' });
+    });
+    it('should throw error already muted', async () => {
+      await expect(
+        subredditService.muteUser(
+          subredditDocument._id,
+          username,
+          usernameMuted1,
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error moderator cant mute another moderator', async () => {
+      await expect(
+        subredditService.muteUser(
+          subredditDocument._id,
+          username,
+          usernameNewModerator,
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error not a moderator', async () => {
+      await expect(
+        subredditService.muteUser(
+          subredditDocument._id,
+          usernameMuted1,
+          'another_user',
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('get muted users', () => {
+    it('should mute a user successfully', async () => {
+      const res = await subredditService.getMutedUsers(
+        subredditDocument._id,
+        username,
+      );
+      expect(res).toEqual([
+        expect.objectContaining({
+          username: usernameMuted1,
+        }),
+        expect.objectContaining({
+          username: usernameMuted2,
+        }),
+      ]);
+    });
+  });
+
+  describe('unmute user', () => {
+    it('should throw error not a moderator', async () => {
+      await expect(
+        subredditService.unMuteUser(
+          subredditDocument._id,
+          usernameMuted1,
+          usernameMuted2,
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should unmute a user successfully', async () => {
+      await subredditService.unMuteUser(
+        subredditDocument._id,
+        username,
+        usernameMuted2,
+      );
+      await subredditService.unMuteUser(
+        subredditDocument._id,
+        username,
+        usernameMuted1,
+      );
+      const res = await subredditService.getMutedUsers(
+        subredditDocument._id,
+        username,
+      );
+      expect(res.length).toEqual(0);
     });
   });
 
