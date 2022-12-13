@@ -468,4 +468,162 @@ export class SubredditController {
       userId,
     );
   }
+
+  @ApiOperation({ description: 'mute a user' })
+  @ApiCreatedResponse({ description: 'The user muted successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/user/:username/mute')
+  muteUser(
+    @User('username') moderatorUsername: string,
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.addUserToListUserDate(
+      subredditId,
+      moderatorUsername,
+      username,
+      'mutedUsers',
+      { moderators: { $ne: username } },
+    );
+  }
+
+  @ApiOperation({ description: 'unmute user' })
+  @ApiCreatedResponse({ description: 'The user unmuted successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Delete('/:subreddit/user/:username/mute')
+  async unMuteUser(
+    @User('username') moderatorUsername: string,
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.removeUserFromListUserDate(
+      subredditId,
+      moderatorUsername,
+      username,
+      'mutedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'get muted users' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/user/mute')
+  async getMutedUsers(
+    @User('username') moderatorUsername: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.getUsersFromListUserDate(
+      subredditId,
+      moderatorUsername,
+      'mutedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'pan a user' })
+  @ApiCreatedResponse({ description: 'The user paned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/user/:username/pan')
+  panUser(
+    @User('username') moderatorUsername: string,
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.addUserToListUserDate(
+      subredditId,
+      moderatorUsername,
+      username,
+      'panedUsers',
+      { moderators: { $ne: username } },
+    );
+  }
+
+  @ApiOperation({ description: 'unpan user' })
+  @ApiCreatedResponse({ description: 'The user unpaned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Delete('/:subreddit/user/:username/pan')
+  async unpanUser(
+    @User('username') moderatorUsername: string,
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.removeUserFromListUserDate(
+      subredditId,
+      moderatorUsername,
+      username,
+      'panedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'get paned users' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/user/pan')
+  async getpanedUsers(
+    @User('username') moderatorUsername: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.getUsersFromListUserDate(
+      subredditId,
+      moderatorUsername,
+      'panedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'approve user' })
+  @ApiCreatedResponse({ description: 'The user approved successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/user/:username/approve')
+  approveUser(
+    @User('username') moderatorUsername: string,
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.addUserToListUserDate(
+      subredditId,
+      moderatorUsername,
+      username,
+      'approvedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'unapprove user' })
+  @ApiCreatedResponse({ description: 'The user unapproved successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Delete('/:subreddit/user/:username/approve')
+  async unapproveUser(
+    @User('username') moderatorUsername: string,
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.removeUserFromListUserDate(
+      subredditId,
+      moderatorUsername,
+      username,
+      'approvedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'get approved users' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/user/approve')
+  async getapprovedUsers(
+    @User('username') moderatorUsername: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+  ) {
+    return this.subredditService.getUsersFromListUserDate(
+      subredditId,
+      moderatorUsername,
+      'approvedUsers',
+    );
+  }
 }

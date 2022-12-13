@@ -703,56 +703,64 @@ describe('SubredditService', () => {
     });
   });
 
-  describe('mute a user', () => {
-    it('should mute a user successfully', async () => {
-      const res1 = await subredditService.muteUser(
+  describe('mute, approve and panned user used function', () => {
+    it('should add a user successfully', async () => {
+      const res1 = await subredditService.addUserToListUserDate(
         subredditDocument._id,
         username,
         usernameMuted1,
+        'mutedUsers',
       );
       expect(res1).toEqual({ status: 'success' });
 
-      const res2 = await subredditService.muteUser(
+      const res2 = await subredditService.addUserToListUserDate(
         subredditDocument._id,
         username,
         usernameMuted2,
+        'mutedUsers',
       );
       expect(res2).toEqual({ status: 'success' });
     });
-    it('should throw error already muted', async () => {
+    it('should throw error already added', async () => {
       await expect(
-        subredditService.muteUser(
+        subredditService.addUserToListUserDate(
           subredditDocument._id,
           username,
           usernameMuted1,
+          'mutedUsers',
         ),
       ).rejects.toThrowError();
     });
     it('should throw error moderator cant mute another moderator', async () => {
+      // extra stage is not exist with approve operation.
       await expect(
-        subredditService.muteUser(
+        subredditService.addUserToListUserDate(
           subredditDocument._id,
           username,
           usernameNewModerator,
+          'mutedUsers',
+          { moderators: { $ne: usernameNewModerator } },
         ),
       ).rejects.toThrowError();
     });
     it('should throw error not a moderator', async () => {
       await expect(
-        subredditService.muteUser(
+        subredditService.addUserToListUserDate(
           subredditDocument._id,
           usernameMuted1,
           'another_user',
+          'mutedUsers',
         ),
       ).rejects.toThrowError();
     });
   });
 
-  describe('get muted users', () => {
-    it('should mute a user successfully', async () => {
-      const res = await subredditService.getMutedUsers(
+  describe('get users from userDate list', () => {
+    it('should get users successfully', async () => {
+      const res = await subredditService.getUsersFromListUserDate(
         subredditDocument._id,
         username,
+        'mutedUsers',
       );
       expect(res).toEqual([
         expect.objectContaining({
@@ -765,30 +773,34 @@ describe('SubredditService', () => {
     });
   });
 
-  describe('unmute user', () => {
+  describe('remove user from list data', () => {
     it('should throw error not a moderator', async () => {
       await expect(
-        subredditService.unMuteUser(
+        subredditService.removeUserFromListUserDate(
           subredditDocument._id,
           usernameMuted1,
           usernameMuted2,
+          'mutedUsers',
         ),
       ).rejects.toThrowError();
     });
-    it('should unmute a user successfully', async () => {
-      await subredditService.unMuteUser(
+    it('should remove a user from the list successfully', async () => {
+      await subredditService.removeUserFromListUserDate(
         subredditDocument._id,
         username,
         usernameMuted2,
+        'mutedUsers',
       );
-      await subredditService.unMuteUser(
+      await subredditService.removeUserFromListUserDate(
         subredditDocument._id,
         username,
         usernameMuted1,
+        'mutedUsers',
       );
-      const res = await subredditService.getMutedUsers(
+      const res = await subredditService.getUsersFromListUserDate(
         subredditDocument._id,
         username,
+        'mutedUsers',
       );
       expect(res.length).toEqual(0);
     });

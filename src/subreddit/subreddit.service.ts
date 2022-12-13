@@ -641,13 +641,15 @@ export class SubredditService {
     return { status: 'success' };
   }
 
-  private async getUserInNestedArrayAggregation(
+  async getUsersFromListUserDate(
     subredditId: Types.ObjectId,
-    userId: Types.ObjectId,
+    userId: string,
     fieldName: string,
   ) {
-    const prjectField = {};
-    prjectField[fieldName] = 1;
+    const prjectField1 = {};
+    prjectField1[fieldName] = 1;
+    const prjectField2 = {};
+    prjectField2[fieldName] = { date: 1 };
 
     // We don't have to check if the request is bad
     const res = await this.subredditModel.aggregate([
@@ -656,7 +658,7 @@ export class SubredditService {
           $and: [{ _id: subredditId }, { moderators: userId }],
         },
       },
-      { $project: prjectField },
+      { $project: prjectField1 },
       { $unset: '_id' },
       { $unwind: `$${fieldName}` },
       {
@@ -669,9 +671,7 @@ export class SubredditService {
       },
       {
         $project: {
-          mutedUsers: {
-            date: 1,
-          },
+          ...prjectField2,
           user: {
             _id: 1,
             username: 1,
@@ -684,10 +684,10 @@ export class SubredditService {
       },
     ]);
 
-    return res.map((v) => ({ date: v.mutedUsers.date, ...v.user[0] }));
+    return res.map((v) => ({ date: v[fieldName].date, ...v.user[0] }));
   }
 
-  private async removeUserFromListUserDate(
+  async removeUserFromListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
     username: string,
@@ -725,11 +725,12 @@ export class SubredditService {
     return Boolean(res);
   }
 
-  private async addUserToListUserDate(
+  async addUserToListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
     username: string,
     fieldName: string,
+    extraStage = {},
   ) {
     const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
       username,
@@ -752,7 +753,7 @@ export class SubredditService {
         $and: [
           { _id: subredditId },
           { moderators: moderatorUsername },
-          { moderators: { $ne: username } },
+          extraStage,
         ],
       },
       {
@@ -761,39 +762,5 @@ export class SubredditService {
     );
 
     return this.modifiedCountResponse(res.modifiedCount);
-  }
-
-  async muteUser(
-    subredditId: Types.ObjectId,
-    moderatorName: string,
-    username: string,
-  ) {
-    return this.addUserToListUserDate(
-      subredditId,
-      moderatorName,
-      username,
-      'mutedUsers',
-    );
-  }
-
-  async unMuteUser(
-    subredditId: Types.ObjectId,
-    moderatorName: string,
-    username: string,
-  ) {
-    return this.removeUserFromListUserDate(
-      subredditId,
-      moderatorName,
-      username,
-      'mutedUsers',
-    );
-  }
-
-  async getMutedUsers(subredditId: Types.ObjectId, userId: Types.ObjectId) {
-    return this.getUserInNestedArrayAggregation(
-      subredditId,
-      userId,
-      'mutedUsers',
-    );
   }
 }
