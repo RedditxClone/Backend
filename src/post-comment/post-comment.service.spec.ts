@@ -8,9 +8,13 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 
+import { BlockSchema } from '../block/block.schema';
+import { BlockService } from '../block/block.service';
 import type { Comment } from '../comment/comment.schema';
 import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
+import { FollowSchema } from '../follow/follow.schema';
+import { FollowService } from '../follow/follow.service';
 import { HideSchema } from '../post/hide.schema';
 import type { Post } from '../post/post.schema';
 import { PostSchema } from '../post/post.schema';
@@ -19,6 +23,8 @@ import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
@@ -39,6 +45,8 @@ describe('PostCommentService', () => {
   let subreddit: SubredditDocument;
   let flairId: Types.ObjectId;
   let userSR: Types.ObjectId;
+  let userService: UserService;
+  let user;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -59,14 +67,12 @@ describe('PostCommentService', () => {
               },
             ],
           },
-          {
-            name: 'Subreddit',
-            schema: SubredditSchema,
-          },
-          {
-            name: 'UserSubreddit',
-            schema: SubredditUserSchema,
-          },
+          { name: 'Follow', schema: FollowSchema },
+          { name: 'Block', schema: BlockSchema },
+          { name: 'Hide', schema: HideSchema },
+          { name: 'Subreddit', schema: SubredditSchema },
+          { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'User', schema: UserSchema },
           {
             name: 'Vote',
             schema: VoteSchema,
@@ -83,6 +89,9 @@ describe('PostCommentService', () => {
         ApiFeaturesService,
         CommentService,
         SubredditService,
+        UserService,
+        FollowService,
+        BlockService,
       ],
     }).compile();
 
@@ -90,7 +99,13 @@ describe('PostCommentService', () => {
     postService = module.get<PostService>(PostService);
     commentService = module.get<CommentService>(CommentService);
     subredditService = module.get<SubredditService>(SubredditService);
-    userSR = new Types.ObjectId(1);
+    userService = module.get<UserService>(UserService);
+    user = await userService.createUser({
+      email: 'eadj@exmaple.com',
+      password: 'password@rfksl',
+      username: 'usrname',
+    });
+    userSR = user._id;
     subreddit = await subredditService.create(
       {
         name: 'subreddit',
@@ -373,6 +388,87 @@ describe('PostCommentService', () => {
           service.disApprove(new Types.ObjectId(32), post._id),
         ).rejects.toThrow('moderator');
       });
+    });
+  });
+  describe('get un-moderated/spammed/edited', () => {
+    let post: Post & { _id: Types.ObjectId };
+    let comment: Comment & { _id: Types.ObjectId };
+    const limit = undefined;
+    const page = undefined;
+    const sort = undefined;
+    beforeAll(async () => {
+      // userId = new Types.ObjectId(1);
+      post = await postService.create(userSR, {
+        subredditId: subreddit._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+      comment = await commentService.create(userSR, {
+        subredditId: subreddit._id,
+        parentId: post._id,
+        postId: post._id,
+        text: 'top level comment',
+      });
+    });
+
+    it('must return both post and comment', async () => {
+      const res = await service.getUnModeratedThingsForSubreddit(
+        subreddit._id,
+        limit,
+        page,
+        sort,
+      );
+      expect(res.length).toEqual(2);
+    });
+    it('must return only the post after spamming comment', async () => {
+      await service.spam(userSR, comment._id);
+      const res = await service.getUnModeratedThingsForSubreddit(
+        subreddit._id,
+        limit,
+        page,
+        sort,
+      );
+      expect(res.length).toEqual(1);
+      expect(res[0].type).toEqual('Post');
+    });
+    it('must get the comment only', async () => {
+      const res = await service.getSpammedThingsForSubreddit(
+        subreddit._id,
+        limit,
+        page,
+        sort,
+      );
+      expect(res.length).toEqual(1);
+      expect(res[0].type).toEqual('Comment');
+    });
+    it('must get the post only', async () => {
+      await service.update(
+        post._id,
+        {
+          text: 'new text',
+        },
+        userSR,
+      );
+      const res = await service.getEditedThingsForSubreddit(
+        subreddit._id,
+        limit,
+        page,
+        sort,
+      );
+      expect(res.length).toEqual(1);
+      expect(res[0].type).toEqual('Post');
+    });
+    it('must return empty array', async () => {
+      await service.spam(userSR, post._id);
+      const res = await service.getUnModeratedThingsForSubreddit(
+        subreddit._id,
+        limit,
+        page,
+        sort,
+      );
+      expect(res.length).toEqual(0);
     });
   });
   afterAll(async () => {

@@ -223,6 +223,7 @@ export class ThingFetch {
           removedAt: 1,
           editCheckedBy: 1,
           nsfw: 1,
+          type: 1,
           visited: 1,
           voteType: {
             $cond: [

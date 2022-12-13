@@ -110,6 +110,7 @@ export class PostCommentService {
     const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, {
       ...dto,
       editedAt: Date.now(),
+      editCheckedBy: null,
     });
 
     if (!updatedThing) {
@@ -428,6 +429,7 @@ export class PostCommentService {
       subredditId,
       {
         editedAt: { $ne: null },
+        editCheckedBy: null,
         isDeleted: false,
         removedBy: null,
       },
