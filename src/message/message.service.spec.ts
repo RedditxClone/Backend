@@ -139,6 +139,26 @@ describe('MessageService', () => {
     });
   });
 
+  describe('delete', () => {
+    it('should throw error', async () => {
+      await expect(async () => {
+        await service.delete(message.authorName, message._id);
+      }).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw error', async () => {
+      await expect(async () => {
+        await service.delete(message.authorName, new Types.ObjectId(123));
+      }).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should delete successfully', async () => {
+      expect(await service.delete(message.destName, message._id)).toEqual({
+        status: 'success',
+      });
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
