@@ -145,17 +145,14 @@ describe('PostService', () => {
     return [user1, user2];
   };
 
-  const generateSRs = async (
-    user1Id: Types.ObjectId,
-    user2Id: Types.ObjectId,
-  ) => {
+  const generateSRs = async (user1: string, user2: string) => {
     const sr1 = await subredditService.create(
       {
         name: 'sr1',
         over18: true,
         type: 'type',
       },
-      user1Id,
+      user1,
     );
     const sr2 = await subredditService.create(
       {
@@ -163,7 +160,7 @@ describe('PostService', () => {
         over18: true,
         type: 'type',
       },
-      user2Id,
+      user2,
     );
 
     return [sr1, sr2];
@@ -180,7 +177,7 @@ describe('PostService', () => {
       const users = await generateUsers();
       user1 = users[0];
       user2 = users[1];
-      const [sr1, sr2] = await generateSRs(user1._id, user2._id);
+      const [sr1, sr2] = await generateSRs(user1.username, user2.username);
       subreddits.push(sr1, sr2);
 
       await subredditService.joinSubreddit(user1._id, sr1._id);
@@ -284,6 +281,7 @@ describe('PostService', () => {
   describe('approve', () => {
     let post: Post & { _id: Types.ObjectId };
 
+    const username = 'fred';
     const userId = new Types.ObjectId(1);
     beforeAll(async () => {
       const sr = await subredditService.create(
@@ -292,7 +290,7 @@ describe('PostService', () => {
           over18: true,
           type: 'sr',
         },
-        userId,
+        username,
       );
       post = await service.create(userId, {
         subredditId: sr._id,
@@ -302,18 +300,18 @@ describe('PostService', () => {
       expect(post._id).toBeInstanceOf(Types.ObjectId);
     });
     it('must approve post successfully', async () => {
-      const res = await service.approve(userId, post._id);
+      const res = await service.approve(username, post._id);
       expect(res).toEqual({ status: 'success' });
     });
     it('must throw error because already approved', async () => {
-      await expect(service.approve(userId, post._id)).rejects.toThrow(
+      await expect(service.approve(username, post._id)).rejects.toThrow(
         'approved',
       );
     });
     it('must throw error because not mod', async () => {
-      await expect(
-        service.approve(new Types.ObjectId(32), post._id),
-      ).rejects.toThrow('moderator');
+      await expect(service.approve('aref', post._id)).rejects.toThrow(
+        'moderator',
+      );
     });
   });
   afterAll(async () => {
