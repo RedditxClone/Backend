@@ -37,6 +37,9 @@ export class Message {
 
   @Prop({ default: null, ref: 'PostComment' })
   postCommentId: Types.ObjectId;
+
+  @Prop({ default: false })
+  softDeleted: boolean;
 }
 
 export const MessageSchema = (() => {

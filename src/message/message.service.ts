@@ -76,6 +76,7 @@ export class MessageService {
       await this.messageModel.findOne({
         _id: parentId,
         destName: authorName, // parent message dest is current author
+        softDeleted: false,
       });
 
     if (!message) {
@@ -114,6 +115,27 @@ export class MessageService {
     });
 
     return plainToInstance(MessageReturnDto, returnedMessage);
+  }
+
+  async delete(authorName: string, messageId: Types.ObjectId) {
+    const findFilter = {
+      _id: messageId,
+      destName: authorName,
+      softDeleted: false,
+    }; // only delete recieved messages
+    const updateFilter = { softDeleted: true };
+    const message = await this.messageModel.findOneAndUpdate(
+      findFilter,
+      updateFilter,
+    );
+
+    if (!message) {
+      throw new NotFoundException(
+        'Message is not found or cannot delete this message',
+      );
+    }
+
+    return { status: 'success' };
   }
 
   findAll() {

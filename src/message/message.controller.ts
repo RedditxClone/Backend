@@ -82,6 +82,21 @@ export class MessageController {
     );
   }
 
+  @ApiOkResponse({ description: 'The message has been deleted successfully' })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthenticaed',
+  })
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @ApiOperation({ description: 'delete specific message with message_id' })
+  @UseGuards(JWTUserGuard)
+  @Delete('/:message_id')
+  remove(
+    @User('username') authorName: string,
+    @Param('message_id') messageId: Types.ObjectId,
+  ) {
+    return this.messageService.delete(authorName, messageId);
+  }
+
   @ApiCreatedResponse({ description: 'The message spammed successfully' })
   @ApiUnauthorizedResponse({ description: "you haven't receive this message" })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
@@ -204,17 +219,5 @@ export class MessageController {
   @Get('/:message_id')
   findOne(@Param('message_id') id: string) {
     return this.messageService.findOne(Number(id));
-  }
-
-  @ApiOkResponse({ description: 'The message has been deleted successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiUnauthorizedResponse({
-    description: "you haven't send|receive message with message_id",
-  })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiOperation({ description: 'delete specific message with message_id' })
-  @Delete('/:message_id')
-  remove(@Param('message_id') id: string) {
-    return this.messageService.remove(Number(id));
   }
 }
