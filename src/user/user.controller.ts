@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseFilePipeBuilder,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -445,5 +446,22 @@ export class UserController {
     file,
   ) {
     return this.userService.uploadPhoto(userId, file, 'coverPhoto');
+  }
+
+  @ApiOperation({
+    description:
+      'Close {option = -1} or reopen {option = 1} all notification for a post or comment',
+  })
+  @ApiCreatedResponse({ description: 'successfully done' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @UseGuards(JWTUserGuard)
+  @Post('thing/:thing/notify/:option')
+  notifyPostComment(
+    @Param('thing', ParseObjectIdPipe) thingId,
+    @Param('option', ParseIntPipe) option,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.userService.notifyPostComment(userId, thingId, option);
   }
 }

@@ -13,5 +13,6 @@ import { NotificationService } from './notification.service';
   ],
   controllers: [NotificationController],
   providers: [NotificationService],
+  exports: [NotificationService],
 })
 export class NotificationModule {}

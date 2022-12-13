@@ -5,6 +5,7 @@ import { JWTUserIfExistGuard } from '../auth/guards/user-if-exist.guard';
 import { CommentController } from '../comment/comment.controller';
 import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
@@ -53,6 +54,7 @@ import { PostCommentService } from './post-comment.service';
         schema: SubredditUserSchema,
       },
     ]),
+    NotificationModule,
   ],
   controllers: [PostCommentController, PostController, CommentController],
   providers: [

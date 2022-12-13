@@ -11,6 +11,7 @@ import { Types } from 'mongoose';
 import type { Comment } from '../comment/comment.schema';
 import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import type { Post } from '../post/post.schema';
 import { PostSchema } from '../post/post.schema';
@@ -43,6 +44,7 @@ describe('PostCommentService', () => {
     module = await Test.createTestingModule({
       imports: [
         ImagesHandlerModule,
+        NotificationModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           {
@@ -279,11 +281,11 @@ describe('PostCommentService', () => {
       });
     });
     it('should upvote successfully', async () => {
-      const res = await service.upvote(comment._id, userId);
+      const res = await service.upvote(comment._id, userId, []);
       expect(res).toEqual({ votesCount: 1 });
     });
     it('should upvote successfully', async () => {
-      const res = await service.upvote(comment._id, user2Id);
+      const res = await service.upvote(comment._id, user2Id, []);
       expect(res).toEqual({ votesCount: 2 });
     });
 
@@ -292,7 +294,7 @@ describe('PostCommentService', () => {
       expect(res).toEqual({ votesCount: 0 });
     });
     it('should upvote with no effect', async () => {
-      const res = await service.upvote(comment._id, user2Id);
+      const res = await service.upvote(comment._id, user2Id, []);
       expect(res).toEqual({ votesCount: 0 });
     });
 
@@ -303,7 +305,7 @@ describe('PostCommentService', () => {
 
     it('should throw an error', async () => {
       const wrongId = new Types.ObjectId(1);
-      await expect(service.upvote(wrongId, userId)).rejects.toThrow(
+      await expect(service.upvote(wrongId, userId, [])).rejects.toThrow(
         `there is no post or comment with id ${wrongId}`,
       );
     });

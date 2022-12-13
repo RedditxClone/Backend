@@ -8,10 +8,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
+import { NotificationService } from '../notification/notification.service';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
-import { SubredditService } from '../subreddit/subreddit.service';
 import type { Vote } from '../vote/vote.schema';
-// import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
@@ -22,7 +21,7 @@ export class PostCommentService {
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
-    private readonly subredditService: SubredditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -188,12 +187,40 @@ export class PostCommentService {
     return isUpvote ? 1 : -1;
   }
 
-  async upvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+  async upvote(
+    thingId: Types.ObjectId,
+    userId: Types.ObjectId,
+    dontNotifyIds: Types.ObjectId[],
+  ) {
     const res = await this.voteModel.findOneAndUpdate(
       { thingId, userId },
       { isUpvote: true },
-      { upsert: true, new: false },
+      { upsert: true },
     );
+
+    if (res === null && !dontNotifyIds.includes(thingId)) {
+      //get thing info
+      const [info] = await this.postCommentModel.aggregate([
+        { $match: { _id: thingId } },
+        {
+          $lookup: {
+            from: 'subreddits',
+            localField: 'subredditId',
+            foreignField: '_id',
+            as: 'subreddit',
+          },
+        },
+      ]);
+
+      if (info !== undefined && !info.userId.equals(userId)) {
+        await this.notificationService.notifyOnVotes(
+          userId,
+          thingId,
+          info.type,
+          info.subreddit[0].name,
+        );
+      }
+    }
 
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1).then();
   }

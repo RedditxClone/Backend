@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationService } from '../notification/notification.service';
 import type { Comment } from './comment.schema';
 import type { CreateCommentDto, UpdateCommentDto } from './dto';
 
@@ -9,6 +10,9 @@ import type { CreateCommentDto, UpdateCommentDto } from './dto';
 export class CommentService {
   constructor(
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
+    @InjectModel('PostComment')
+    private readonly postCommentModel: Model<Comment>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -24,13 +28,56 @@ export class CommentService {
   ): Promise<Comment & { _id: Types.ObjectId }> => {
     const parentId = new Types.ObjectId(createCommentDto.parentId);
     const postId = new Types.ObjectId(createCommentDto.postId);
+    const subredditId = new Types.ObjectId(createCommentDto.subredditId);
     const comment: Comment & { _id: Types.ObjectId } =
       await this.commentModel.create({
         userId,
         ...createCommentDto,
         postId,
         parentId,
+        subredditId,
       });
+
+    //notification
+    const [info] = await this.postCommentModel.aggregate([
+      { $match: { _id: parentId } },
+      {
+        $lookup: {
+          from: 'subreddits',
+          localField: 'subredditId',
+          foreignField: '_id',
+          as: 'subreddit',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+    ]);
+    let replyType = 'comment';
+
+    if (postId === parentId) {
+      replyType = 'post';
+    }
+
+    if (
+      info !== undefined &&
+      !info.userId.equals(userId) &&
+      !info.dontNotifyIds.includes(parentId) &&
+      !info.dontNotifyIds.includes(postId)
+    ) {
+      await this.notificationService.notifyOnReplies(
+        info.userId,
+        userId,
+        replyType,
+        info.subreddit[0].name,
+        info.user[0].username,
+      );
+    }
 
     return comment;
   };
