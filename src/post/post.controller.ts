@@ -368,8 +368,8 @@ export class PostController {
   @Post('/:post/approve')
   approve(
     @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postService.approve(userId, postId);
+    return this.postService.approve(username, postId);
   }
 }
