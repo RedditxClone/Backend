@@ -11,7 +11,6 @@ import { Model } from 'mongoose';
 import { NotificationService } from '../notification/notification.service';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 import type { Vote } from '../vote/vote.schema';
-// import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
@@ -188,14 +187,18 @@ export class PostCommentService {
     return isUpvote ? 1 : -1;
   }
 
-  async upvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+  async upvote(
+    thingId: Types.ObjectId,
+    userId: Types.ObjectId,
+    dontNotifyIds: Types.ObjectId[],
+  ) {
     const res = await this.voteModel.findOneAndUpdate(
       { thingId, userId },
       { isUpvote: true },
       { upsert: true },
     );
 
-    if (res === null) {
+    if (res === null && !dontNotifyIds.includes(thingId)) {
       //get thing info
       const [info] = await this.postCommentModel.aggregate([
         { $match: { _id: thingId } },

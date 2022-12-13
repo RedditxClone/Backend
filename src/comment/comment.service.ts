@@ -64,7 +64,12 @@ export class CommentService {
       replyType = 'post';
     }
 
-    if (info !== undefined && !info.userId.equals(userId)) {
+    if (
+      info !== undefined &&
+      !info.userId.equals(userId) &&
+      !info.dontNotifyIds.includes(parentId) &&
+      !info.dontNotifyIds.includes(postId)
+    ) {
       await this.notificationService.notifyOnReplies(
         info.userId,
         userId,

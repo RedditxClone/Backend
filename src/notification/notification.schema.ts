@@ -35,8 +35,8 @@ export class Notification {
   @Prop({ default: Date.now() })
   createdAt: Date;
 
-  @Prop({ default: false })
-  isNew: boolean;
+  @Prop({ default: true })
+  new: boolean;
 
   @Prop({ default: false })
   hidden: boolean;

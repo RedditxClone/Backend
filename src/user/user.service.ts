@@ -421,4 +421,24 @@ export class UserService {
       `${fieldName}`,
     );
   }
+
+  notifyPostComment = async (
+    userId: Types.ObjectId,
+    thingId: any,
+    option: any,
+  ) => {
+    if (option === 1) {
+      await this.userModel.updateOne(
+        { _id: userId },
+        { $addToSet: { dontNotifyIds: thingId } },
+      );
+    } else if (option === -1) {
+      await this.userModel.updateOne(
+        { _id: userId },
+        { $pull: { dontNotifyIds: thingId } },
+      );
+    }
+
+    return { status: 'success' };
+  };
 }
