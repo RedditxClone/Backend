@@ -14,7 +14,6 @@ export class Notification {
 
   @Prop({
     enum: [
-      'private_msg',
       'comment_reply',
       'post_reply',
       'post_vote', // upvote on post

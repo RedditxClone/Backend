@@ -1,15 +1,19 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
+import { Types } from 'mongoose';
 
-import { rootMongooseTestModule } from '../utils/mongoose-in-memory';
+import {
+  closeInMongodConnection,
+  rootMongooseTestModule,
+} from '../utils/mongoose-in-memory';
 import { NotificationModule } from './notification.module';
 import { NotificationService } from './notification.service';
 
 describe('NotificationService', () => {
   let service: NotificationService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+  let module: TestingModule;
+  beforeAll(async () => {
+    module = await Test.createTestingModule({
       imports: [NotificationModule, rootMongooseTestModule()],
       providers: [],
     }).compile();
@@ -19,5 +23,55 @@ describe('NotificationService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+  describe('notifyOnFollow spec', () => {
+    const id = new Types.ObjectId(1);
+    it('should pass', async () => {
+      const res: any = await service.notifyOnFollow(id, id, id, 'folan');
+      expect(res.body).toEqual('folan started following you.');
+      expect(res.type).toEqual('follow');
+    });
+  });
+  describe('notifyOnVotes spec', () => {
+    const id = new Types.ObjectId(1);
+    it('should pass', async () => {
+      const res: any = await service.notifyOnVotes(id, id, 'post', 'folan');
+      expect(res.body).toEqual('You got an upvote on your post in r/folan');
+      expect(res.type).toEqual('post_vote');
+    });
+    it('should pass', async () => {
+      const res: any = await service.notifyOnVotes(id, id, 'comment', 'folan');
+      expect(res.body).toEqual('You got an upvote on your comment in r/folan');
+      expect(res.type).toEqual('comment_vote');
+    });
+  });
+  describe('notifyOnReplies spec', () => {
+    const id = new Types.ObjectId(1);
+    it('should pass', async () => {
+      const res: any = await service.notifyOnReplies(
+        id,
+        id,
+        'post',
+        'folan1',
+        'folan2',
+      );
+      expect(res.body).toEqual('u/folan2 replied to your post in r/folan1');
+      expect(res.type).toEqual('post_reply');
+    });
+    it('should pass', async () => {
+      const res: any = await service.notifyOnReplies(
+        id,
+        id,
+        'comment',
+        'folan1',
+        'folan2',
+      );
+      expect(res.body).toEqual('u/folan2 replied to your comment in r/folan1');
+      expect(res.type).toEqual('comment_reply');
+    });
+  });
+  afterAll(async () => {
+    await closeInMongodConnection();
+    await module.close();
   });
 });

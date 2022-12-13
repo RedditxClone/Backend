@@ -33,7 +33,7 @@ export class NotificationService {
 
     body = `${followerName} started following you.`;
 
-    await this.notificationModel.create({
+    return this.notificationModel.create({
       userId,
       body,
       refId,
@@ -61,7 +61,7 @@ export class NotificationService {
 
     body = `You got an upvote on your ${refType} in r/${subredditName}`;
 
-    await this.notificationModel.create({
+    return this.notificationModel.create({
       userId,
       body,
       refId,
@@ -90,7 +90,7 @@ export class NotificationService {
 
     body = `u/${replierName} replied to your ${refType} in r/${subredditName}`;
 
-    await this.notificationModel.create({
+    return this.notificationModel.create({
       userId,
       body,
       refId,
