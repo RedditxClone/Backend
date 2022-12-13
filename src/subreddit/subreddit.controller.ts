@@ -314,7 +314,7 @@ export class SubredditController {
   @Post('/:subreddit/moderation/:username')
   addNewModuratorToSr(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @Param('username', ParseObjectIdPipe) newModeratorUsername: string,
+    @Param('username') newModeratorUsername: string,
     @User('username') moderatorUsername: string,
   ) {
     return this.subredditService.addNewModerator(
@@ -328,8 +328,8 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The subreddits returned succesfully' })
   @UseGuards(JWTUserGuard)
   @Get('/moderation/me')
-  getSubredditsUserModerate(@User('_id') userId) {
-    return this.subredditService.subredditIModerate(userId);
+  getSubredditsUserModerate(@User('username') username) {
+    return this.subredditService.subredditIModerate(username);
   }
 
   @ApiOperation({ description: 'Get subreddits the user joined' })
@@ -456,7 +456,7 @@ export class SubredditController {
   @ApiCreatedResponse({ description: 'The users returned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
-  @Post('/:subreddit/userId/:userId/join/accept')
+  @Post('/:subreddit/user/:userId/join/accept')
   AcceptAJoinRequest(
     @User('username') moderatorUsername: string,
     @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
