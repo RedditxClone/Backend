@@ -25,6 +25,26 @@ export class PostComment {
 
   @Prop({ ref: 'Subreddit', required: true })
   subredditId: Types.ObjectId;
-}
 
+  @Prop({ ref: 'User', default: null })
+  spammedBy: Types.ObjectId;
+
+  @Prop({ default: null })
+  spammedAt: Date;
+
+  @Prop({ ref: 'User', default: null })
+  approvedBy: Types.ObjectId;
+
+  @Prop({ default: null })
+  approvedAt: Date;
+
+  @Prop({ ref: 'User', default: null })
+  removedBy: Types.ObjectId;
+
+  @Prop({ default: null })
+  removedAt: Date;
+
+  @Prop({ default: false })
+  edited: boolean;
+}
 export const PostCommentSchema = SchemaFactory.createForClass(PostComment);

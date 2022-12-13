@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { ThingFetch } from '../post-comment/post-comment.utils';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
 import type { Hide } from './hide.schema';
@@ -86,224 +87,69 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  private getRandomTimeLine() {
+  private getRandomTimeLine(
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(undefined);
+
     return this.postModel.aggregate([
-      {
-        $sample: { size: 15 },
-      },
+      ...fetcher.prepare(),
+      // return random sample
+      { $sample: { size: Number(limit || 10) } },
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.getPostProject(),
     ]);
   }
 
-  private async getUserTimeLine(userId: Types.ObjectId) {
+  private async getUserTimeLine(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
     return this.postModel.aggregate([
-      {
-        $match: {
-          isDeleted: false,
-        },
-      },
-      {
-        $set: {
-          postId: { $toObjectId: '$_id' },
-          subredditId: {
-            $toObjectId: '$subredditId',
-          },
-          userId: {
-            $toObjectId: '$userId',
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'usersubreddits',
-          as: 'PostUserSubreddit',
-          let: {
-            subredditId: '$subredditId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$subredditId', '$$subredditId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $unwind: '$PostUserSubreddit',
-      },
-      {
-        $lookup: {
-          from: 'hides',
-          as: 'hide',
-          let: {
-            postId: '$postId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$$postId', '$postId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$hide', []],
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'blocks',
-          as: 'block',
-          let: {
-            userId: '$userId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    {
-                      $and: [
-                        { $eq: ['$blocked', userId] },
-                        { $eq: ['$blocker', '$$userId'] },
-                      ],
-                    },
-                    {
-                      $and: [
-                        { $eq: ['$blocker', userId] },
-                        { $eq: ['$blocked', '$$userId'] },
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$block', []],
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'subreddits',
-          as: 'subreddit',
-          localField: 'subredditId',
-          foreignField: '_id',
-        },
-      },
-      {
-        $unwind: '$subreddit',
-      },
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          upvotesCount: 1,
-          images: 1,
-          postId: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          votesCount: 1,
-          flair: 1,
-          subreddit: {
-            id: '$subredditId',
-            name: '$subreddit.name',
-            type: '$subreddit.type',
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-      {
-        $unwind: '$user',
-      },
-      {
-        $lookup: {
-          from: 'votes',
-          as: 'vote',
-          let: {
-            postId: '$postId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$$postId', '$thingId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          subreddit: 1,
-          votesCount: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          flair: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  'downvote',
-                ],
-              },
-            ],
-          },
-          images: 1,
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
-        },
-      },
+      ...fetcher.prepare(),
+      ...fetcher.filterOfMySRs(),
+      ...fetcher.filterHidden(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
     ]);
   }
 
-  async getTimeLine(userId: Types.ObjectId | undefined) {
+  async getTimeLine(
+    userId: Types.ObjectId | undefined,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
     if (!userId) {
-      return this.getRandomTimeLine();
+      return this.getRandomTimeLine(page, limit);
     }
 
-    return this.getUserTimeLine(userId);
+    return this.getUserTimeLine(userId, page, limit);
+  }
+
+  async getPostsOfUser(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificUser(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
   }
 }
