@@ -9,6 +9,7 @@ import { CommentSchema } from '../comment/comment.schema';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
@@ -22,6 +23,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { CreatePostDto } from './dto';
 import { HideSchema } from './hide.schema';
 import type { Post } from './post.schema';
@@ -67,6 +69,14 @@ describe('PostService', () => {
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
           { name: 'User', schema: UserSchema },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
+          },
+          {
+            name: 'Hide',
+            schema: HideSchema,
+          },
         ]),
       ],
       providers: [
@@ -76,6 +86,7 @@ describe('PostService', () => {
         FollowService,
         BlockService,
         ApiFeaturesService,
+        PostCommentService,
       ],
     }).compile();
 
@@ -267,6 +278,42 @@ describe('PostService', () => {
         const res = await service.getPostsOfUser(user1._id, page, limit);
         expect(res.length).toEqual(0);
       });
+    });
+  });
+
+  describe('approve', () => {
+    let post: Post & { _id: Types.ObjectId };
+
+    const userId = new Types.ObjectId(1);
+    beforeAll(async () => {
+      const sr = await subredditService.create(
+        {
+          name: 'sr',
+          over18: true,
+          type: 'sr',
+        },
+        userId,
+      );
+      post = await service.create(userId, {
+        subredditId: sr._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+    });
+    it('must approve post successfully', async () => {
+      const res = await service.approve(userId, post._id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('must throw error because already approved', async () => {
+      await expect(service.approve(userId, post._id)).rejects.toThrow(
+        'approved',
+      );
+    });
+    it('must throw error because not mod', async () => {
+      await expect(
+        service.approve(new Types.ObjectId(32), post._id),
+      ).rejects.toThrow('moderator');
     });
   });
   afterAll(async () => {
