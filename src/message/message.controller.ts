@@ -37,6 +37,36 @@ export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
   @ApiCreatedResponse({
+    description: 'The messagess have been marked successfully',
+    type: ModifiedCountDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
+  @ApiOperation({ description: 'mark specific message as read' })
+  @Post('/mark_as_read')
+  @UseGuards(JWTUserGuard)
+  markMessagesAsRead(
+    @User('username') username: string,
+    @Body() messageIdList: MessageIdListDto,
+  ) {
+    return this.messageService.markAsRead(username, messageIdList);
+  }
+
+  @ApiCreatedResponse({
+    description: 'The messages have been marked successfully',
+    type: ModifiedCountDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
+  @ApiOperation({ description: 'mark specific message as read' })
+  @Post('/mark_as_unread')
+  @UseGuards(JWTUserGuard)
+  markMessagesAsUnRead(
+    @User('username') username: string,
+    @Body() messageIdList: MessageIdListDto,
+  ) {
+    return this.messageService.markAsUnRead(username, messageIdList);
+  }
+
+  @ApiCreatedResponse({
     description: 'The message was created successfully',
     type: MessageReturnDto,
   })
@@ -108,36 +138,6 @@ export class MessageController {
   @Post('/:message_id/spam')
   spamMessage(@Param('message_id', ParseObjectIdPipe) _messageId: string) {
     return { status: 'success' };
-  }
-
-  @ApiCreatedResponse({
-    description: 'The messagess have been marked successfully',
-    type: ModifiedCountDto,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
-  @ApiOperation({ description: 'mark specific message as read' })
-  @Post('/mark_as_read')
-  @UseGuards(JWTUserGuard)
-  markMessagesAsRead(
-    @User('username') username: string,
-    @Body() messageIdList: MessageIdListDto,
-  ) {
-    return this.messageService.markAsRead(username, messageIdList);
-  }
-
-  @ApiCreatedResponse({
-    description: 'The messages have been marked successfully',
-    type: ModifiedCountDto,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
-  @ApiOperation({ description: 'mark specific message as read' })
-  @Post('/mark_as_unread')
-  @UseGuards(JWTUserGuard)
-  markMessagesAsUnRead(
-    @User('username') username: string,
-    @Body() messageIdList: MessageIdListDto,
-  ) {
-    return this.messageService.markAsUnRead(username, messageIdList);
   }
 
   @ApiOkResponse({
