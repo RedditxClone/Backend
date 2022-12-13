@@ -16,6 +16,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -407,6 +409,18 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
   })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        photo: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseGuards(JWTUserGuard)
   @Post('/me/profile')
   uploadProfilePhoto(
@@ -432,6 +446,18 @@ export class UserController {
     description: 'you are not allowed to make this action',
   })
   @UseGuards(JWTUserGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        photo: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Post('/me/cover')
   uploadCoverPhoto(
     @User('_id') userId: Types.ObjectId,
