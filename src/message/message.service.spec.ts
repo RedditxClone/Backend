@@ -71,6 +71,9 @@ describe('MessageService', () => {
     });
   });
 
+  let parentId: Types.ObjectId;
+  let parentId2: Types.ObjectId;
+
   describe('replyToPrivateMessage', () => {
     const messageReplyDto: MessageReplyDto = {
       body: 'some reply body',
@@ -97,7 +100,6 @@ describe('MessageService', () => {
       }).rejects.toThrowError(NotFoundException);
     });
 
-    let parentId: Types.ObjectId;
     it('should reply successfully', async () => {
       const returnMessage: MessageReturnDto =
         await service.replyToPrivateMessage(
@@ -126,6 +128,7 @@ describe('MessageService', () => {
           id,
           parentId,
         );
+      parentId2 = returnMessage._id;
       expect(returnMessage).toEqual(
         expect.objectContaining({
           firstMessageId: message._id, // root
@@ -156,6 +159,79 @@ describe('MessageService', () => {
       expect(await service.delete(message.destName, message._id)).toEqual({
         status: 'success',
       });
+    });
+  });
+  describe('markAsRead/Unread', () => {
+    it('should not modify any', async () => {
+      const a = new Types.ObjectId(456);
+      const b = new Types.ObjectId(455);
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsRead(message.destName, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(0);
+    });
+
+    it('should modify one message', async () => {
+      const a = message._id;
+      const b = new Types.ObjectId(455);
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsRead(message.destName, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(1);
+    });
+
+    it('should modify one message', async () => {
+      const a = message._id;
+      const b = parentId2;
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsRead(message.destName, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(1);
+    });
+
+    it('should modify two messages', async () => {
+      const a = message._id;
+      const b = parentId2;
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsUnRead(message.destName, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(2);
+    });
+
+    it('should not modify any', async () => {
+      const a = message._id;
+      const b = parentId2;
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsUnRead(message.destName, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(0);
+    });
+
+    it('should not modify any', async () => {
+      const a = message._id;
+      const b = new Types.ObjectId(455);
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsUnRead(message.destName, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(0);
     });
   });
 
