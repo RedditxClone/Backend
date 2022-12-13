@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -83,6 +84,9 @@ export class PostCommentController {
   @ApiCreatedResponse({ description: 'spammed successfully' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
   @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @ApiNotFoundResponse({
+    description: 'wrong post id or you are not the moderator',
+  })
   @UseGuards(JWTUserGuard)
   @Post('/:thing/spam')
   spam(
@@ -90,5 +94,23 @@ export class PostCommentController {
     @User('_id') userId: Types.ObjectId,
   ) {
     return this.postCommentService.spam(userId, thingId);
+  }
+
+  @ApiOperation({
+    description: 'unspam post or comment',
+  })
+  @ApiCreatedResponse({ description: 'unspammed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @ApiNotFoundResponse({
+    description: 'wrong post id or you are not the moderator',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/:thing/unspam')
+  unspam(
+    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postCommentService.unspam(userId, thingId);
   }
 }

@@ -335,7 +335,7 @@ export class PostCommentService {
       );
     }
 
-    if (thing.spammedBy !== null) {
+    if (thing.spammedBy === null) {
       throw new BadRequestException('spam is already removed');
     }
 
