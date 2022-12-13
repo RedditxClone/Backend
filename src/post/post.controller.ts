@@ -363,4 +363,13 @@ export class PostController {
 
     return insightsPostDto;
   }
+
+  @UseGuards(JWTUserGuard)
+  @Post('/:post/approve')
+  approve(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.approve(userId, postId);
+  }
 }

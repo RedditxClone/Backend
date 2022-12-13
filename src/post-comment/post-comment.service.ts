@@ -271,7 +271,7 @@ export class PostCommentService {
         },
       ]);
 
-  private async getThingIModerate(
+  async getThingIModerate(
     moderatorId: Types.ObjectId,
     thingId: Types.ObjectId,
   ) {
@@ -341,27 +341,6 @@ export class PostCommentService {
     await this.postCommentModel.findByIdAndUpdate(thingId, {
       spammedBy: null,
       spammedAt: null,
-    });
-
-    return { status: 'success' };
-  }
-
-  async approve(userId: Types.ObjectId, thingId: Types.ObjectId) {
-    const [post] = await this.getThingIModerate(userId, thingId);
-
-    if (!post) {
-      throw new NotFoundException(
-        'either wrong id or you are not a moderator of the subreddit',
-      );
-    }
-
-    if (post.approvedBy !== null) {
-      throw new BadRequestException('post is already approved');
-    }
-
-    await this.postCommentModel.findByIdAndUpdate(thingId, {
-      approvedBy: userId,
-      approvedAt: Date.now(),
     });
 
     return { status: 'success' };
