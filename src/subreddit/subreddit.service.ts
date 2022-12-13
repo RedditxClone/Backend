@@ -31,14 +31,14 @@ export class SubredditService {
 
   async create(
     createSubredditDto: CreateSubredditDto,
-    user_id: Types.ObjectId,
+    username: string,
   ): Promise<SubredditDocument> {
     let subreddit: SubredditDocument | undefined;
 
     try {
       subreddit = await this.subredditModel.create({
         ...createSubredditDto,
-        moderators: [user_id],
+        moderators: [username],
       });
     } catch (error) {
       if (error?.message?.startsWith('E11000')) {
@@ -231,8 +231,8 @@ export class SubredditService {
       {
         $match: {
           $or: [
-            { name: { $regex: searchPhrase } },
-            { description: { $regex: searchPhrase } },
+            { name: { $regex: searchPhrase, $options: 'i' } },
+            { description: { $regex: searchPhrase, $options: 'i' } },
           ],
         },
       },
@@ -261,15 +261,52 @@ export class SubredditService {
     ]);
   }
 
+  getSearchFlairsAggregate(
+    searchPhrase: string,
+    subreddit: Types.ObjectId,
+    page,
+    numberOfData: number,
+  ) {
+    const pageNumber = page ?? 1;
+
+    return this.subredditModel.aggregate([
+      {
+        $match: {
+          _id: subreddit,
+        },
+      },
+      {
+        $project: {
+          flair: '$flairList',
+        },
+      },
+      {
+        $unwind: '$flair',
+      },
+      {
+        $match: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          'flair.text': { $regex: searchPhrase, $options: 'i' },
+        },
+      },
+      {
+        $skip: (pageNumber - 1) * numberOfData,
+      },
+      {
+        $limit: numberOfData,
+      },
+    ]);
+  }
+
   async addSubredditCategories(
     subreddit: Types.ObjectId,
-    userId: Types.ObjectId,
+    username: string,
     categories: string[],
   ) {
     const sr = await this.subredditModel.updateOne(
       {
         _id: subreddit,
-        moderators: userId,
+        moderators: username,
       },
       {
         $addToSet: { categories: { $each: categories } },
@@ -306,17 +343,17 @@ export class SubredditService {
   }
 
   async addNewModerator(
-    moderatorId: Types.ObjectId,
-    newModuratorId: Types.ObjectId,
+    moderatorUsername: string,
+    newModuratorUsername: string,
     subreddit: Types.ObjectId,
   ) {
     const res = await this.subredditModel.updateOne(
       {
-        moderators: moderatorId,
+        moderators: moderatorUsername,
         _id: subreddit,
       },
       {
-        $addToSet: { moderators: newModuratorId },
+        $addToSet: { moderators: newModuratorUsername },
       },
     );
 
@@ -330,10 +367,19 @@ export class SubredditService {
     );
   }
 
-  async subredditIModerate(userId: Types.ObjectId) {
+  async subredditIModerate(username: string) {
     return this.subredditModel.find({
-      moderators: userId,
+      moderators: username,
     });
+  }
+
+  async checkIfModerator(subredditId: Types.ObjectId, userId: Types.ObjectId) {
+    const moderator = await this.subredditModel.exists({
+      moderators: userId,
+      _id: subredditId,
+    });
+
+    return Boolean(moderator);
   }
 
   async subredditsIJoined(userId: Types.ObjectId) {
@@ -378,7 +424,7 @@ export class SubredditService {
         $lookup: {
           from: 'users',
           localField: 'moderators',
-          foreignField: '_id',
+          foreignField: 'username',
           as: 'user',
         },
       },
@@ -407,25 +453,21 @@ export class SubredditService {
     return Boolean(res);
   }
 
-  async isModerator(userId: Types.ObjectId, subreddit: Types.ObjectId) {
+  async isModerator(username: string, subreddit: Types.ObjectId) {
     const res = await this.subredditModel.findOne({
-      moderators: userId,
+      moderators: username,
       _id: subreddit,
     });
 
     return Boolean(res);
   }
 
-  async addRule(
-    subreddit: Types.ObjectId,
-    userId: Types.ObjectId,
-    ruleDto: RuleDto,
-  ) {
+  async addRule(subreddit: Types.ObjectId, username: string, ruleDto: RuleDto) {
     ruleDto._id = new mongoose.Types.ObjectId();
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,
-        moderators: userId,
+        moderators: username,
       },
       {
         $push: { rules: ruleDto },
@@ -442,12 +484,12 @@ export class SubredditService {
   async deleteRule(
     subreddit: Types.ObjectId,
     ruleId: Types.ObjectId,
-    userId: Types.ObjectId,
+    username: string,
   ) {
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,
-        moderators: userId,
+        moderators: username,
       },
       {
         $pull: {
@@ -462,7 +504,7 @@ export class SubredditService {
   async updateRule(
     subreddit: Types.ObjectId,
     ruleId: Types.ObjectId,
-    userId: Types.ObjectId,
+    username: string,
     ruleDto: UpdateRuleDto,
   ) {
     const updatedObject = {};
@@ -474,7 +516,7 @@ export class SubredditService {
 
     const queryObject = {
       _id: subreddit,
-      moderators: userId,
+      moderators: username,
     };
 
     queryObject['rules._id'] = ruleId;
@@ -509,12 +551,12 @@ export class SubredditService {
 
   async getUsersAskingToJoinSubreddit(
     subreddit: Types.ObjectId,
-    moderatorId: Types.ObjectId,
+    moderatorUsername: string,
   ) {
     const res = await this.subredditModel.aggregate([
       {
         $match: {
-          $and: [{ _id: subreddit }, { moderators: moderatorId }],
+          $and: [{ _id: subreddit }, { moderators: moderatorUsername }],
         },
       },
       {
@@ -554,13 +596,13 @@ export class SubredditService {
 
   private async deleteUserFromAskingListIfSrExist(
     subreddit: Types.ObjectId,
-    moderatorId: Types.ObjectId,
+    moderatorUsername: string,
     userId: Types.ObjectId,
   ) {
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,
-        moderators: moderatorId,
+        moderators: moderatorUsername,
       },
       {
         $pull: {
@@ -582,12 +624,12 @@ export class SubredditService {
 
   async acceptToJoinSr(
     subredditId: Types.ObjectId,
-    moderatorId: Types.ObjectId,
+    moderatorUsername: string,
     userId: Types.ObjectId,
   ) {
     await this.deleteUserFromAskingListIfSrExist(
       subredditId,
-      moderatorId,
+      moderatorUsername,
       userId,
     );
 

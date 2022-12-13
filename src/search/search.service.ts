@@ -94,4 +94,20 @@ export class SearchService {
       return _doc;
     });
   };
+
+  searchFlairs = async (
+    data: string,
+    subreddit: Types.ObjectId,
+    page,
+    limit,
+  ) => {
+    const res = await this.subredditService.getSearchFlairsAggregate(
+      data,
+      subreddit,
+      page,
+      limit,
+    );
+
+    return res.map((v) => v.flair);
+  };
 }

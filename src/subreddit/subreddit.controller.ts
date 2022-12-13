@@ -53,9 +53,9 @@ export class SubredditController {
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto, userId);
+    return this.subredditService.create(createSubredditDto, username);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
@@ -282,12 +282,12 @@ export class SubredditController {
   @Post('/:subreddit/category')
   addSubredditsWithCategories(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
     @Body('categories') categories: string[],
   ) {
     return this.subredditService.addSubredditCategories(
       subreddit,
-      userId,
+      username,
       categories,
     );
   }
@@ -311,15 +311,15 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The user was added successfully' })
   @ApiBadRequestResponse()
   @UseGuards(JWTUserGuard)
-  @Post('/:subreddit/moderation/:userId')
+  @Post('/:subreddit/moderation/:username')
   addNewModuratorToSr(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
-    @User('_id') moduratorId: Types.ObjectId,
+    @Param('username') newModeratorUsername: string,
+    @User('username') moderatorUsername: string,
   ) {
     return this.subredditService.addNewModerator(
-      moduratorId,
-      userId,
+      moderatorUsername,
+      newModeratorUsername,
       subreddit,
     );
   }
@@ -328,8 +328,8 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The subreddits returned succesfully' })
   @UseGuards(JWTUserGuard)
   @Get('/moderation/me')
-  getSubredditsUserModerate(@User('_id') userId) {
-    return this.subredditService.subredditIModerate(userId);
+  getSubredditsUserModerate(@User('username') username) {
+    return this.subredditService.subredditIModerate(username);
   }
 
   @ApiOperation({ description: 'Get subreddits the user joined' })
@@ -363,9 +363,9 @@ export class SubredditController {
   @Get('/:subreddit/moderation/me')
   isModerator(
     @Param('subreddit', ParseObjectIdPipe) subreddit,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.subredditService.isModerator(userId, subreddit);
+    return this.subredditService.isModerator(username, subreddit);
   }
 
   @ApiOperation({ description: 'add a rule in a subreddit' })
@@ -379,10 +379,10 @@ export class SubredditController {
   @Post('/:subreddit/rule')
   addRule(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
     @Body() ruleDto: RuleDto,
   ) {
-    return this.subredditService.addRule(subreddit, userId, ruleDto);
+    return this.subredditService.addRule(subreddit, username, ruleDto);
   }
 
   @ApiOperation({ description: 'delete a rule in a subreddit' })
@@ -397,9 +397,9 @@ export class SubredditController {
   deleteRule(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
     @Param('ruleId', ParseObjectIdPipe) ruleId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.subredditService.deleteRule(subreddit, ruleId, userId);
+    return this.subredditService.deleteRule(subreddit, ruleId, username);
   }
 
   @ApiOperation({ description: 'update a rule in a subreddit' })
@@ -414,10 +414,15 @@ export class SubredditController {
   updateRule(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
     @Param('ruleId', ParseObjectIdPipe) ruleId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
     @Body() ruleDto: UpdateRuleDto,
   ) {
-    return this.subredditService.updateRule(subreddit, ruleId, userId, ruleDto);
+    return this.subredditService.updateRule(
+      subreddit,
+      ruleId,
+      username,
+      ruleDto,
+    );
   }
 
   @ApiOperation({ description: 'Ask to join sr' })
@@ -438,12 +443,12 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   @Get('/:subreddit/join/ask')
   UsersAskingToJoinSubreddit(
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
   ) {
     return this.subredditService.getUsersAskingToJoinSubreddit(
       subreddit,
-      userId,
+      username,
     );
   }
 
@@ -453,10 +458,14 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   @Post('/:subreddit/user/:userId/join/accept')
   AcceptAJoinRequest(
-    @User('_id') moderatorId: Types.ObjectId,
+    @User('username') moderatorUsername: string,
     @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
   ) {
-    return this.subredditService.acceptToJoinSr(subreddit, moderatorId, userId);
+    return this.subredditService.acceptToJoinSr(
+      subreddit,
+      moderatorUsername,
+      userId,
+    );
   }
 }

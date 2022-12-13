@@ -38,6 +38,7 @@ describe('PostCommentService', () => {
   let module: TestingModule;
   let subreddit: SubredditDocument;
   let flairId: Types.ObjectId;
+  let userSR: Types.ObjectId;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -89,13 +90,14 @@ describe('PostCommentService', () => {
     postService = module.get<PostService>(PostService);
     commentService = module.get<CommentService>(CommentService);
     subredditService = module.get<SubredditService>(SubredditService);
+    userSR = new Types.ObjectId(1);
     subreddit = await subredditService.create(
       {
         name: 'subreddit',
         over18: true,
         type: 'type',
       },
-      new Types.ObjectId(1),
+      'aref',
     );
     const { flairList } = await subredditService.createFlair(
       subreddit._id.toString(),
@@ -304,6 +306,51 @@ describe('PostCommentService', () => {
       await expect(service.upvote(wrongId, userId)).rejects.toThrow(
         `there is no post or comment with id ${wrongId}`,
       );
+    });
+  });
+
+  describe('spam', () => {
+    let post: Post & { _id: Types.ObjectId };
+    let comment: Comment & { _id: Types.ObjectId };
+    // let userId: Types.ObjectId;
+    beforeAll(async () => {
+      // userId = new Types.ObjectId(1);
+      post = await postService.create(userSR, {
+        subredditId: subreddit._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+      comment = await commentService.create(userSR, {
+        subredditId: subreddit._id,
+        parentId: post._id,
+        postId: post._id,
+        text: 'top level comment',
+      });
+    });
+    it('must spam post successfully', async () => {
+      const res = await service.spam(userSR, post._id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('must spam comment successfully', async () => {
+      const res = await service.spam(userSR, comment._id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('must throw errror because already spammed', async () => {
+      await expect(service.spam(userSR, post._id)).rejects.toThrow('spammed');
+    });
+    it('must throw error because not mod', async () => {
+      await expect(
+        service.spam(new Types.ObjectId(32), post._id),
+      ).rejects.toThrow('moderator');
+    });
+    it('must unspam post successfully', async () => {
+      const res = await service.unspam(userSR, post._id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('must unspam comment successfully', async () => {
+      const res = await service.unspam(userSR, comment._id);
+      expect(res).toEqual({ status: 'success' });
     });
   });
   afterAll(async () => {
