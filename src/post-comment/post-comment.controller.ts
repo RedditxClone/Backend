@@ -109,9 +109,9 @@ export class PostCommentController {
   @Post('/:thing/unspam')
   unspam(
     @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.unspam(userId, thingId);
+    return this.postCommentService.unspam(username, thingId);
   }
 
   @ApiOperation({
@@ -127,8 +127,8 @@ export class PostCommentController {
   @Post('/:thing/remove')
   disapprove(
     @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.disApprove(userId, thingId);
+    return this.postCommentService.disApprove(username, thingId);
   }
 }

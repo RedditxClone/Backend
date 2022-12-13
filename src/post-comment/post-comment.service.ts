@@ -320,7 +320,7 @@ export class PostCommentService {
     }
 
     await this.postCommentModel.findByIdAndUpdate(thingId, {
-      spammedBy: moderatorId,
+      spammedBy: moderatorUsername,
       spammedAt: Date.now(),
     });
 
@@ -362,7 +362,7 @@ export class PostCommentService {
     }
 
     await this.postCommentModel.findByIdAndUpdate(thingId, {
-      removedBy: userId,
+      removedBy: modUsername,
       removedAt: Date.now(),
     });
 
