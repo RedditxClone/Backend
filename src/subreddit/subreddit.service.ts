@@ -377,7 +377,9 @@ export class SubredditService {
     });
 
     if (!moderator) {
-      throw new UnauthorizedException('you are not an moderator');
+      throw new UnauthorizedException(
+        'you are not an moderator or wrong subreddit id',
+      );
     }
   }
 

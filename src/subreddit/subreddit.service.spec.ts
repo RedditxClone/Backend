@@ -6,6 +6,14 @@ import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
 import mongoose, { Types } from 'mongoose';
 
+import { BlockSchema } from '../block/block.schema';
+import { CommentSchema } from '../comment/comment.schema';
+import { FollowSchema } from '../follow/follow.schema';
+import { HideSchema } from '../post/hide.schema';
+import { PostSchema } from '../post/post.schema';
+import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserSchema } from '../user/user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
@@ -13,6 +21,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -75,11 +84,33 @@ describe('SubredditService', () => {
         rootMongooseTestModule(),
         ImagesHandlerModule,
         MongooseModule.forFeature([
+          {
+            name: 'PostComment',
+            schema: PostCommentSchema,
+            discriminators: [
+              {
+                name: 'Post',
+                schema: PostSchema,
+              },
+              {
+                name: 'Comment',
+                schema: CommentSchema,
+              },
+            ],
+          },
+          { name: 'Follow', schema: FollowSchema },
+          { name: 'Block', schema: BlockSchema },
+          { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'User', schema: UserSchema },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
+          },
         ]),
       ],
-      providers: [SubredditService, ApiFeaturesService],
+      providers: [SubredditService, ApiFeaturesService, PostCommentService],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
     subredditDocument = await subredditService.create(subredditDefault, userId);
@@ -422,6 +453,94 @@ describe('SubredditService', () => {
     });
   });
 
+  describe('get subreddits', () => {
+    const limit = undefined;
+    const page = undefined;
+    const sort = undefined;
+    let sr;
+    beforeAll(async () => {
+      sr = await subredditService.create(
+        {
+          name: 'sr',
+          over18: true,
+          type: 'ty',
+        },
+        userId,
+      );
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getUnModeratedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getUnModeratedThings(
+          sr._id,
+          sr._id,
+          limit,
+          page,
+          sort,
+        ),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getUnModeratedThings(
+          userId,
+          userId,
+          limit,
+          page,
+          sort,
+        ),
+      ).rejects.toThrow('wrong');
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getSpammedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getSpammedThings(sr._id, sr._id, limit, page, sort),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getSpammedThings(userId, userId, limit, page, sort),
+      ).rejects.toThrow('wrong');
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getEditedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getEditedThings(sr._id, sr._id, limit, page, sort),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getEditedThings(userId, userId, limit, page, sort),
+      ).rejects.toThrow('wrong');
+    });
+  });
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);
