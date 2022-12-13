@@ -107,7 +107,10 @@ export class PostCommentService {
 
     this.checkIfValidFlairId(dto.flair, thing.subredditId.flairList);
 
-    const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
+    const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, {
+      ...dto,
+      editedAt: Date.now(),
+    });
 
     if (!updatedThing) {
       throw new NotFoundException(`id : ${id} not found`);
