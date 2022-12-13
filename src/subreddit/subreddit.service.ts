@@ -365,4 +365,13 @@ export class SubredditService {
       moderators: userId,
     });
   }
+
+  async checkIfModerator(subredditId: Types.ObjectId, userId: Types.ObjectId) {
+    const moderator = await this.subredditModel.exists({
+      moderators: userId,
+      _id: subredditId,
+    });
+
+    return Boolean(moderator);
+  }
 }
