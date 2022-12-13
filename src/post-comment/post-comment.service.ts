@@ -9,6 +9,7 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
+import { SubredditService } from '../subreddit/subreddit.service';
 import type { Vote } from '../vote/vote.schema';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
@@ -21,6 +22,7 @@ export class PostCommentService {
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
+    private readonly subredditService: SubredditService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -269,4 +271,79 @@ export class PostCommentService {
           select: 'name',
         },
       ]);
+
+  private async getThingIModerate(
+    moderatorId: Types.ObjectId,
+    thingId: Types.ObjectId,
+  ) {
+    return this.postCommentModel.aggregate([
+      {
+        $match: {
+          $expr: {
+            $and: [{ isDeleted: false }, { $eq: ['$_id', thingId] }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'subreddits',
+          as: 'subreddit',
+          localField: 'subredditId',
+          foreignField: '_id',
+        },
+      },
+      {
+        $unwind: '$subreddit',
+      },
+      {
+        $match: {
+          $expr: {
+            $in: [moderatorId, '$subreddit.moderators'],
+          },
+        },
+      },
+    ]);
+  }
+
+  async spam(moderatorId: Types.ObjectId, thingId: Types.ObjectId) {
+    const [thing] = await this.getThingIModerate(moderatorId, thingId);
+
+    if (!thing) {
+      throw new NotFoundException(
+        'either the post not found or you are not in the list of the post subreddit moderators',
+      );
+    }
+
+    if (thing.spammedBy !== null) {
+      throw new BadRequestException(`${thing.type} is already spammed`);
+    }
+
+    await this.postCommentModel.findByIdAndUpdate(thingId, {
+      spammedBy: moderatorId,
+      spammedAt: Date.now(),
+    });
+
+    return { status: 'success' };
+  }
+
+  async unspam(moderatorId: Types.ObjectId, thingId: Types.ObjectId) {
+    const [thing] = await this.getThingIModerate(moderatorId, thingId);
+
+    if (!thing) {
+      throw new NotFoundException(
+        'either the post not found or you are not in the list of the post subreddit moderators',
+      );
+    }
+
+    if (thing.spammedBy !== null) {
+      throw new BadRequestException('spam is already removed');
+    }
+
+    await this.postCommentModel.findByIdAndUpdate(thingId, {
+      spammedBy: null,
+      spammedAt: null,
+    });
+
+    return { status: 'success' };
+  }
 }

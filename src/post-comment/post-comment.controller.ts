@@ -76,4 +76,19 @@ export class PostCommentController {
   ) {
     return this.postCommentService.unvote(thingId, userId);
   }
+
+  @ApiOperation({
+    description: 'spam post or comment',
+  })
+  @ApiCreatedResponse({ description: 'spammed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:thing/spam')
+  spam(
+    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postCommentService.spam(userId, thingId);
+  }
 }
