@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -22,8 +21,12 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
-import { CreateMessageDto, MessageReplyDto } from './dto';
-import { GetMessagesDto } from './dto/get-message.dto';
+import {
+  CreateMessageDto,
+  MessageIdListDto,
+  MessageReplyDto,
+  ModifiedCountDto,
+} from './dto';
 import { MessageReturnDto } from './dto/message-return.dto';
 import { MessageService } from './message.service';
 
@@ -106,6 +109,48 @@ export class MessageController {
     return { status: 'success' };
   }
 
+  @ApiCreatedResponse({
+    description: 'The messages have been marked successfully',
+    type: ModifiedCountDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiOperation({ description: 'mark specific message as read' })
+  @Post('/mark_as_read')
+  @UseGuards(JWTUserGuard)
+  markMessagesAsRead(
+    @User('username') username: string,
+    @Body() messageIdList: MessageIdListDto,
+  ) {
+    return this.messageService.markAsRead(username, messageIdList);
+  }
+
+  @ApiCreatedResponse({
+    description: 'The message have been marked successfully',
+    type: ModifiedCountDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiOperation({ description: 'mark specific message as read' })
+  @Post('/mark_as_unread')
+  @UseGuards(JWTUserGuard)
+  markMessagesAsUnRead(
+    @User('username') username: string,
+    @Body() messageIdList: MessageIdListDto,
+  ) {
+    return this.messageService.markAsUnRead(username, messageIdList);
+  }
+
+  @ApiOkResponse({
+    description: 'The resource was returned successfully',
+    type: MessageReturnDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiNotFoundResponse({ description: 'Resource not found' })
+  @ApiOperation({ description: 'get specific message with message_id' })
+  @Get('/:message_id')
+  findOne(@Param('message_id') id: string) {
+    return this.messageService.findOne(Number(id));
+  }
+
   // @ApiOkResponse({
   //   description: 'all messages have been returned successfully',
   //   type: [MessageReturnDto],
@@ -133,91 +178,68 @@ export class MessageController {
   //   };
   // }
 
-  @ApiOkResponse({
-    description: 'all messages have been returned successfully',
-    type: [MessageReturnDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'user_id not found not found' })
-  @ApiOperation({
-    description: 'get all messages received by user with user_id',
-  })
-  @Get('/user/:user_id/received')
-  findReceivedByUser(@Param('user_id') _userId: string) {
-    // return {
-    //   status: 'success',
-    //   messages: [],
-    // };
-  }
+  // @ApiOkResponse({
+  //   description: 'all messages have been returned successfully',
+  //   type: [MessageReturnDto],
+  // })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'user_id not found not found' })
+  // @ApiOperation({
+  //   description: 'get all messages received by user with user_id',
+  // })
+  // @Get('/user/:user_id/received')
+  // findReceivedByUser(@Param('user_id') _userId: string) {
+  //   // return {
+  //   //   status: 'success',
+  //   //   messages: [],
+  //   // };
+  // }
 
-  @ApiOkResponse({
-    description: 'all messages have been returned successfully',
-    type: [MessageReturnDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiOperation({
-    description: 'get all messages sent|received by current user',
-  })
-  @ApiNotFoundResponse({ description: 'user_id not found not found' })
-  @Get('/me')
-  findAllForMe(@Query() _dto: GetMessagesDto) {
-    return this.messageService.findAll();
-  }
+  // @ApiOkResponse({
+  //   description: 'all messages have been returned successfully',
+  //   type: [MessageReturnDto],
+  // })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiOperation({
+  //   description: 'get all messages sent|received by current user',
+  // })
+  // @ApiNotFoundResponse({ description: 'user_id not found not found' })
+  // @Get('/me')
+  // findAllForMe(@Query() _dto: GetMessagesDto) {
+  //   return this.messageService.findAll();
+  // }
 
-  @ApiOkResponse({
-    description: 'all messages have been returned successfully',
-    type: [MessageReturnDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'user_id not found not found' })
-  @Get('/me/sent')
-  @ApiOperation({
-    description: 'get all messages sent by current user',
-  })
-  findAllSentByMe(@Query() _dto: GetMessagesDto) {
-    // return {
-    //   status: 'success',
-    //   messages: [],
-    // };
-  }
+  // @ApiOkResponse({
+  //   description: 'all messages have been returned successfully',
+  //   type: [MessageReturnDto],
+  // })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'user_id not found not found' })
+  // @Get('/me/sent')
+  // @ApiOperation({
+  //   description: 'get all messages sent by current user',
+  // })
+  // findAllSentByMe(@Query() _dto: GetMessagesDto) {
+  //   // return {
+  //   //   status: 'success',
+  //   //   messages: [],
+  //   // };
+  // }
 
-  @ApiOkResponse({
-    description: 'all messages have been returned successfully',
-    type: [MessageReturnDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'user_id not found not found' })
-  @ApiOperation({
-    description: 'get all messages received by current user',
-  })
-  @Get('/me/received')
-  findReceivedByMe(@Query() _dto: GetMessagesDto) {
-    // return {
-    //   status: 'success',
-    //   messages: [],
-    // };
-  }
-
-  @ApiCreatedResponse({
-    description: 'The message has been marked successfully',
-    type: [MessageReturnDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiOperation({ description: 'mark specific message as read' })
-  @Post('/:message_id/mark_as_read')
-  makeMessagesAsRead(@Param('message_id') _messageId: string) {
-    return { status: 'success' };
-  }
-
-  @ApiOkResponse({
-    description: 'The resource was returned successfully',
-    type: MessageReturnDto,
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiOperation({ description: 'get specific message with message_id' })
-  @Get('/:message_id')
-  findOne(@Param('message_id') id: string) {
-    return this.messageService.findOne(Number(id));
-  }
+  // @ApiOkResponse({
+  //   description: 'all messages have been returned successfully',
+  //   type: [MessageReturnDto],
+  // })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'user_id not found not found' })
+  // @ApiOperation({
+  //   description: 'get all messages received by current user',
+  // })
+  // @Get('/me/received')
+  // findReceivedByMe(@Query() _dto: GetMessagesDto) {
+  //   // return {
+  //   //   status: 'success',
+  //   //   messages: [],
+  //   // };
+  // }
 }

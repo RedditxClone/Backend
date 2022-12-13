@@ -11,9 +11,10 @@ import type { UserDocument } from 'user/user.schema';
 
 import { BlockService } from '../block/block.service';
 import { UserService } from '../user/user.service';
-import type { MessageReplyDto } from './dto';
+import type { MessageReplyDto, ModifiedCountDto } from './dto';
 import { MessageReturnDto } from './dto';
 import type { CreateMessageDto } from './dto/create-message.dto';
+import type { MessageIdListDto } from './dto/message-id-list.dto';
 import type { Message, MessageDocument } from './message.schema';
 
 @Injectable()
@@ -136,6 +137,32 @@ export class MessageService {
     }
 
     return { status: 'success' };
+  }
+
+  async markAsRead(
+    username: string,
+    messageIdList: MessageIdListDto,
+  ): Promise<ModifiedCountDto> {
+    const { messages } = messageIdList;
+    const res = await this.messageModel.updateMany(
+      { destName: username, isRead: false, _id: { $in: messages } },
+      { isRead: true },
+    );
+
+    return { modifiedCount: res.modifiedCount };
+  }
+
+  async markAsUnRead(
+    username: string,
+    messageIdList: MessageIdListDto,
+  ): Promise<ModifiedCountDto> {
+    const { messages } = messageIdList;
+    const res = await this.messageModel.updateMany(
+      { destName: username, isRead: true, _id: { $in: messages } },
+      { isRead: false },
+    );
+
+    return { modifiedCount: res.modifiedCount };
   }
 
   findAll() {
