@@ -376,15 +376,20 @@ export class SubredditService {
       _id: subredditId,
     });
 
-    return Boolean(moderator);
+    if (!moderator) {
+      throw new UnauthorizedException('you are not an moderator');
+    }
   }
 
   async getUnModeratedThings(
     subredditId: Types.ObjectId,
-    limit: number,
-    page: number,
-    sort: string,
+    userId: Types.ObjectId,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
   ) {
+    await this.checkIfModerator(subredditId, userId);
+
     return this.postCommentService.getUnModeratedThingsForSubreddit(
       subredditId,
       limit,
@@ -395,10 +400,13 @@ export class SubredditService {
 
   async getSpammedThings(
     subredditId: Types.ObjectId,
-    limit: number,
-    page: number,
-    sort: string,
+    userId: Types.ObjectId,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
   ) {
+    await this.checkIfModerator(subredditId, userId);
+
     return this.postCommentService.getSpammedThingsForSubreddit(
       subredditId,
       limit,
@@ -409,10 +417,13 @@ export class SubredditService {
 
   async getEditedThings(
     subredditId: Types.ObjectId,
-    limit: number,
-    page: number,
-    sort: string,
+    userId: Types.ObjectId,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
   ) {
+    await this.checkIfModerator(subredditId, userId);
+
     return this.postCommentService.getEditedThingsForSubreddit(
       subredditId,
       limit,

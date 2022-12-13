@@ -329,4 +329,24 @@ export class SubredditController {
   getSubredditsUserModerate(@User('_id') userId) {
     return this.subredditService.subredditIModerate(userId);
   }
+
+  @Get('/:subreddit/unmoderated')
+  @UseGuards(JWTUserGuard)
+  unmoderated(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.getUnModeratedThings(
+      subredditId,
+      userId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  // @G
 }

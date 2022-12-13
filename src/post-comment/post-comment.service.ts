@@ -363,9 +363,9 @@ export class PostCommentService {
 
   async getUnModeratedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number,
-    page: number,
-    sort: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
@@ -376,9 +376,9 @@ export class PostCommentService {
 
   async getSpammedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number,
-    page: number,
-    sort: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
@@ -393,9 +393,9 @@ export class PostCommentService {
 
   async getEditedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number,
-    page: number,
-    sort: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
