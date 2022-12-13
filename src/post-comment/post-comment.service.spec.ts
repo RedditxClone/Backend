@@ -309,7 +309,7 @@ describe('PostCommentService', () => {
     });
   });
 
-  describe('spam', () => {
+  describe('spam/remove', () => {
     let post: Post & { _id: Types.ObjectId };
     let comment: Comment & { _id: Types.ObjectId };
     // let userId: Types.ObjectId;
@@ -328,29 +328,51 @@ describe('PostCommentService', () => {
         text: 'top level comment',
       });
     });
-    it('must spam post successfully', async () => {
-      const res = await service.spam(userSR, post._id);
-      expect(res).toEqual({ status: 'success' });
+    describe('spam', () => {
+      it('must spam post successfully', async () => {
+        const res = await service.spam(userSR, post._id);
+        expect(res).toEqual({ status: 'success' });
+      });
+      it('must spam comment successfully', async () => {
+        const res = await service.spam(userSR, comment._id);
+        expect(res).toEqual({ status: 'success' });
+      });
+      it('must throw errror because already spammed', async () => {
+        await expect(service.spam(userSR, post._id)).rejects.toThrow('spammed');
+      });
+      it('must throw error because not mod', async () => {
+        await expect(
+          service.spam(new Types.ObjectId(32), post._id),
+        ).rejects.toThrow('moderator');
+      });
+      it('must unspam post successfully', async () => {
+        const res = await service.unspam(userSR, post._id);
+        expect(res).toEqual({ status: 'success' });
+      });
+      it('must unspam comment successfully', async () => {
+        const res = await service.unspam(userSR, comment._id);
+        expect(res).toEqual({ status: 'success' });
+      });
     });
-    it('must spam comment successfully', async () => {
-      const res = await service.spam(userSR, comment._id);
-      expect(res).toEqual({ status: 'success' });
-    });
-    it('must throw errror because already spammed', async () => {
-      await expect(service.spam(userSR, post._id)).rejects.toThrow('spammed');
-    });
-    it('must throw error because not mod', async () => {
-      await expect(
-        service.spam(new Types.ObjectId(32), post._id),
-      ).rejects.toThrow('moderator');
-    });
-    it('must unspam post successfully', async () => {
-      const res = await service.unspam(userSR, post._id);
-      expect(res).toEqual({ status: 'success' });
-    });
-    it('must unspam comment successfully', async () => {
-      const res = await service.unspam(userSR, comment._id);
-      expect(res).toEqual({ status: 'success' });
+    describe('remove', () => {
+      it('must remove post successfully', async () => {
+        const res = await service.disApprove(userSR, post._id);
+        expect(res).toEqual({ status: 'success' });
+      });
+      it('must remove comment successfully', async () => {
+        const res = await service.disApprove(userSR, comment._id);
+        expect(res).toEqual({ status: 'success' });
+      });
+      it('must throw errror because already removed', async () => {
+        await expect(service.disApprove(userSR, post._id)).rejects.toThrow(
+          'removed',
+        );
+      });
+      it('must throw error because not mod', async () => {
+        await expect(
+          service.disApprove(new Types.ObjectId(32), post._id),
+        ).rejects.toThrow('moderator');
+      });
     });
   });
   afterAll(async () => {
