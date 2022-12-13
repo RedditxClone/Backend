@@ -15,6 +15,7 @@ import type { Vote } from '../vote/vote.schema';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
+import { ThingFetch } from './post-comment.utils';
 @Injectable()
 export class PostCommentService {
   constructor(
@@ -372,14 +373,16 @@ export class PostCommentService {
     filter: any,
     paginationParameters: any,
   ) {
-    const query = this.postCommentModel.find({
-      subredditId,
-      ...filter,
-    });
+    const fetcher = new ThingFetch(undefined);
+    const { limit, page } = paginationParameters;
 
-    return this.featureService.processQuery(query, paginationParameters, {
-      pagination: true,
-    });
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificFilter({ ...filter, subredditId }),
+      ...fetcher.getPaginated(limit, page),
+      ...fetcher.userInfo(),
+      ...fetcher.getPostProject(),
+    ]);
   }
 
   async getUnModeratedThingsForSubreddit(
@@ -390,7 +393,7 @@ export class PostCommentService {
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
-      { approvedBy: null, removedBy: null, isDeleted: false },
+      { approvedBy: null, removedBy: null, spammedBy: null },
       { limit, page, sort },
     );
   }

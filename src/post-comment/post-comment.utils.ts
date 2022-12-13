@@ -187,6 +187,7 @@ export class ThingFetch {
     ];
   }
 
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   getPaginated(page = 1, limit = 10) {
     return [
       {
@@ -215,7 +216,14 @@ export class ThingFetch {
           publishedDate: 1,
           flair: 1,
           spoiler: 1,
+          approvedBy: 1,
+          approvedAt: 1,
+          isEdited: 1,
+          removedBy: 1,
+          removedAt: 1,
+          editCheckedBy: 1,
           nsfw: 1,
+          visited: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
@@ -291,6 +299,14 @@ export class ThingFetch {
     return [
       {
         $match: { userId: this.userId },
+      },
+    ];
+  }
+
+  matchForSpecificFilter(filter: any) {
+    return [
+      {
+        $match: filter,
       },
     ];
   }
