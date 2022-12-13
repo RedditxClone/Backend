@@ -133,8 +133,8 @@ export class Subreddit {
   @Prop({ default: [] })
   flairList: Flair[];
 
-  @Prop({ default: [], ref: 'User' })
-  moderators: Types.ObjectId[];
+  @Prop({ default: [] })
+  moderators: string[];
 
   @Prop()
   icon: string;

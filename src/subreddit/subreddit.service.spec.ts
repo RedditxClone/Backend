@@ -35,8 +35,9 @@ describe('SubredditService', () => {
   let subredditDocument: SubredditDocument;
 
   let userId;
-  let userIdNewModerator;
   let userIdNewAskToJoin;
+  let username;
+  let usernameNewModerator;
   let ruleId1;
   let ruleId2;
 
@@ -112,9 +113,13 @@ describe('SubredditService', () => {
     userData.username = 'kamal';
     const u3 = await userService.createUser(userData);
     userId = u1._id;
-    userIdNewModerator = u2._id;
     userIdNewAskToJoin = u3._id;
-    subredditDocument = await subredditService.create(subredditDefault, userId);
+    username = u1.username;
+    usernameNewModerator = u2.username;
+    subredditDocument = await subredditService.create(
+      subredditDefault,
+      username,
+    );
     id = subredditDocument._id.toString();
   });
 
@@ -123,7 +128,7 @@ describe('SubredditService', () => {
   });
   describe('create', () => {
     it('should create subreddit successfully', async () => {
-      const subreddit = await subredditService.create(subreddit1, userId);
+      const subreddit = await subredditService.create(subreddit1, username);
       expect(subreddit).toEqual(
         expect.objectContaining({
           name: subreddit1.name,
@@ -368,7 +373,7 @@ describe('SubredditService', () => {
     it('should add cateogries successfully', async () => {
       const res = await subredditService.addSubredditCategories(
         subredditDocument._id,
-        userId,
+        username,
         ['sport', 'news'],
       );
       expect(res).toEqual({ status: 'success' });
@@ -377,7 +382,7 @@ describe('SubredditService', () => {
     it('should add cateogries successfully', async () => {
       await subredditService.addSubredditCategories(
         subredditDocument._id,
-        userId,
+        username,
         ['finance', 'news'],
       );
       const sr = await subredditService.findSubreddit(subredditDocument._id);
@@ -387,9 +392,11 @@ describe('SubredditService', () => {
 
     it('should throw error', async () => {
       await expect(
-        subredditService.addSubredditCategories(subredditDocument._id, userId, [
-          'sport',
-        ]),
+        subredditService.addSubredditCategories(
+          subredditDocument._id,
+          username,
+          ['sport'],
+        ),
       ).rejects.toThrowError();
     });
   });
@@ -411,19 +418,19 @@ describe('SubredditService', () => {
   describe('add new moderator', () => {
     it('should add moderator successfully', async () => {
       const res = await subredditService.addNewModerator(
-        userId,
-        userIdNewModerator,
+        username,
+        usernameNewModerator,
         subredditDocument._id,
       );
       const sr = await subredditService.findSubreddit(subredditDocument._id);
       expect(res).toEqual({ status: 'success' });
-      expect(sr.moderators).toEqual([userId, userIdNewModerator]);
+      expect(sr.moderators).toEqual([username, usernameNewModerator]);
     });
     it('should return unauth error', async () => {
       await expect(
         subredditService.addNewModerator(
-          new Types.ObjectId(3),
-          userIdNewModerator,
+          'not_exist_user',
+          usernameNewModerator,
           subredditDocument._id,
         ),
       ).rejects.toThrowError('Unauthorized');
@@ -431,8 +438,8 @@ describe('SubredditService', () => {
     it('should return you are already a moderator', async () => {
       await expect(
         subredditService.addNewModerator(
-          userId,
-          userIdNewModerator,
+          username,
+          usernameNewModerator,
           subredditDocument._id,
         ),
       ).rejects.toThrowError('You are already a moderator in that subreddit');
@@ -441,15 +448,13 @@ describe('SubredditService', () => {
 
   describe('get subreddits I moderate', () => {
     it('should get subreddits successfully', async () => {
-      const res = await subredditService.subredditIModerate(userId);
+      const res = await subredditService.subredditIModerate(username);
       expect(res.length).toEqual(2);
       expect(res[0]._id).toEqual(subredditDocument._id);
     });
 
     it('should return empty array', async () => {
-      const res = await subredditService.subredditIModerate(
-        new Types.ObjectId(91),
-      );
+      const res = await subredditService.subredditIModerate('hf91');
       expect(res.length).toEqual(0);
     });
   });
@@ -486,7 +491,6 @@ describe('SubredditService', () => {
 
   describe('is in a subreddit', () => {
     it('should be part of that subreddit', async () => {
-      // console.log(userId, ' ', typeof userId);
       const res = await subredditService.isJoined(
         userId,
         subredditDocument._id,
@@ -506,7 +510,7 @@ describe('SubredditService', () => {
   describe('is a moderator in subreddit', () => {
     it('should be part of that subreddit', async () => {
       const res = await subredditService.isModerator(
-        userId,
+        username,
         subredditDocument._id,
       );
       expect(res).toBe(true);
@@ -514,7 +518,7 @@ describe('SubredditService', () => {
 
     it('should not be in that subreddit', async () => {
       const res = await subredditService.isModerator(
-        userId,
+        username,
         new Types.ObjectId(20),
       );
       expect(res).toBe(false);
@@ -525,7 +529,7 @@ describe('SubredditService', () => {
     it('should add rule successfully', async () => {
       const res1 = await subredditService.addRule(
         subredditDocument._id,
-        userId,
+        username,
         rule,
       );
       expect(res1).toEqual(expect.objectContaining(rule));
@@ -533,7 +537,7 @@ describe('SubredditService', () => {
       rule.description = 'test';
       const res2 = await subredditService.addRule(
         subredditDocument._id,
-        userId,
+        username,
         rule,
       );
       expect(res2).toEqual(expect.objectContaining(rule));
@@ -541,7 +545,7 @@ describe('SubredditService', () => {
     });
     it('should throw error', async () => {
       await expect(
-        subredditService.addRule(new Types.ObjectId(1431), userId, rule),
+        subredditService.addRule(new Types.ObjectId(1431), username, rule),
       ).rejects.toThrowError();
     });
   });
@@ -556,7 +560,7 @@ describe('SubredditService', () => {
       await subredditService.updateRule(
         subredditDocument._id,
         ruleId2,
-        userId,
+        username,
         updateObject,
       );
 
@@ -577,7 +581,7 @@ describe('SubredditService', () => {
         subredditService.updateRule(
           new Types.ObjectId(1431),
           ruleId1,
-          userId,
+          username,
           rule,
         ),
       ).rejects.toThrowError();
@@ -586,7 +590,11 @@ describe('SubredditService', () => {
 
   describe('delete subreddit rule', () => {
     it('should delete rule successfully', async () => {
-      await subredditService.deleteRule(subredditDocument._id, ruleId2, userId);
+      await subredditService.deleteRule(
+        subredditDocument._id,
+        ruleId2,
+        username,
+      );
 
       const { rules } = await subredditService.findSubreddit(
         subredditDocument._id,
@@ -600,7 +608,7 @@ describe('SubredditService', () => {
         subredditService.deleteRule(
           subredditDocument._id,
           ruleId1,
-          new Types.ObjectId(413),
+          '5y198yhdwq',
         ),
       ).rejects.toThrowError();
     });
@@ -625,7 +633,7 @@ describe('SubredditService', () => {
     it('should return users successfully', async () => {
       const res = await subredditService.getUsersAskingToJoinSubreddit(
         subredditDocument._id,
-        userId,
+        username,
       );
 
       expect(res.length).toEqual(1);
@@ -642,7 +650,7 @@ describe('SubredditService', () => {
     it('should return users successfully', async () => {
       await subredditService.acceptToJoinSr(
         subredditDocument._id,
-        userId,
+        username,
         userIdNewAskToJoin,
       );
       expect(
@@ -655,7 +663,7 @@ describe('SubredditService', () => {
       expect(
         await subredditService.getUsersAskingToJoinSubreddit(
           subredditDocument._id,
-          userId,
+          username,
         ),
       ).toEqual([]);
     });
@@ -664,7 +672,7 @@ describe('SubredditService', () => {
       await expect(
         subredditService.acceptToJoinSr(
           subredditDocument._id,
-          userId,
+          username,
           userIdNewAskToJoin,
         ),
       ).rejects.toThrowError();
@@ -672,7 +680,7 @@ describe('SubredditService', () => {
       await expect(
         subredditService.acceptToJoinSr(
           new Types.ObjectId(186),
-          userId,
+          username,
           userIdNewAskToJoin,
         ),
       ).rejects.toThrowError();
@@ -680,7 +688,7 @@ describe('SubredditService', () => {
       await expect(
         subredditService.acceptToJoinSr(
           subredditDocument._id,
-          new Types.ObjectId(186),
+          'hfdioa33',
           userIdNewAskToJoin,
         ),
       ).rejects.toThrowError();

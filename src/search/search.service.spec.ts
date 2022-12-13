@@ -26,7 +26,6 @@ describe('SearchService', () => {
   let searchService: SearchService;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
-  let id3: Types.ObjectId;
   let postId: Types.ObjectId;
   let commentId: Types.ObjectId;
   let subredditId1: Types.ObjectId;
@@ -96,11 +95,16 @@ describe('SearchService', () => {
     id1 = user1._id;
     const user2 = await userService.createUser(user2Data);
     id2 = user2._id;
-    const user3 = await userService.createUser(user3Data);
-    id3 = user3._id;
+    await userService.createUser(user3Data);
 
-    const subredditDocument1 = await subredditService.create(subreddit1, id1);
-    const subredditDocument2 = await subredditService.create(subreddit2, id3);
+    const subredditDocument1 = await subredditService.create(
+      subreddit1,
+      user1.username,
+    );
+    const subredditDocument2 = await subredditService.create(
+      subreddit2,
+      user2.username,
+    );
     subredditId1 = subredditDocument1._id;
     subredditId2 = subredditDocument2._id;
 
