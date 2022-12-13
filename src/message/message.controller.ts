@@ -21,6 +21,7 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreateMessageDto,
   MessageIdListDto,
@@ -75,7 +76,7 @@ export class MessageController {
     @Body() messageReplyDto: MessageReplyDto,
     @User('username') authorName: string,
     @User('_id') authorId: Types.ObjectId,
-    @Param('message_id') messageId: Types.ObjectId,
+    @Param('message_id', ParseObjectIdPipe) messageId: Types.ObjectId,
   ): Promise<MessageReturnDto> {
     return this.messageService.replyToPrivateMessage(
       messageReplyDto,
@@ -95,7 +96,7 @@ export class MessageController {
   @Delete('/:message_id')
   remove(
     @User('username') authorName: string,
-    @Param('message_id') messageId: Types.ObjectId,
+    @Param('message_id', ParseObjectIdPipe) messageId: Types.ObjectId,
   ) {
     return this.messageService.delete(authorName, messageId);
   }
@@ -105,7 +106,7 @@ export class MessageController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiOperation({ description: 'spam a message' })
   @Post('/:message_id/spam')
-  spamMessage(@Param('message_id') _messageId: string) {
+  spamMessage(@Param('message_id', ParseObjectIdPipe) _messageId: string) {
     return { status: 'success' };
   }
 
