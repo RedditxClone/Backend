@@ -295,6 +295,16 @@ export class SubredditService {
     );
   }
 
+  private modifiedCountResponse(modifiedCount, message?) {
+    if (modifiedCount === 0) {
+      throw new BadRequestException(message);
+    }
+
+    return {
+      status: 'success',
+    };
+  }
+
   async addNewModerator(
     moderatorId: Types.ObjectId,
     newModuratorId: Types.ObjectId,
@@ -314,15 +324,10 @@ export class SubredditService {
       throw new UnauthorizedException();
     }
 
-    if (res.modifiedCount === 0) {
-      throw new BadRequestException(
-        'You are already a moderator in that subreddit',
-      );
-    }
-
-    return {
-      status: 'success',
-    };
+    return this.modifiedCountResponse(
+      res.modifiedCount,
+      'You are already a moderator in that subreddit',
+    );
   }
 
   async subredditIModerate(userId: Types.ObjectId) {
@@ -427,8 +432,8 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!res.modifiedCount) {
+      throw new NotFoundException();
     }
 
     return ruleDto;
@@ -451,15 +456,7 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException('No subreddit with such id');
-    }
-
-    if (!res.modifiedCount) {
-      throw new NotFoundException('no rule with such id');
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async updateRule(
@@ -492,11 +489,7 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException();
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async askToJoinSr(subreddit: Types.ObjectId, userId: Types.ObjectId) {
@@ -511,11 +504,7 @@ export class SubredditService {
       },
     );
 
-    if (res.modifiedCount === 0) {
-      throw new BadRequestException();
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async getUsersAskingToJoinSubreddit(
@@ -587,6 +576,8 @@ export class SubredditService {
     if (!res.modifiedCount) {
       throw new BadRequestException("User didn't send request to join the sr");
     }
+
+    return { status: 'success' };
   }
 
   async acceptToJoinSr(
@@ -606,5 +597,99 @@ export class SubredditService {
     });
 
     return { status: 'success' };
+  }
+
+  private getUserInNestedArrayAggregation(
+    subredditId: Types.ObjectId,
+    userId: Types.ObjectId,
+    fieldName: string,
+  ) {
+    const prjectField = {};
+    prjectField[fieldName] = 1;
+
+    return this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [{ _id: subredditId }, { moderators: userId }],
+        },
+      },
+      { $project: prjectField },
+      { $unwind: `${fieldName}` },
+      {
+        $lookup: {
+          from: 'users',
+          localField: `${fieldName}`,
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: 'user',
+      },
+      {
+        $project: {
+          _id: 1,
+          username: 1,
+          profilePhoto: 1,
+          displayName: 1,
+          about: 1,
+          date: 1,
+        },
+      },
+    ]);
+  }
+
+  async muteUser(
+    subredditId: Types.ObjectId,
+    moderatorId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [
+          { _id: subredditId },
+          { moderators: moderatorId },
+          { moderators: { $ne: userId } },
+        ],
+      },
+      {
+        $push: {
+          mutedUsers: {
+            userId,
+          },
+        },
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
+  }
+
+  async unMuteUser(
+    subredditId: Types.ObjectId,
+    moderatorId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [{ _id: subredditId }, { moderators: moderatorId }],
+      },
+      {
+        $pull: {
+          mutedUsers: {
+            userId,
+          },
+        },
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
+  }
+
+  async getMutedUsers(subredditId: Types.ObjectId, userId: Types.ObjectId) {
+    return this.getUserInNestedArrayAggregation(
+      subredditId,
+      userId,
+      'mutedUsers',
+    );
   }
 }

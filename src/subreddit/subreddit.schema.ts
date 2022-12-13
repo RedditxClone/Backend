@@ -17,6 +17,14 @@ export class Flair {
   textColor: string;
 }
 
+class UserDate {
+  @Prop({ required: true })
+  username: Types.ObjectId;
+
+  @Prop({ default: Date.now() })
+  date: Date;
+}
+
 export class Rule {
   @Prop({ required: true })
   rule: string;
@@ -150,6 +158,15 @@ export class Subreddit {
 
   @Prop({ default: [] })
   joinList: Types.ObjectId[];
+
+  @Prop({ default: [] })
+  panedUsers: UserDate[];
+
+  @Prop({ default: [] })
+  mutedUsers: UserDate[];
+
+  @Prop({ default: [] })
+  approvedUsers: UserDate[];
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);
