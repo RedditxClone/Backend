@@ -17,10 +17,25 @@ export class Flair {
   textColor: string;
 }
 
-// class Category {
-//   @Prop({ unique: true })
-//   data: string;
-// }
+export class Rule {
+  @Prop({ required: true })
+  rule: string;
+
+  @Prop({ required: true, enum: [0, 1, 2] })
+  to: number;
+
+  @Prop()
+  reason?: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop({ default: Date.now() })
+  createdDate?: Date;
+
+  @Prop({ required: true })
+  _id: Types.ObjectId;
+}
 
 @Schema()
 export class Subreddit {
@@ -118,14 +133,23 @@ export class Subreddit {
   @Prop({ default: [] })
   flairList: Flair[];
 
-  @Prop({ default: [], ref: 'User' })
-  moderators: Types.ObjectId[];
+  @Prop({ default: [] })
+  moderators: string[];
 
   @Prop()
   icon: string;
 
   @Prop({ default: [] })
   categories: string[];
+
+  @Prop({ default: new Date(Date.now()) })
+  createdDate: Date;
+
+  @Prop({ default: [] })
+  rules: Rule[];
+
+  @Prop({ default: [] })
+  joinList: Types.ObjectId[];
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

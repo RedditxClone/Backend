@@ -112,7 +112,7 @@ describe('PostCommentService', () => {
         over18: true,
         type: 'type',
       },
-      userSR,
+      'aref',
     );
     const { flairList } = await subredditService.createFlair(
       subreddit._id.toString(),

@@ -146,8 +146,8 @@ export class PostCommentService {
     //if moderator or the creator can remove the post
     if (
       !(
-        thing.userId.equals(userId) ||
-        thing.subredditId.moderators.includes(userId)
+        thing.userId.equals(userId)
+        // || thing.subredditId.moderators.includes(userId) // moderators works with name now
       )
     ) {
       throw new UnauthorizedException(
