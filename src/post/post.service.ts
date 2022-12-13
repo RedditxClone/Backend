@@ -159,9 +159,9 @@ export class PostService {
     ]);
   }
 
-  async approve(userId: Types.ObjectId, thingId: Types.ObjectId) {
+  async approve(modUsername: string, thingId: Types.ObjectId) {
     const [post] = await this.postCommentService.getThingIModerate(
-      userId,
+      modUsername,
       thingId,
     );
 
@@ -176,7 +176,7 @@ export class PostService {
     }
 
     await this.postModel.findByIdAndUpdate(thingId, {
-      approvedBy: userId,
+      approvedBy: modUsername,
       approvedAt: Date.now(),
     });
 
