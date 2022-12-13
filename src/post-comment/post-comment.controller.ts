@@ -115,9 +115,9 @@ export class PostCommentController {
   }
 
   @ApiOperation({
-    description: 'unspam post or comment',
+    description: 'remove post or comment',
   })
-  @ApiCreatedResponse({ description: 'unspammed successfully' })
+  @ApiCreatedResponse({ description: 'removed successfully' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
   @ApiBadRequestResponse({ description: 'invalid mongo id' })
   @ApiNotFoundResponse({

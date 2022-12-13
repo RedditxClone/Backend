@@ -348,5 +348,39 @@ export class SubredditController {
     );
   }
 
-  // @G
+  @Get('/:subreddit/spammed')
+  @UseGuards(JWTUserGuard)
+  spammed(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.getSpammedThings(
+      subredditId,
+      userId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  @Get('/:subreddit/edited')
+  @UseGuards(JWTUserGuard)
+  edited(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.getEditedThings(
+      subredditId,
+      userId,
+      limit,
+      page,
+      sort,
+    );
+  }
 }
