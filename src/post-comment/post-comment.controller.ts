@@ -124,24 +124,6 @@ export class PostCommentController {
     description: 'wrong post id or you are not the moderator',
   })
   @UseGuards(JWTUserGuard)
-  @Post('/:thing/approve')
-  approve(
-    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
-  ) {
-    // return this.postCommentService.approve(userId, thingId);
-  }
-
-  @ApiOperation({
-    description: 'unspam post or comment',
-  })
-  @ApiCreatedResponse({ description: 'unspammed successfully' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
-  @ApiBadRequestResponse({ description: 'invalid mongo id' })
-  @ApiNotFoundResponse({
-    description: 'wrong post id or you are not the moderator',
-  })
-  @UseGuards(JWTUserGuard)
   @Post('/:thing/remove')
   disapprove(
     @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
