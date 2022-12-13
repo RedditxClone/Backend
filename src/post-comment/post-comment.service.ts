@@ -367,6 +367,27 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
+  async disApprove(userId: Types.ObjectId, thingId: Types.ObjectId) {
+    const [post] = await this.getThingIModerate(userId, thingId);
+
+    if (!post) {
+      throw new NotFoundException(
+        'either wrong id or you are not a moderator of the subreddit',
+      );
+    }
+
+    if (post.removedBy !== null) {
+      throw new BadRequestException('post is already removed');
+    }
+
+    await this.postCommentModel.findByIdAndUpdate(thingId, {
+      removedBy: userId,
+      removedAt: Date.now(),
+    });
+
+    return { status: 'success' };
+  }
+
   private async getCommonThingsForSubreddit(
     subredditId: Types.ObjectId,
     filter: any,
