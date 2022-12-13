@@ -110,10 +110,10 @@ export class MessageController {
   }
 
   @ApiCreatedResponse({
-    description: 'The messages have been marked successfully',
+    description: 'The messagess have been marked successfully',
     type: ModifiedCountDto,
   })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
   @ApiOperation({ description: 'mark specific message as read' })
   @Post('/mark_as_read')
   @UseGuards(JWTUserGuard)
@@ -125,10 +125,10 @@ export class MessageController {
   }
 
   @ApiCreatedResponse({
-    description: 'The message have been marked successfully',
+    description: 'The messages have been marked successfully',
     type: ModifiedCountDto,
   })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
   @ApiOperation({ description: 'mark specific message as read' })
   @Post('/mark_as_unread')
   @UseGuards(JWTUserGuard)
