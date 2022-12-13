@@ -112,7 +112,7 @@ describe('PostCommentService', () => {
         over18: true,
         type: 'type',
       },
-      'aref',
+      'usrname',
     );
     const { flairList } = await subredditService.createFlair(
       subreddit._id.toString(),
@@ -345,48 +345,50 @@ describe('PostCommentService', () => {
     });
     describe('spam', () => {
       it('must spam post successfully', async () => {
-        const res = await service.spam(userSR, post._id);
+        const res = await service.spam('usrname', post._id);
         expect(res).toEqual({ status: 'success' });
       });
       it('must spam comment successfully', async () => {
-        const res = await service.spam(userSR, comment._id);
+        const res = await service.spam('usrname', comment._id);
         expect(res).toEqual({ status: 'success' });
       });
       it('must throw errror because already spammed', async () => {
-        await expect(service.spam(userSR, post._id)).rejects.toThrow('spammed');
+        await expect(service.spam('usrname', post._id)).rejects.toThrow(
+          'spammed',
+        );
       });
       it('must throw error because not mod', async () => {
-        await expect(
-          service.spam(new Types.ObjectId(32), post._id),
-        ).rejects.toThrow('moderator');
+        await expect(service.spam('fred', post._id)).rejects.toThrow(
+          'moderator',
+        );
       });
       it('must unspam post successfully', async () => {
-        const res = await service.unspam(userSR, post._id);
+        const res = await service.unspam('usrname', post._id);
         expect(res).toEqual({ status: 'success' });
       });
       it('must unspam comment successfully', async () => {
-        const res = await service.unspam(userSR, comment._id);
+        const res = await service.unspam('usrname', comment._id);
         expect(res).toEqual({ status: 'success' });
       });
     });
     describe('remove', () => {
       it('must remove post successfully', async () => {
-        const res = await service.disApprove(userSR, post._id);
+        const res = await service.disApprove('usrname', post._id);
         expect(res).toEqual({ status: 'success' });
       });
       it('must remove comment successfully', async () => {
-        const res = await service.disApprove(userSR, comment._id);
+        const res = await service.disApprove('usrname', comment._id);
         expect(res).toEqual({ status: 'success' });
       });
       it('must throw errror because already removed', async () => {
-        await expect(service.disApprove(userSR, post._id)).rejects.toThrow(
+        await expect(service.disApprove('usrname', post._id)).rejects.toThrow(
           'removed',
         );
       });
       it('must throw error because not mod', async () => {
-        await expect(
-          service.disApprove(new Types.ObjectId(32), post._id),
-        ).rejects.toThrow('moderator');
+        await expect(service.disApprove('fred', post._id)).rejects.toThrow(
+          'moderator',
+        );
       });
     });
   });
@@ -423,7 +425,7 @@ describe('PostCommentService', () => {
       expect(res.length).toEqual(2);
     });
     it('must return only the post after spamming comment', async () => {
-      await service.spam(userSR, comment._id);
+      await service.spam('usrname', comment._id);
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
         limit,
@@ -461,7 +463,7 @@ describe('PostCommentService', () => {
       expect(res[0].type).toEqual('Post');
     });
     it('must return empty array', async () => {
-      await service.spam(userSR, post._id);
+      await service.spam('usrname', post._id);
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
         limit,
