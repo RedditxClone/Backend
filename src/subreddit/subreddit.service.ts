@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
+// import { PostService } from '../post/post.service';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
@@ -20,11 +22,13 @@ import type { SubredditUser } from './subreddit-user.schema';
 @Injectable()
 export class SubredditService {
   constructor(
-    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('Subreddit')
+    private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeatureService: ApiFeaturesService,
+    private readonly postCommentService: PostCommentService,
   ) {}
 
   async create(
@@ -373,5 +377,47 @@ export class SubredditService {
     });
 
     return Boolean(moderator);
+  }
+
+  async getUnModeratedThings(
+    subredditId: Types.ObjectId,
+    limit: number,
+    page: number,
+    sort: string,
+  ) {
+    return this.postCommentService.getUnModeratedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async getSpammedThings(
+    subredditId: Types.ObjectId,
+    limit: number,
+    page: number,
+    sort: string,
+  ) {
+    return this.postCommentService.getSpammedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async getEditedThings(
+    subredditId: Types.ObjectId,
+    limit: number,
+    page: number,
+    sort: string,
+  ) {
+    return this.postCommentService.getEditedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
   }
 }

@@ -9,20 +9,19 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
-import { SubredditService } from '../subreddit/subreddit.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { Vote } from '../vote/vote.schema';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
-
 @Injectable()
 export class PostCommentService {
   constructor(
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
-    private readonly subredditService: SubredditService,
+    private readonly featureService: ApiFeaturesService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -345,5 +344,67 @@ export class PostCommentService {
     });
 
     return { status: 'success' };
+  }
+
+  private async getCommonThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    filter: any,
+    paginationParameters: any,
+  ) {
+    const query = this.postCommentModel.find({
+      subredditId,
+      ...filter,
+    });
+
+    return this.featureService.processQuery(query, paginationParameters, {
+      pagination: true,
+    });
+  }
+
+  async getUnModeratedThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    limit: number,
+    page: number,
+    sort: string,
+  ) {
+    return this.getCommonThingsForSubreddit(
+      subredditId,
+      { approvedBy: null, removedBy: null, isDeleted: false },
+      { limit, page, sort },
+    );
+  }
+
+  async getSpammedThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    limit: number,
+    page: number,
+    sort: string,
+  ) {
+    return this.getCommonThingsForSubreddit(
+      subredditId,
+      {
+        spammedBy: { $ne: null },
+        isDeleted: false,
+        removedBy: null,
+      },
+      { limit, page, sort },
+    );
+  }
+
+  async getEditedThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    limit: number,
+    page: number,
+    sort: string,
+  ) {
+    return this.getCommonThingsForSubreddit(
+      subredditId,
+      {
+        editedAt: { $ne: null },
+        isDeleted: false,
+        removedBy: null,
+      },
+      { limit, page, sort },
+    );
   }
 }
