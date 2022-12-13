@@ -39,6 +39,9 @@ export class Notification {
 
   @Prop({ default: false })
   hidden: boolean;
+
+  @Prop({ default: false })
+  read: boolean;
 }
 
 export const NotificationSchema = (() => {

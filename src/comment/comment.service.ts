@@ -76,6 +76,7 @@ export class CommentService {
         replyType,
         info.subreddit[0].name,
         info.user[0].username,
+        info.user[0]._id,
       );
     }
 

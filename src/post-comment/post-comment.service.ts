@@ -218,6 +218,7 @@ export class PostCommentService {
           thingId,
           info.type,
           info.subreddit[0].name,
+          info.subreddit[0]._id,
         );
       }
     }
