@@ -5,8 +5,8 @@ import { Types } from 'mongoose';
 export type MessageDocument = Message & Document;
 @Schema()
 export class Message {
-  @Prop({ default: null, ref: 'Message' })
-  firstMessageId: Types.ObjectId;
+  @Prop({ default: null, ref: 'Message', type: Types.ObjectId })
+  firstMessageId: Types.ObjectId | null;
 
   @Prop({ default: null, ref: 'Message' })
   parentId: Types.ObjectId;
@@ -27,7 +27,7 @@ export class Message {
   createdAt: Date;
 
   @Prop({ default: false })
-  isNew: boolean;
+  isRead: boolean;
 
   @Prop({
     enum: ['private_msg', 'comment_reply', 'post_reply'],

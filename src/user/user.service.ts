@@ -415,4 +415,16 @@ export class UserService {
       `${fieldName}`,
     );
   }
+
+  async canRecieveMessages(
+    userId: Types.ObjectId,
+    senderName?: string,
+  ): Promise<boolean> {
+    return (
+      (await this.userModel.count({
+        _id: userId,
+        $or: [{ acceptPms: 'everyone' }, { whitelisted: [senderName] }],
+      })) > 0
+    );
+  }
 }
