@@ -329,4 +329,12 @@ export class SubredditController {
   getSubredditsUserModerate(@User('_id') userId) {
     return this.subredditService.subredditIModerate(userId);
   }
+
+  @ApiOperation({ description: 'Get subreddits the user joined' })
+  @ApiOkResponse({ description: 'The subreddits returned succesfully' })
+  @UseGuards(JWTUserGuard)
+  @Get('/join/me')
+  getSubredditsUserJoined(@User('_id') userId) {
+    return this.subredditService.subredditsIJoined(userId);
+  }
 }

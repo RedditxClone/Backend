@@ -374,4 +374,24 @@ export class SubredditService {
 
     return Boolean(moderator);
   }
+
+  async subredditsIJoined(userId: Types.ObjectId) {
+    const subreddits = await this.userSubredditModel.aggregate([
+      {
+        $match: {
+          userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'subreddits',
+          localField: 'subredditId',
+          foreignField: '_id',
+          as: 'subreddit',
+        },
+      },
+    ]);
+
+    return subreddits.map((v) => v.subreddit[0]);
+  }
 }
