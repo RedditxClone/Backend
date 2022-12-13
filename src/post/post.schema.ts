@@ -38,8 +38,8 @@ export class Post extends PostComment {
   @Prop({ default: false })
   visited: boolean;
 
-  @Prop({ ref: 'User', default: null })
-  approvedBy: Types.ObjectId;
+  @Prop({ default: null })
+  approvedBy: string;
 
   @Prop({ default: null })
   approvedAt: Date;

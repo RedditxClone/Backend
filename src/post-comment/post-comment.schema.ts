@@ -26,14 +26,14 @@ export class PostComment {
   @Prop({ ref: 'Subreddit', required: true })
   subredditId: Types.ObjectId;
 
-  @Prop({ ref: 'User', default: null })
-  spammedBy: Types.ObjectId;
+  @Prop({ default: null })
+  spammedBy: string;
 
   @Prop({ default: null })
   spammedAt: Date;
 
-  @Prop({ ref: 'User', default: null })
-  removedBy: Types.ObjectId;
+  @Prop({ default: null })
+  removedBy: string;
 
   @Prop({ default: null })
   removedAt: Date;

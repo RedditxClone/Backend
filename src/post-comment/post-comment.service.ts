@@ -276,10 +276,7 @@ export class PostCommentService {
         },
       ]);
 
-  async getThingIModerate(
-    moderatorId: Types.ObjectId,
-    thingId: Types.ObjectId,
-  ) {
+  async getThingIModerate(modUsername: string, thingId: Types.ObjectId) {
     return this.postCommentModel.aggregate([
       {
         $match: {
@@ -302,15 +299,15 @@ export class PostCommentService {
       {
         $match: {
           $expr: {
-            $in: [moderatorId, '$subreddit.moderators'],
+            $in: [modUsername, '$subreddit.moderators'],
           },
         },
       },
     ]);
   }
 
-  async spam(moderatorId: Types.ObjectId, thingId: Types.ObjectId) {
-    const [thing] = await this.getThingIModerate(moderatorId, thingId);
+  async spam(moderatorUsername: string, thingId: Types.ObjectId) {
+    const [thing] = await this.getThingIModerate(moderatorUsername, thingId);
 
     if (!thing) {
       throw new NotFoundException(
@@ -330,8 +327,8 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
-  async unspam(moderatorId: Types.ObjectId, thingId: Types.ObjectId) {
-    const [thing] = await this.getThingIModerate(moderatorId, thingId);
+  async unspam(modUsername: string, thingId: Types.ObjectId) {
+    const [thing] = await this.getThingIModerate(modUsername, thingId);
 
     if (!thing) {
       throw new NotFoundException(
@@ -351,8 +348,8 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
-  async disApprove(userId: Types.ObjectId, thingId: Types.ObjectId) {
-    const [post] = await this.getThingIModerate(userId, thingId);
+  async disApprove(modUsername: string, thingId: Types.ObjectId) {
+    const [post] = await this.getThingIModerate(modUsername, thingId);
 
     if (!post) {
       throw new NotFoundException(

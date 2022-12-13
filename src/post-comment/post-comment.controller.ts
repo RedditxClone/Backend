@@ -91,9 +91,9 @@ export class PostCommentController {
   @Post('/:thing/spam')
   spam(
     @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.spam(userId, thingId);
+    return this.postCommentService.spam(username, thingId);
   }
 
   @ApiOperation({
