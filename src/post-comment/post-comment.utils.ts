@@ -222,6 +222,7 @@ export class ThingFetch {
           removedBy: 1,
           removedAt: 1,
           editCheckedBy: 1,
+          vote: 1,
           nsfw: 1,
           type: 1,
           visited: 1,
@@ -308,6 +309,38 @@ export class ThingFetch {
     return [
       {
         $match: filter,
+      },
+    ];
+  }
+
+  matchToGetUpvoteOnly() {
+    return [
+      ...this.voteInfo(),
+      {
+        $unwind: '$vote',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$vote.isUpvote', true],
+          },
+        },
+      },
+    ];
+  }
+
+  matchToGetDownvoteOnly() {
+    return [
+      ...this.voteInfo(),
+      {
+        $unwind: 'vote',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$vote.isUpvote', false],
+          },
+        },
       },
     ];
   }

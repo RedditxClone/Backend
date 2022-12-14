@@ -221,6 +221,25 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
 
+  async getUpvoted(userId: Types.ObjectId) {
+    const fetcher = new ThingFetch(userId);
+    console.log([
+      ...fetcher.prepare(),
+      ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
   searchPostQuery = (searchPhrase: string, usersBlockedMe) =>
     this.postCommentModel
       .find({
