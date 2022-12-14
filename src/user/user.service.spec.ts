@@ -434,24 +434,23 @@ describe('UserService', () => {
 
       posts.push(post1, post2);
       user1.savedPosts = [post1._id, post2._id];
+      await user1.save();
     });
     it('should return 2 posts successfully', async () => {
       const res = await service.getSavedPosts(
         user1._id,
-        user1.savedPosts,
         new PaginationParamsDto(),
       );
-      expect(res.data.length).toEqual(2);
-      expect(res.data[0]).toEqual(
+      expect(res.length).toEqual(2);
+      expect(res[0]).toEqual(
         expect.objectContaining({
           _id: posts[0]._id,
           text: posts[0].text,
           title: posts[0].title,
           voteType: null,
-          subreddit: {
+          subredditInfo: {
             id: subreddits[0]._id,
             name: subreddits[0].name,
-            type: subreddits[0].type,
           },
           user: {
             id: user2._id,

@@ -486,7 +486,7 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(JWTUserGuard)
   @Post('/post/:post_id/save')
-  async savePost(
+  savePost(
     @Param('post_id', ParseObjectIdPipe) post_id: Types.ObjectId,
     @Req() { user },
   ) {
@@ -505,11 +505,10 @@ export class UserController {
   })
   @UseGuards(JWTUserGuard)
   @Get('/post/save')
-  async getSavedPosts(
+  getSavedPosts(
     @User('_id') userId: Types.ObjectId,
-    @User('savedPosts') savedPosts: Types.ObjectId[],
     @Query() paginationParams: PaginationParamsDto,
   ) {
-    return this.userService.getSavedPosts(userId, savedPosts, paginationParams);
+    return this.userService.getSavedPosts(userId, paginationParams);
   }
 }

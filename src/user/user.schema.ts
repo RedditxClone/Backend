@@ -149,7 +149,7 @@ export class User {
   @Prop({ default: [] })
   whitelisted: string[];
 
-  @Prop({ default: [], ref: 'PostComment' })
+  @Prop({ default: [] })
   savedPosts: Types.ObjectId[];
 
   //Miscellaneous

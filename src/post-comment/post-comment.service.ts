@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
+import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -162,153 +163,21 @@ export class PostCommentService {
     return { status: 'success', timestamp: new Date() };
   };
 
-  getSavedPosts = (userId: Types.ObjectId, savedPosts: Types.ObjectId[]) =>
-    this.postCommentModel.aggregate([
-      { $match: { _id: { $in: savedPosts }, isDeleted: false } },
-      {
-        $set: {
-          postId: { $toObjectId: '$_id' },
-          subredditId: {
-            $toObjectId: '$subredditId',
-          },
-          userId: {
-            $toObjectId: '$userId',
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'blocks',
-          as: 'block',
-          let: {
-            userId: '$userId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    {
-                      $and: [
-                        { $eq: ['$blocked', userId] },
-                        { $eq: ['$blocker', '$$userId'] },
-                      ],
-                    },
-                    {
-                      $and: [
-                        { $eq: ['$blocker', userId] },
-                        { $eq: ['$blocked', '$$userId'] },
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$block', []],
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'subreddits',
-          as: 'subreddit',
-          localField: 'subredditId',
-          foreignField: '_id',
-        },
-      },
-      {
-        $unwind: '$subreddit',
-      },
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          upvotesCount: 1,
-          images: 1,
-          postId: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          votesCount: 1,
-          flair: 1,
-          subreddit: {
-            id: '$subredditId',
-            name: '$subreddit.name',
-            type: '$subreddit.type',
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-      {
-        $unwind: '$user',
-      },
-      {
-        $lookup: {
-          from: 'votes',
-          as: 'vote',
-          let: {
-            postId: '$postId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$$postId', '$thingId'] },
-                    { $eq: ['$userId', userId] },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          subreddit: 1,
-          votesCount: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          flair: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  'downvote',
-                ],
-              },
-            ],
-          },
-          images: 1,
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
-        },
-      },
+  getSavedPosts(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterForSavedOnly(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
     ]);
+  }
 
   private async changeVotes(
     thingId: Types.ObjectId,

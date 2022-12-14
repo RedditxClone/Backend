@@ -161,7 +161,6 @@ describe('UserControllerSpec', () => {
       const id1: Types.ObjectId = new Types.ObjectId(1);
       const res: any = await userController.getSavedPosts(
         id1,
-        [id1],
         new PaginationParamsDto(),
       );
       expect(res).toEqual({

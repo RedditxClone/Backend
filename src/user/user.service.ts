@@ -427,15 +427,9 @@ export class UserService {
 
   async getSavedPosts(
     userId: Types.ObjectId,
-    savedPosts: Types.ObjectId[],
     paginationParams: PaginationParamsDto,
   ) {
-    const aggregate = this.postCommentService.getSavedPosts(userId, savedPosts);
-
-    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
-      aggregate,
-      paginationParams,
-    );
+    return this.postCommentService.getSavedPosts(userId, paginationParams);
   }
 
   uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {

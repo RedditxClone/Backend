@@ -27,6 +27,42 @@ export class ThingFetch {
     ];
   }
 
+  getMe() {
+    return [
+      {
+        $lookup: {
+          as: 'me',
+          from: 'users',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', this.userId],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: '$me',
+      },
+    ];
+  }
+
+  filterForSavedOnly() {
+    return [
+      ...this.getMe(),
+      {
+        $match: {
+          $expr: {
+            $in: ['$_id', '$me.savedPosts'],
+          },
+        },
+      },
+    ];
+  }
+
   filterOfMySRs() {
     return [
       {
