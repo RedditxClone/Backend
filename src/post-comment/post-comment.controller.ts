@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
@@ -160,7 +162,15 @@ export class PostCommentController {
 
   @UseGuards(IsUserExistGuard)
   @Get('user/:username')
-  getThingsOfUser(@Param('username') username: string, @Req() req) {
-    return this.postCommentService.getThingsOfUser(username, req._id);
+  getThingsOfUser(
+    @Param('username') username: string,
+    @Req() req,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getThingsOfUser(
+      username,
+      req._id,
+      pagination,
+    );
   }
 }

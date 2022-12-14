@@ -148,7 +148,6 @@ export class PostService {
   ) {
     const fetcher = new ThingFetch(userId);
     const { limit, sort, page } = pagination;
-    console.log(pagination);
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),

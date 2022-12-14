@@ -250,10 +250,10 @@ export class ThingFetch {
 
   getSortObject(sortType: string | undefined) {
     const sortOptions = {
-      hot: { hotValue: -1 },
-      top: { votesCount: -1 },
-      new: { publishedAt: -1 },
-      best: { bestValue: -1 },
+      hot: { hotValue: -1, _id: 1 },
+      top: { votesCount: -1, _id: 1 },
+      new: { publishedAt: -1, _id: 1 },
+      best: { bestValue: -1, _id: 1 },
     };
 
     if (!sortType || !Object.keys(sortOptions).includes(sortType)) {

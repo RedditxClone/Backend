@@ -32,7 +32,7 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { FollowService } from '../follow/follow.service';
-import { NormalizedPostDto, ReturnPostDto } from '../post/dto';
+import { ReturnPostDto } from '../post/dto';
 import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';

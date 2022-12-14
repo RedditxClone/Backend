@@ -410,8 +410,13 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
-  async getThingsOfUser(username: string, userId: Types.ObjectId | undefined) {
+  async getThingsOfUser(
+    username: string,
+    userId: Types.ObjectId | undefined,
+    pagination: PaginationParamsDto,
+  ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
@@ -423,6 +428,11 @@ export class PostCommentService {
           },
         },
       },
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.filterBlocked(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
