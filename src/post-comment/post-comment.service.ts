@@ -442,14 +442,18 @@ export class PostCommentService {
   private async getCommonThingsForSubreddit(
     subredditId: Types.ObjectId,
     filter: any,
-    paginationParameters: any,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(undefined);
-    const { limit, page } = paginationParameters;
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificFilter({ ...filter, subredditId }),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(limit, page),
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
@@ -458,22 +462,18 @@ export class PostCommentService {
 
   async getUnModeratedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
       { approvedBy: null, removedBy: null, spammedBy: null },
-      { limit, page, sort },
+      pagination,
     );
   }
 
   async getSpammedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
@@ -482,15 +482,13 @@ export class PostCommentService {
         isDeleted: false,
         removedBy: null,
       },
-      { limit, page, sort },
+      pagination,
     );
   }
 
   async getEditedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
@@ -500,7 +498,7 @@ export class PostCommentService {
         isDeleted: false,
         removedBy: null,
       },
-      { limit, page, sort },
+      pagination,
     );
   }
 }

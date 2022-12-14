@@ -27,6 +27,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards/user.guard';
@@ -473,17 +474,13 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   unmoderated(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getUnModeratedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
@@ -491,17 +488,13 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   spammed(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getSpammedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
@@ -509,17 +502,13 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   edited(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getEditedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 }

@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
+import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 // import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
@@ -388,51 +389,39 @@ export class SubredditService {
   async getUnModeratedThings(
     subredditId: Types.ObjectId,
     modUsername: string,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
       subredditId,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
   async getSpammedThings(
     subredditId: Types.ObjectId,
     modUsername: string,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getSpammedThingsForSubreddit(
       subredditId,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
   async getEditedThings(
     subredditId: Types.ObjectId,
     modUsername: string,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getEditedThingsForSubreddit(
       subredditId,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
