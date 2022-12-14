@@ -223,17 +223,22 @@ export class PostCommentService {
 
   async getUpvoted(userId: Types.ObjectId) {
     const fetcher = new ThingFetch(userId);
-    console.log([
+
+    return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetUpvoteOnly(),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
+  }
+
+  async getDownvoted(userId: Types.ObjectId) {
+    const fetcher = new ThingFetch(userId);
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.matchToGetDownvoteOnly(),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),

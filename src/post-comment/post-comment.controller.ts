@@ -27,6 +27,14 @@ export class PostCommentController {
     return this.postCommentService.getUpvoted(userId);
   }
 
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('downvoted')
+  getDownvoted(@User('_id') userId: Types.ObjectId) {
+    return this.postCommentService.getDownvoted(userId);
+  }
+
   @Post()
   create(@Body() createPostCommentDto: CreatePostCommentDto) {
     return this.postCommentService.create(createPostCommentDto);
