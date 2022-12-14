@@ -225,31 +225,8 @@ export class SubredditService {
     return 'Waiting for api features to use the sort function';
   }
 
-  async getSearchSubredditAggregation(
-    searchPhrase: string,
-    username,
-    userId,
-    page,
-    numberOfData = 50,
-  ) {
-    const pageNumber = page ?? 1;
-
-    const res = await this.subredditModel.aggregate([
-      {
-        $match: {
-          $and: [
-            {
-              $or: [
-                { name: { $regex: searchPhrase, $options: 'i' } },
-                { description: { $regex: searchPhrase, $options: 'i' } },
-              ],
-            },
-            {
-              pannedUsers: { $ne: username },
-            },
-          ],
-        },
-      },
+  private getSrCommonStages(userId, page, limit) {
+    return [
       {
         $project: {
           ...subredditSelectedFields,
@@ -282,11 +259,60 @@ export class SubredditService {
         },
       },
       {
-        $skip: (pageNumber - 1) * numberOfData,
+        $skip: ((Number(page) || 1) - 1) * Number(limit),
       },
       {
-        $limit: numberOfData,
+        $limit: Number(limit),
       },
+    ];
+  }
+
+  async getSubredditStartsWithChar(
+    searchPhrase: string,
+    username,
+    userId,
+    page = 1,
+    numberOfData = 50,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [
+            { name: new RegExp(`^${searchPhrase}`, 'i') },
+            { pannedUsers: { $ne: username } },
+          ],
+        },
+      },
+      ...this.getSrCommonStages(userId, page, numberOfData),
+    ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+  }
+
+  async getSearchSubredditAggregation(
+    searchPhrase: string,
+    username,
+    userId,
+    pageNumber = 1,
+    numberOfData = 50,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              $or: [
+                { name: { $regex: searchPhrase, $options: 'i' } },
+                { description: { $regex: searchPhrase, $options: 'i' } },
+              ],
+            },
+            {
+              pannedUsers: { $ne: username },
+            },
+          ],
+        },
+      },
+      ...this.getSrCommonStages(userId, pageNumber, numberOfData),
     ]);
 
     return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
@@ -295,11 +321,9 @@ export class SubredditService {
   getSearchFlairsAggregate(
     searchPhrase: string,
     subreddit: Types.ObjectId,
-    page,
-    numberOfData: number,
+    page = 1,
+    limit = 50,
   ) {
-    const pageNumber = page ?? 1;
-
     return this.subredditModel.aggregate([
       {
         $match: {
@@ -321,10 +345,10 @@ export class SubredditService {
         },
       },
       {
-        $skip: (pageNumber - 1) * numberOfData,
+        $skip: ((Number(page) || 1) - 1) * Number(limit),
       },
       {
-        $limit: numberOfData,
+        $limit: Number(limit),
       },
     ]);
   }

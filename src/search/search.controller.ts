@@ -13,40 +13,79 @@ export class SearchController {
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for people' })
   @Get('/peoples')
-  searchPeople(@Query('word') word, @Query('page') page, @Req() req) {
-    return this.searchService.searchPeople(word, Number(page), 10, req._id);
+  searchPeople(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() req,
+  ) {
+    return this.searchService.searchPeople(word, page, limit, req._id);
   }
 
   @ApiProperty({ description: 'search for communities' })
   @UseGuards(IsUserExistGuard)
   @Get('/communities')
-  searchCommunities(@Query('word') word, @Query('page') page, @Req() { _id }) {
-    page = Number(page);
+  searchCommunities(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() { _id },
+  ) {
+    return this.searchService.searchCommunities(word, _id, page, limit);
+  }
 
-    return this.searchService.searchCommunities(word, _id, page ?? 1, 10);
+  @ApiProperty({
+    description: 'search for communities starts with any word or character',
+  })
+  @UseGuards(IsUserExistGuard)
+  @Get('/communities/start')
+  searchCommunitiesStartsWith(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() { _id },
+  ) {
+    return this.searchService.searchCommunitiesStartsWith(
+      word,
+      _id,
+      page,
+      limit,
+    );
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for posts' })
   @Get('/posts')
-  searchPosts(@Query('word') word, @Query('page') page, @Req() req) {
-    return this.searchService.searchPosts(word, Number(page), 10, req._id);
+  searchPosts(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() req,
+  ) {
+    return this.searchService.searchPosts(word, page, limit, req._id);
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for comments' })
   @Get('/comments')
-  searchComments(@Query('word') word, @Query('page') page, @Req() req) {
-    return this.searchService.searchComments(word, Number(page), 10, req._id);
+  searchComments(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() req,
+  ) {
+    page = Number(page);
+
+    return this.searchService.searchComments(word, page, limit, req._id);
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'genral search' })
   @Get('/general')
-  searchGeneral(@Query('word') word, @Req() req) {
+  searchGeneral(@Query('word') word, @Req() { _id }) {
     return Promise.all([
-      this.searchService.searchPeople(word, 1, 5, req._id),
-      // this.searchService.searchCommunities(word, 1, 5),
+      this.searchService.searchPeople(word, 1, 5, _id),
+      this.searchService.searchCommunities(word, _id, 1, 5),
     ]);
   }
 
@@ -58,14 +97,6 @@ export class SearchController {
     @Query('page') page,
     @Query('limit') limit,
   ) {
-    limit = Number(limit);
-    page = Number(page);
-
-    return this.searchService.searchFlairs(
-      word,
-      subreddit,
-      page ?? 1,
-      limit ?? 50,
-    );
+    return this.searchService.searchFlairs(word, subreddit, page, limit);
   }
 }
