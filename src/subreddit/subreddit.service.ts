@@ -13,6 +13,7 @@ import mongoose, { Model } from 'mongoose';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
+import { subredditSelectedFields } from '../utils/project-selected-fields';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
@@ -224,20 +225,35 @@ export class SubredditService {
     return 'Waiting for api features to use the sort function';
   }
 
-  getSearchSubredditAggregation(
+  async getSearchSubredditAggregation(
     searchPhrase: string,
+    username,
+    userId,
     page,
-    numberOfData: number,
+    numberOfData = 50,
   ) {
     const pageNumber = page ?? 1;
 
-    return this.subredditModel.aggregate([
+    const res = await this.subredditModel.aggregate([
       {
         $match: {
-          $or: [
-            { name: { $regex: searchPhrase, $options: 'i' } },
-            { description: { $regex: searchPhrase, $options: 'i' } },
+          $and: [
+            {
+              $or: [
+                { name: { $regex: searchPhrase, $options: 'i' } },
+                { description: { $regex: searchPhrase, $options: 'i' } },
+              ],
+            },
+            {
+              pannedUsers: { $ne: username },
+            },
           ],
+        },
+      },
+      {
+        $project: {
+          ...subredditSelectedFields,
+          srId: '$_id',
         },
       },
       {
@@ -250,10 +266,19 @@ export class SubredditService {
       },
       {
         $project: {
-          _id: 1,
-          name: 1,
-          description: 1,
+          ...subredditSelectedFields,
           users: { $size: '$users' },
+          joined: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: '$users',
+                  cond: { $eq: ['$$this.userId', userId] },
+                },
+              },
+              0,
+            ],
+          },
         },
       },
       {
@@ -263,6 +288,8 @@ export class SubredditService {
         $limit: numberOfData,
       },
     ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
   }
 
   getSearchFlairsAggregate(
