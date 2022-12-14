@@ -182,4 +182,22 @@ export class PostService {
 
     return { status: 'success' };
   }
+
+  async getHiddenPosts(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.getHidden(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
 }

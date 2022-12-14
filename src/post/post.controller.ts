@@ -188,6 +188,21 @@ export class PostController {
     return this.postService.hide(postId, userId);
   }
 
+  @ApiOkResponse({
+    description: 'your hidden posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('hidden')
+  @UseGuards(JWTUserGuard)
+  getHiddenPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.getHiddenPosts(userId, page, limit);
+  }
+
   @ApiOperation({
     description: `UnHide a post, this removes the hide property from a post thus it can reappear again.`,
   })
