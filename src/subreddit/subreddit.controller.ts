@@ -33,6 +33,8 @@ import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
+import { RuleDto } from './dto/rule.dto';
+import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
@@ -51,9 +53,9 @@ export class SubredditController {
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto, userId);
+    return this.subredditService.create(createSubredditDto, username);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
@@ -280,12 +282,12 @@ export class SubredditController {
   @Post('/:subreddit/category')
   addSubredditsWithCategories(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
     @Body('categories') categories: string[],
   ) {
     return this.subredditService.addSubredditCategories(
       subreddit,
-      userId,
+      username,
       categories,
     );
   }
@@ -309,15 +311,15 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The user was added successfully' })
   @ApiBadRequestResponse()
   @UseGuards(JWTUserGuard)
-  @Post('/:subreddit/moderation/:userId')
+  @Post('/:subreddit/moderation/:username')
   addNewModuratorToSr(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
-    @User('_id') moduratorId: Types.ObjectId,
+    @Param('username') newModeratorUsername: string,
+    @User('username') moderatorUsername: string,
   ) {
     return this.subredditService.addNewModerator(
-      moduratorId,
-      userId,
+      moderatorUsername,
+      newModeratorUsername,
       subreddit,
     );
   }
@@ -326,7 +328,198 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The subreddits returned succesfully' })
   @UseGuards(JWTUserGuard)
   @Get('/moderation/me')
-  getSubredditsUserModerate(@User('_id') userId) {
-    return this.subredditService.subredditIModerate(userId);
+  getSubredditsUserModerate(@User('username') username) {
+    return this.subredditService.subredditIModerate(username);
+  }
+
+  @ApiOperation({ description: 'Get subreddits the user joined' })
+  @ApiOkResponse({ description: 'The subreddits returned succesfully' })
+  @UseGuards(JWTUserGuard)
+  @Get('/join/me')
+  getSubredditsUserJoined(@User('_id') userId) {
+    return this.subredditService.subredditsIJoined(userId);
+  }
+
+  @ApiOperation({ description: 'Get subreddit moderators' })
+  @ApiOkResponse({ description: 'The moderators returned succesfully' })
+  @Get('/:subreddit/moderation/moderators')
+  getSubredditsModerators(@Param('subreddit', ParseObjectIdPipe) subreddit) {
+    return this.subredditService.getSubredditModerators(subreddit);
+  }
+
+  @ApiOperation({ description: 'Is in sr' })
+  @ApiOkResponse({ description: 'true or false response' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/join/me')
+  isJoined(
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.subredditService.isJoined(userId, subreddit);
+  }
+
+  @ApiOperation({ description: 'Am I a moderator in that sr' })
+  @ApiOkResponse({ description: 'true or false response' })
+  @Get('/:subreddit/moderation/me')
+  isModerator(
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.isModerator(username, subreddit);
+  }
+
+  @ApiOperation({ description: 'add a rule in a subreddit' })
+  @ApiCreatedResponse({ description: 'The rule was added successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/rule')
+  addRule(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('username') username: string,
+    @Body() ruleDto: RuleDto,
+  ) {
+    return this.subredditService.addRule(subreddit, username, ruleDto);
+  }
+
+  @ApiOperation({ description: 'delete a rule in a subreddit' })
+  @ApiCreatedResponse({ description: 'The rule was deleted successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Delete('/:subreddit/rule/:ruleId')
+  deleteRule(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('ruleId', ParseObjectIdPipe) ruleId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.deleteRule(subreddit, ruleId, username);
+  }
+
+  @ApiOperation({ description: 'update a rule in a subreddit' })
+  @ApiCreatedResponse({ description: 'The rule was update successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Patch('/:subreddit/rule/:ruleId')
+  updateRule(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @Param('ruleId', ParseObjectIdPipe) ruleId: Types.ObjectId,
+    @User('username') username: string,
+    @Body() ruleDto: UpdateRuleDto,
+  ) {
+    return this.subredditService.updateRule(
+      subreddit,
+      ruleId,
+      username,
+      ruleDto,
+    );
+  }
+
+  @ApiOperation({ description: 'Ask to join sr' })
+  @ApiCreatedResponse({ description: 'The request sent successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/join/ask')
+  askToJoinSr(
+    @User('_id') userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.askToJoinSr(subreddit, userId);
+  }
+
+  @ApiOperation({ description: 'Get users ask to join sr' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Get('/:subreddit/join/ask')
+  UsersAskingToJoinSubreddit(
+    @User('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.getUsersAskingToJoinSubreddit(
+      subreddit,
+      username,
+    );
+  }
+
+  @ApiOperation({ description: 'Get users ask to join sr' })
+  @ApiCreatedResponse({ description: 'The users returned successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/user/:userId/join/accept')
+  AcceptAJoinRequest(
+    @User('username') moderatorUsername: string,
+    @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId,
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.acceptToJoinSr(
+      subreddit,
+      moderatorUsername,
+      userId,
+    );
+  }
+
+  @Get('/:subreddit/unmoderated')
+  @UseGuards(JWTUserGuard)
+  unmoderated(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.getUnModeratedThings(
+      subredditId,
+      username,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  @Get('/:subreddit/spammed')
+  @UseGuards(JWTUserGuard)
+  spammed(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.getSpammedThings(
+      subredditId,
+      username,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  @Get('/:subreddit/edited')
+  @UseGuards(JWTUserGuard)
+  edited(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.getEditedThings(
+      subredditId,
+      username,
+      limit,
+      page,
+      sort,
+    );
   }
 }

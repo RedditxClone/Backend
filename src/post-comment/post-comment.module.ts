@@ -10,6 +10,7 @@ import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { VoteSchema } from '../vote/vote.schema';
 import { PostCommentController } from './post-comment.controller';
 import { PostCommentSchema } from './post-comment.schema';
@@ -49,6 +50,8 @@ import { PostCommentService } from './post-comment.service';
     CommentService,
     ApiFeaturesService,
     JWTUserIfExistGuard,
+    // SubredditService,
+    ImagesHandlerService,
   ],
   exports: [PostCommentService],
 })

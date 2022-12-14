@@ -9,34 +9,40 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
+// import { PostService } from '../post/post.service';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
+import type { RuleDto } from './dto/rule.dto';
+import type { UpdateRuleDto } from './dto/update-rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
 import type { SubredditUser } from './subreddit-user.schema';
 @Injectable()
 export class SubredditService {
   constructor(
-    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('Subreddit')
+    private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeatureService: ApiFeaturesService,
+    private readonly postCommentService: PostCommentService,
   ) {}
 
   async create(
     createSubredditDto: CreateSubredditDto,
-    user_id: Types.ObjectId,
+    username: string,
   ): Promise<SubredditDocument> {
     let subreddit: SubredditDocument | undefined;
 
     try {
       subreddit = await this.subredditModel.create({
         ...createSubredditDto,
-        moderators: [user_id],
+        moderators: [username],
       });
     } catch (error) {
       if (error?.message?.startsWith('E11000')) {
@@ -298,13 +304,13 @@ export class SubredditService {
 
   async addSubredditCategories(
     subreddit: Types.ObjectId,
-    userId: Types.ObjectId,
+    username: string,
     categories: string[],
   ) {
     const sr = await this.subredditModel.updateOne(
       {
         _id: subreddit,
-        moderators: userId,
+        moderators: username,
       },
       {
         $addToSet: { categories: { $each: categories } },
@@ -331,17 +337,17 @@ export class SubredditService {
   }
 
   async addNewModerator(
-    moderatorId: Types.ObjectId,
-    newModuratorId: Types.ObjectId,
+    moderatorUsername: string,
+    newModuratorUsername: string,
     subreddit: Types.ObjectId,
   ) {
     const res = await this.subredditModel.updateOne(
       {
-        moderators: moderatorId,
+        moderators: moderatorUsername,
         _id: subreddit,
       },
       {
-        $addToSet: { moderators: newModuratorId },
+        $addToSet: { moderators: newModuratorUsername },
       },
     );
 
@@ -360,9 +366,346 @@ export class SubredditService {
     };
   }
 
-  async subredditIModerate(userId: Types.ObjectId) {
+  async subredditIModerate(username: string) {
     return this.subredditModel.find({
-      moderators: userId,
+      moderators: username,
     });
+  }
+
+  async checkIfModerator(subredditId: Types.ObjectId, username: string) {
+    const moderator = await this.subredditModel.exists({
+      moderators: username,
+      _id: subredditId,
+    });
+
+    if (!moderator) {
+      throw new UnauthorizedException(
+        'you are not an moderator or wrong subreddit id',
+      );
+    }
+  }
+
+  async getUnModeratedThings(
+    subredditId: Types.ObjectId,
+    modUsername: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    await this.checkIfModerator(subredditId, modUsername);
+
+    return this.postCommentService.getUnModeratedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async getSpammedThings(
+    subredditId: Types.ObjectId,
+    modUsername: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    await this.checkIfModerator(subredditId, modUsername);
+
+    return this.postCommentService.getSpammedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async getEditedThings(
+    subredditId: Types.ObjectId,
+    modUsername: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    await this.checkIfModerator(subredditId, modUsername);
+
+    return this.postCommentService.getEditedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async subredditsIJoined(userId: Types.ObjectId) {
+    const subreddits = await this.userSubredditModel.aggregate([
+      {
+        $match: {
+          userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'subreddits',
+          localField: 'subredditId',
+          foreignField: '_id',
+          as: 'subreddit',
+        },
+      },
+    ]);
+
+    return subreddits.map((v) => v.subreddit[0]);
+  }
+
+  async getSubredditModerators(subreddit: Types.ObjectId) {
+    const subreddits = await this.subredditModel.aggregate([
+      {
+        $match: {
+          _id: subreddit,
+        },
+      },
+      {
+        $project: {
+          moderators: 1,
+        },
+      },
+      {
+        $unset: '_id',
+      },
+      {
+        $unwind: '$moderators',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'moderators',
+          foreignField: 'username',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+          },
+        },
+      },
+    ]);
+
+    return subreddits.map((v) => v.user[0]);
+  }
+
+  async isJoined(userId: Types.ObjectId, subredditId: Types.ObjectId) {
+    const res = await this.userSubredditModel.findOne({
+      userId,
+      subredditId,
+    });
+
+    return Boolean(res);
+  }
+
+  async isModerator(username: string, subreddit: Types.ObjectId) {
+    const res = await this.subredditModel.findOne({
+      moderators: username,
+      _id: subreddit,
+    });
+
+    return Boolean(res);
+  }
+
+  async addRule(subreddit: Types.ObjectId, username: string, ruleDto: RuleDto) {
+    ruleDto._id = new mongoose.Types.ObjectId();
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: username,
+      },
+      {
+        $push: { rules: ruleDto },
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    return ruleDto;
+  }
+
+  async deleteRule(
+    subreddit: Types.ObjectId,
+    ruleId: Types.ObjectId,
+    username: string,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: username,
+      },
+      {
+        $pull: {
+          rules: { _id: ruleId },
+        },
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new NotFoundException('No subreddit with such id');
+    }
+
+    if (!res.modifiedCount) {
+      throw new NotFoundException('no rule with such id');
+    }
+
+    return { status: 'success' };
+  }
+
+  async updateRule(
+    subreddit: Types.ObjectId,
+    ruleId: Types.ObjectId,
+    username: string,
+    ruleDto: UpdateRuleDto,
+  ) {
+    const updatedObject = {};
+
+    // eslint-disable-next-line unicorn/no-array-for-each
+    Object.keys(ruleDto).forEach((key) => {
+      updatedObject[`rules.$.${key}`] = ruleDto[key];
+    });
+
+    const queryObject = {
+      _id: subreddit,
+      moderators: username,
+    };
+
+    queryObject['rules._id'] = ruleId;
+
+    const res = await this.subredditModel.updateOne(
+      queryObject,
+      {
+        $set: updatedObject,
+      },
+      {
+        runValidators: true,
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new NotFoundException();
+    }
+
+    return { status: 'success' };
+  }
+
+  async askToJoinSr(subreddit: Types.ObjectId, userId: Types.ObjectId) {
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+      },
+      {
+        $addToSet: {
+          joinList: userId,
+        },
+      },
+    );
+
+    if (res.modifiedCount === 0) {
+      throw new BadRequestException();
+    }
+
+    return { status: 'success' };
+  }
+
+  async getUsersAskingToJoinSubreddit(
+    subreddit: Types.ObjectId,
+    moderatorUsername: string,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [{ _id: subreddit }, { moderators: moderatorUsername }],
+        },
+      },
+      {
+        $project: {
+          joinList: 1,
+        },
+      },
+      {
+        $unset: '_id',
+      },
+      {
+        $unwind: '$joinList',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'joinList',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+          },
+        },
+      },
+    ]);
+
+    return res.map((v) => v.user[0]);
+  }
+
+  private async deleteUserFromAskingListIfSrExist(
+    subreddit: Types.ObjectId,
+    moderatorUsername: string,
+    userId: Types.ObjectId,
+  ) {
+    const res = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: moderatorUsername,
+      },
+      {
+        $pull: {
+          joinList: userId,
+        },
+      },
+    );
+
+    if (!res.matchedCount) {
+      throw new BadRequestException();
+    }
+
+    if (!res.modifiedCount) {
+      throw new BadRequestException("User didn't send request to join the sr");
+    }
+  }
+
+  async acceptToJoinSr(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    userId: Types.ObjectId,
+  ) {
+    await this.deleteUserFromAskingListIfSrExist(
+      subredditId,
+      moderatorUsername,
+      userId,
+    );
+
+    await this.userSubredditModel.create({
+      subredditId,
+      userId,
+    });
+
+    return { status: 'success' };
   }
 }
