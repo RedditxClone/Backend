@@ -333,7 +333,7 @@ export class ThingFetch {
     return [
       ...this.voteInfo(),
       {
-        $unwind: 'vote',
+        $unwind: '$vote',
       },
       {
         $match: {

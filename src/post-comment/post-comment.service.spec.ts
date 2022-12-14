@@ -392,7 +392,7 @@ describe('PostCommentService', () => {
       });
     });
   });
-  describe('get un-moderated/spammed/edited', () => {
+  describe('get un-moderated/spammed/edited/upvoted/downvoted', () => {
     let post: Post & { _id: Types.ObjectId };
     let comment: Comment & { _id: Types.ObjectId };
     const limit = undefined;
@@ -471,6 +471,26 @@ describe('PostCommentService', () => {
         sort,
       );
       expect(res.length).toEqual(0);
+    });
+    it('must return empty array', async () => {
+      const res = await service.getUpvoted(userSR);
+      expect(res).toEqual([]);
+    });
+    it('must return element after upvoting it', async () => {
+      await service.upvote(post._id, userSR);
+      const res = await service.getUpvoted(userSR);
+      expect(res.length).toEqual(1);
+      expect(res[0]._id).toEqual(post._id);
+    });
+    it("must't return the element after downvoting it", async () => {
+      await service.downvote(post._id, userSR);
+      const res = await service.getUpvoted(userSR);
+      expect(res.length).toEqual(0);
+    });
+    it('must return post', async () => {
+      const res = await service.getDownvoted(userSR);
+      expect(res.length).toEqual(1);
+      expect(res[0]._id).toEqual(post._id);
     });
   });
   afterAll(async () => {
