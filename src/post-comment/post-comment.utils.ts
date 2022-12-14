@@ -27,6 +27,19 @@ export class ThingFetch {
     ];
   }
 
+  getHidden() {
+    return [
+      this.filterHidden()[0],
+      {
+        $match: {
+          $expr: {
+            $ne: ['$hide', []],
+          },
+        },
+      },
+    ];
+  }
+
   getMe() {
     return [
       {
