@@ -41,7 +41,7 @@ export class PostComment {
   @Prop({ default: null })
   editedAt: Date;
 
-  @Prop({ ref: 'User', default: null })
-  editCheckedBy: boolean;
+  @Prop({ default: null })
+  editCheckedBy: string;
 }
 export const PostCommentSchema = SchemaFactory.createForClass(PostComment);
