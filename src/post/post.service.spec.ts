@@ -64,6 +64,7 @@ describe('PostService', () => {
             ],
           },
           { name: 'Follow', schema: FollowSchema },
+          { name: 'Vote', schema: VoteSchema },
           { name: 'Block', schema: BlockSchema },
           { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
@@ -80,13 +81,13 @@ describe('PostService', () => {
         ]),
       ],
       providers: [
+        PostCommentService,
         PostService,
         SubredditService,
         UserService,
         FollowService,
         BlockService,
         ApiFeaturesService,
-        PostCommentService,
       ],
     }).compile();
 
@@ -97,6 +98,8 @@ describe('PostService', () => {
 
   let id: Types.ObjectId;
   it('should be defined', () => {
+    expect(subredditService).toBeDefined();
+    expect(userService).toBeDefined();
     expect(service).toBeDefined();
   });
   describe('create post spec', () => {

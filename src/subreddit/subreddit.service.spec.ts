@@ -8,11 +8,9 @@ import mongoose, { Types } from 'mongoose';
 
 import { BlockModule } from '../block/block.module';
 import { BlockSchema } from '../block/block.schema';
-import { CommentSchema } from '../comment/comment.schema';
 import { FollowModule } from '../follow/follow.module';
 import { FollowSchema } from '../follow/follow.schema';
 import { HideSchema } from '../post/hide.schema';
-import { PostSchema } from '../post/post.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserModule } from '../user/user.module';
@@ -104,16 +102,6 @@ describe('SubredditService', () => {
           {
             name: 'PostComment',
             schema: PostCommentSchema,
-            discriminators: [
-              {
-                name: 'Post',
-                schema: PostSchema,
-              },
-              {
-                name: 'Comment',
-                schema: CommentSchema,
-              },
-            ],
           },
           { name: 'Follow', schema: FollowSchema },
           { name: 'Block', schema: BlockSchema },

@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
+import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -161,6 +162,22 @@ export class PostCommentService {
 
     return { status: 'success', timestamp: new Date() };
   };
+
+  getSavedPosts(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterForSavedOnly(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
 
   private async changeVotes(
     thingId: Types.ObjectId,

@@ -17,7 +17,9 @@ import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type {
   AvailableUsernameDto,
@@ -35,6 +37,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly followService: FollowService,
     private readonly blockService: BlockService,
+    private readonly postCommentService: PostCommentService,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
@@ -403,6 +406,30 @@ export class UserService {
       .select('');
 
     return { status: 'success' };
+  }
+
+  async savePost(user_id: Types.ObjectId, post_id: Types.ObjectId) {
+    const data = await this.userModel
+      .updateOne(
+        { _id: user_id },
+        {
+          $addToSet: { savedPosts: post_id },
+        },
+      )
+      .select('');
+
+    if (data.modifiedCount === 0) {
+      throw new BadRequestException('the post already saved');
+    }
+
+    return { status: 'success' };
+  }
+
+  async getSavedPosts(
+    userId: Types.ObjectId,
+    paginationParams: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getSavedPosts(userId, paginationParams);
   }
 
   uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {

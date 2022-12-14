@@ -60,6 +60,7 @@ export const stubUser = (): User => ({
   chatRequest: true,
   newFollower: false,
   unSubscribe: false,
+  savedPosts: [],
 });
 
 export const stubUserFresh = (): User => ({
@@ -118,4 +119,5 @@ export const stubUserFresh = (): User => ({
   chatRequest: true,
   newFollower: false,
   unSubscribe: false,
+  savedPosts: [],
 });
