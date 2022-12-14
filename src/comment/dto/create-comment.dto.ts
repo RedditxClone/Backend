@@ -5,8 +5,7 @@ import { Types } from 'mongoose';
 export class CreateCommentDto {
   @ApiProperty()
   @IsMongoId()
-  @IsOptional()
-  parentId?: Types.ObjectId;
+  parentId: Types.ObjectId;
 
   @ApiProperty()
   @IsMongoId()
