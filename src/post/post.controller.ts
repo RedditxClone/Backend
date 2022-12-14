@@ -58,6 +58,20 @@ export class PostController {
     description: 'posts returned successfully',
     type: ReturnPostDto,
   })
+  @Get('discover')
+  @UseGuards(JWTUserGuard)
+  discover(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.discover(userId, page, limit);
+  }
+
+  @ApiOkResponse({
+    description: 'posts returned successfully',
+    type: ReturnPostDto,
+  })
   @Get('timeline')
   @UseGuards(IsUserExistGuard)
   getTimeLine(

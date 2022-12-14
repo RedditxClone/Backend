@@ -311,4 +311,22 @@ export class ThingFetch {
       },
     ];
   }
+
+  spreadForDiscover() {
+    return [
+      {
+        $unwind: '$images',
+      },
+      {
+        $project: {
+          images: 1,
+          subreddit: {
+            name: '$subreddit.name',
+            id: '$subreddit._id',
+          },
+          postId: 1,
+        },
+      },
+    ];
+  }
 }
