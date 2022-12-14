@@ -14,11 +14,11 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { IsUserExistGuard } from 'auth/guards/is-user-exist.guard';
 import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
