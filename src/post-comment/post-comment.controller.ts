@@ -11,6 +11,7 @@ import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -26,6 +27,22 @@ import { PostCommentService } from './post-comment.service';
 @Controller('thing')
 export class PostCommentController {
   constructor(private readonly postCommentService: PostCommentService) {}
+
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('upvoted')
+  getUpvoted(@User('_id') userId: Types.ObjectId) {
+    return this.postCommentService.getUpvoted(userId);
+  }
+
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('downvoted')
+  getDownvoted(@User('_id') userId: Types.ObjectId) {
+    return this.postCommentService.getDownvoted(userId);
+  }
 
   @Post()
   create(@Body() createPostCommentDto: CreatePostCommentDto) {
