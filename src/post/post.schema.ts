@@ -37,5 +37,11 @@ export class Post extends PostComment {
 
   @Prop({ default: false })
   visited: boolean;
+
+  @Prop({ default: null })
+  approvedBy: string;
+
+  @Prop({ default: null })
+  approvedAt: Date;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);

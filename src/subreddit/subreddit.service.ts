@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
+// import { PostService } from '../post/post.service';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
@@ -22,11 +24,13 @@ import type { SubredditUser } from './subreddit-user.schema';
 @Injectable()
 export class SubredditService {
   constructor(
-    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
+    @InjectModel('Subreddit')
+    private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeatureService: ApiFeaturesService,
+    private readonly postCommentService: PostCommentService,
   ) {}
 
   async create(
@@ -373,13 +377,68 @@ export class SubredditService {
     });
   }
 
-  async checkIfModerator(subredditId: Types.ObjectId, userId: Types.ObjectId) {
+  async checkIfModerator(subredditId: Types.ObjectId, username: string) {
     const moderator = await this.subredditModel.exists({
-      moderators: userId,
+      moderators: username,
       _id: subredditId,
     });
 
-    return Boolean(moderator);
+    if (!moderator) {
+      throw new UnauthorizedException(
+        'you are not an moderator or wrong subreddit id',
+      );
+    }
+  }
+
+  async getUnModeratedThings(
+    subredditId: Types.ObjectId,
+    modUsername: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    await this.checkIfModerator(subredditId, modUsername);
+
+    return this.postCommentService.getUnModeratedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async getSpammedThings(
+    subredditId: Types.ObjectId,
+    modUsername: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    await this.checkIfModerator(subredditId, modUsername);
+
+    return this.postCommentService.getSpammedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  async getEditedThings(
+    subredditId: Types.ObjectId,
+    modUsername: string,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    await this.checkIfModerator(subredditId, modUsername);
+
+    return this.postCommentService.getEditedThingsForSubreddit(
+      subredditId,
+      limit,
+      page,
+      sort,
+    );
   }
 
   async subredditsIJoined(userId: Types.ObjectId) {

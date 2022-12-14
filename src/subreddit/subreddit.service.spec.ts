@@ -7,7 +7,12 @@ import { readFile } from 'fs/promises';
 import mongoose, { Types } from 'mongoose';
 
 import { BlockModule } from '../block/block.module';
+import { BlockSchema } from '../block/block.schema';
 import { FollowModule } from '../follow/follow.module';
+import { FollowSchema } from '../follow/follow.schema';
+import { HideSchema } from '../post/hide.schema';
+import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserModule } from '../user/user.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
@@ -18,6 +23,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
 import type { RuleDto } from './dto/rule.dto';
@@ -95,12 +101,28 @@ describe('SubredditService', () => {
         FollowModule,
         BlockModule,
         MongooseModule.forFeature([
+          {
+            name: 'PostComment',
+            schema: PostCommentSchema,
+          },
+          { name: 'Follow', schema: FollowSchema },
+          { name: 'Block', schema: BlockSchema },
+          { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
           { name: 'User', schema: UserSchema },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
+          },
         ]),
       ],
-      providers: [SubredditService, ApiFeaturesService, UserService],
+      providers: [
+        SubredditService,
+        ApiFeaturesService,
+        UserService,
+        PostCommentService,
+      ],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
     const userService = module.get<UserService>(UserService);
@@ -806,6 +828,197 @@ describe('SubredditService', () => {
     });
   });
 
+  describe('mute, approve and panned user used function', () => {
+    it('should add a user successfully', async () => {
+      const res1 = await subredditService.addUserToListUserDate(
+        subredditDocument._id,
+        username,
+        usernameMuted1,
+        'mutedUsers',
+      );
+      expect(res1).toEqual({ status: 'success' });
+
+      const res2 = await subredditService.addUserToListUserDate(
+        subredditDocument._id,
+        username,
+        usernameMuted2,
+        'mutedUsers',
+      );
+      expect(res2).toEqual({ status: 'success' });
+    });
+    it('should throw error already added', async () => {
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          username,
+          usernameMuted1,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error moderator cant mute another moderator', async () => {
+      // extra stage is not exist with approve operation.
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          username,
+          usernameNewModerator,
+          'mutedUsers',
+          { moderators: { $ne: usernameNewModerator } },
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error not a moderator', async () => {
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          usernameMuted1,
+          'another_user',
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('get users from userDate list', () => {
+    it('should get users successfully', async () => {
+      const res = await subredditService.getUsersFromListUserDate(
+        subredditDocument._id,
+        username,
+        'mutedUsers',
+      );
+      expect(res).toEqual([
+        expect.objectContaining({
+          username: usernameMuted1,
+        }),
+        expect.objectContaining({
+          username: usernameMuted2,
+        }),
+      ]);
+    });
+  });
+
+  describe('remove user from list data', () => {
+    it('should throw error not a moderator', async () => {
+      await expect(
+        subredditService.removeUserFromListUserDate(
+          subredditDocument._id,
+          usernameMuted1,
+          usernameMuted2,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should remove a user from the list successfully', async () => {
+      await subredditService.removeUserFromListUserDate(
+        subredditDocument._id,
+        username,
+        usernameMuted2,
+        'mutedUsers',
+      );
+      await subredditService.removeUserFromListUserDate(
+        subredditDocument._id,
+        username,
+        usernameMuted1,
+        'mutedUsers',
+      );
+      const res = await subredditService.getUsersFromListUserDate(
+        subredditDocument._id,
+        username,
+        'mutedUsers',
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('get subreddits', () => {
+    const limit = undefined;
+    const page = undefined;
+    const sort = undefined;
+    let sr;
+    beforeAll(async () => {
+      sr = await subredditService.create(
+        {
+          name: 'sr',
+          over18: true,
+          type: 'ty',
+        },
+        userId,
+      );
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getUnModeratedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getUnModeratedThings(
+          sr._id,
+          sr._id,
+          limit,
+          page,
+          sort,
+        ),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getUnModeratedThings(
+          userId,
+          userId,
+          limit,
+          page,
+          sort,
+        ),
+      ).rejects.toThrow('wrong');
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getSpammedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getSpammedThings(sr._id, sr._id, limit, page, sort),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getSpammedThings(userId, userId, limit, page, sort),
+      ).rejects.toThrow('wrong');
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getEditedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getEditedThings(sr._id, sr._id, limit, page, sort),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getEditedThings(userId, userId, limit, page, sort),
+      ).rejects.toThrow('wrong');
+    });
+  });
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);

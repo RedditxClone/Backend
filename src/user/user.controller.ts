@@ -3,11 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
+  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -30,6 +32,7 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { FollowService } from '../follow/follow.service';
+import { NormalizedPostDto, ReturnPostDto } from '../post/dto';
 import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -471,5 +474,38 @@ export class UserController {
     file,
   ) {
     return this.userService.uploadPhoto(userId, file, 'coverPhoto');
+  }
+
+  @ApiOperation({
+    description: 'Save post',
+  })
+  @ApiOkResponse({ description: 'post saved successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @HttpCode(200)
+  @UseGuards(JWTUserGuard)
+  @Post('/post/:post_id/save')
+  savePost(
+    @Param('post_id', ParseObjectIdPipe) post_id: Types.ObjectId,
+    @Req() { user },
+  ) {
+    return this.userService.savePost(user._id, post_id);
+  }
+
+  @ApiOperation({
+    description: 'get saved posts',
+  })
+  @ApiPaginatedOkResponse(ReturnPostDto, 'saved posts returned successfully ')
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/post/save')
+  getSavedPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.userService.getSavedPosts(userId, paginationParams);
   }
 }
