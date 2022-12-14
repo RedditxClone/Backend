@@ -9,9 +9,6 @@ import { HideSchema } from '../post/hide.schema';
 import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
-import { SubredditSchema } from '../subreddit/subreddit.schema';
-import { SubredditService } from '../subreddit/subreddit.service';
-import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { VoteSchema } from '../vote/vote.schema';
@@ -44,14 +41,6 @@ import { PostCommentService } from './post-comment.service';
         name: 'Hide',
         schema: HideSchema,
       },
-      {
-        name: 'Subreddit',
-        schema: SubredditSchema,
-      },
-      {
-        name: 'UserSubreddit',
-        schema: SubredditUserSchema,
-      },
     ]),
   ],
   controllers: [PostCommentController, PostController, CommentController],
@@ -61,7 +50,7 @@ import { PostCommentService } from './post-comment.service';
     CommentService,
     ApiFeaturesService,
     JWTUserIfExistGuard,
-    SubredditService,
+    // SubredditService,
     ImagesHandlerService,
   ],
   exports: [PostCommentService],

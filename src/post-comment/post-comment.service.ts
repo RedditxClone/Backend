@@ -9,20 +9,20 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
-import { SubredditService } from '../subreddit/subreddit.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { Vote } from '../vote/vote.schema';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
-
+import { ThingFetch } from './post-comment.utils';
 @Injectable()
 export class PostCommentService {
   constructor(
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
-    private readonly subredditService: SubredditService,
+    private readonly featureService: ApiFeaturesService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -107,7 +107,11 @@ export class PostCommentService {
 
     this.checkIfValidFlairId(dto.flair, thing.subredditId.flairList);
 
-    const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, dto);
+    const updatedThing = await this.postCommentModel.findByIdAndUpdate(id, {
+      ...dto,
+      editedAt: Date.now(),
+      editCheckedBy: null,
+    });
 
     if (!updatedThing) {
       throw new NotFoundException(`id : ${id} not found`);
@@ -272,10 +276,7 @@ export class PostCommentService {
         },
       ]);
 
-  private async getThingIModerate(
-    moderatorId: Types.ObjectId,
-    thingId: Types.ObjectId,
-  ) {
+  async getThingIModerate(modUsername: string, thingId: Types.ObjectId) {
     return this.postCommentModel.aggregate([
       {
         $match: {
@@ -298,15 +299,15 @@ export class PostCommentService {
       {
         $match: {
           $expr: {
-            $in: [moderatorId, '$subreddit.moderators'],
+            $in: [modUsername, '$subreddit.moderators'],
           },
         },
       },
     ]);
   }
 
-  async spam(moderatorId: Types.ObjectId, thingId: Types.ObjectId) {
-    const [thing] = await this.getThingIModerate(moderatorId, thingId);
+  async spam(moderatorUsername: string, thingId: Types.ObjectId) {
+    const [thing] = await this.getThingIModerate(moderatorUsername, thingId);
 
     if (!thing) {
       throw new NotFoundException(
@@ -319,15 +320,15 @@ export class PostCommentService {
     }
 
     await this.postCommentModel.findByIdAndUpdate(thingId, {
-      spammedBy: moderatorId,
+      spammedBy: moderatorUsername,
       spammedAt: Date.now(),
     });
 
     return { status: 'success' };
   }
 
-  async unspam(moderatorId: Types.ObjectId, thingId: Types.ObjectId) {
-    const [thing] = await this.getThingIModerate(moderatorId, thingId);
+  async unspam(modUsername: string, thingId: Types.ObjectId) {
+    const [thing] = await this.getThingIModerate(modUsername, thingId);
 
     if (!thing) {
       throw new NotFoundException(
@@ -345,5 +346,91 @@ export class PostCommentService {
     });
 
     return { status: 'success' };
+  }
+
+  async disApprove(modUsername: string, thingId: Types.ObjectId) {
+    const [post] = await this.getThingIModerate(modUsername, thingId);
+
+    if (!post) {
+      throw new NotFoundException(
+        'either wrong id or you are not a moderator of the subreddit',
+      );
+    }
+
+    if (post.removedBy !== null) {
+      throw new BadRequestException('post is already removed');
+    }
+
+    await this.postCommentModel.findByIdAndUpdate(thingId, {
+      removedBy: modUsername,
+      removedAt: Date.now(),
+    });
+
+    return { status: 'success' };
+  }
+
+  private async getCommonThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    filter: any,
+    paginationParameters: any,
+  ) {
+    const fetcher = new ThingFetch(undefined);
+    const { limit, page } = paginationParameters;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificFilter({ ...filter, subredditId }),
+      ...fetcher.getPaginated(limit, page),
+      ...fetcher.userInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async getUnModeratedThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    return this.getCommonThingsForSubreddit(
+      subredditId,
+      { approvedBy: null, removedBy: null, spammedBy: null },
+      { limit, page, sort },
+    );
+  }
+
+  async getSpammedThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    return this.getCommonThingsForSubreddit(
+      subredditId,
+      {
+        spammedBy: { $ne: null },
+        isDeleted: false,
+        removedBy: null,
+      },
+      { limit, page, sort },
+    );
+  }
+
+  async getEditedThingsForSubreddit(
+    subredditId: Types.ObjectId,
+    limit: number | undefined,
+    page: number | undefined,
+    sort: string | undefined,
+  ) {
+    return this.getCommonThingsForSubreddit(
+      subredditId,
+      {
+        editedAt: { $ne: null },
+        editCheckedBy: null,
+        isDeleted: false,
+        removedBy: null,
+      },
+      { limit, page, sort },
+    );
   }
 }

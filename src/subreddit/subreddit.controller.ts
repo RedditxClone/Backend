@@ -468,4 +468,58 @@ export class SubredditController {
       userId,
     );
   }
+
+  @Get('/:subreddit/unmoderated')
+  @UseGuards(JWTUserGuard)
+  unmoderated(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.getUnModeratedThings(
+      subredditId,
+      username,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  @Get('/:subreddit/spammed')
+  @UseGuards(JWTUserGuard)
+  spammed(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.getSpammedThings(
+      subredditId,
+      username,
+      limit,
+      page,
+      sort,
+    );
+  }
+
+  @Get('/:subreddit/edited')
+  @UseGuards(JWTUserGuard)
+  edited(
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query('limit') limit: number | undefined,
+    @Query('page') page: number | undefined,
+    @Query('sort') sort: string | undefined,
+    @User('username') username: string,
+  ) {
+    return this.subredditService.getEditedThings(
+      subredditId,
+      username,
+      limit,
+      page,
+      sort,
+    );
+  }
 }
