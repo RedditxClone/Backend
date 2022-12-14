@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -75,5 +76,59 @@ export class PostCommentController {
     @User('_id') userId: Types.ObjectId,
   ) {
     return this.postCommentService.unvote(thingId, userId);
+  }
+
+  @ApiOperation({
+    description: 'spam post or comment',
+  })
+  @ApiCreatedResponse({ description: 'spammed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @ApiNotFoundResponse({
+    description: 'wrong post id or you are not the moderator',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/:thing/spam')
+  spam(
+    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.postCommentService.spam(username, thingId);
+  }
+
+  @ApiOperation({
+    description: 'unspam post or comment',
+  })
+  @ApiCreatedResponse({ description: 'unspammed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @ApiNotFoundResponse({
+    description: 'wrong post id or you are not the moderator',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/:thing/unspam')
+  unspam(
+    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.postCommentService.unspam(username, thingId);
+  }
+
+  @ApiOperation({
+    description: 'remove post or comment',
+  })
+  @ApiCreatedResponse({ description: 'removed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @ApiNotFoundResponse({
+    description: 'wrong post id or you are not the moderator',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/:thing/remove')
+  disapprove(
+    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.postCommentService.disApprove(username, thingId);
   }
 }

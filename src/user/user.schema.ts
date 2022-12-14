@@ -12,7 +12,7 @@ export class User {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true, select: false })
+  @Prop({ select: false })
   hashPassword: string;
 
   // moderator access is given to specific users
@@ -164,6 +164,14 @@ export class User {
 
   @Prop({ default: false })
   unSubscribe: boolean;
+
+  // google auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGoogleAccount?: string;
+
+  // github auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGithubAccount?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

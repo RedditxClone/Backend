@@ -1,12 +1,16 @@
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import type { Response } from 'express';
+import type { TokenPayload } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { CreateUserDto } from '../user/dto';
+import type { CreateUserFacebookGoogleDto } from '../user/dto/create-user-facebook-google.dto';
 import type { User, UserDocument } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../utils';
@@ -193,5 +197,90 @@ export class AuthService {
         .status(HttpStatus.UNAUTHORIZED)
         .json({ status: "couldn't send message" });
     }
+  };
+
+  /** Create a user that doesn't have an account connected to that mail.
+   *
+   * @param userData the data of the user taken from the token.
+   * @returns the data of the user created.
+   */
+  createUserAccountWithoutPassword = async (
+    userData: TokenPayload | undefined,
+    accountType: string,
+  ) => {
+    const name = await this.userService.generateRandomUsernames(1);
+
+    const newAccount: CreateUserFacebookGoogleDto = {
+      email: userData?.email ?? '',
+      username: name[0],
+    };
+
+    newAccount[accountType] = userData?.email ?? '';
+
+    return this.userModel.create({
+      ...newAccount,
+    });
+  };
+
+  verfiyUserGmailData: any = async (token: string) => {
+    try {
+      const client = new OAuth2Client();
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: [
+          process.env.GOOGLE_CREDIENTIALS_CLIENT_ID_web ?? '',
+          process.env.GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_web ?? '',
+          process.env.GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_android ?? '',
+        ],
+      });
+
+      return ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Unautherized account');
+    }
+  };
+
+  verfiyUserGithubData = async (token: string) => {
+    try {
+      const { data } = await axios.get('https://api.github.com/user', {
+        headers: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!data.login) {
+        throw new UnauthorizedException('Unautherized account');
+      }
+
+      return {
+        email: data.login,
+      };
+    } catch {
+      throw new UnauthorizedException('Unautherized account');
+    }
+  };
+
+  continueAuth = async (
+    token: string,
+    res: Response,
+    accountTypeField: string,
+    verfiyFunction: (TOKEN: string) => Promise<any>,
+  ) => {
+    const userData = await verfiyFunction(token);
+
+    const searchWith = {};
+    searchWith[accountTypeField] = userData?.email;
+
+    let user = await this.userModel.findOne(searchWith);
+
+    if (!user) {
+      user = await this.createUserAccountWithoutPassword(
+        userData,
+        accountTypeField,
+      );
+    }
+
+    await this.sendAuthToken(user, res);
   };
 }

@@ -65,7 +65,7 @@ export class UserService {
   searchUserQuery = (usersBlockedMe, searchPhrase) =>
     this.userModel
       .find({
-        username: new RegExp(`^${searchPhrase}`),
+        username: new RegExp(`^${searchPhrase}`, 'i'),
         _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
       })
       .select('username profilePhoto about');
