@@ -24,4 +24,7 @@ export class PaginationParamsDto {
   @Max(75) // max allowed results per page
   @IsOptional()
   readonly limit: number = 15; // default value
+
+  @ApiPropertyOptional({})
+  readonly sort: string = 'best';
 }

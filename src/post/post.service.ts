@@ -151,12 +151,12 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
-      ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
       ...fetcher.prepareBeforeStoring('hot'),
       {
         $sort: fetcher.getSortObject('hot'),
       },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),

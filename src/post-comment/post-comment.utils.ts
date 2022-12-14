@@ -253,10 +253,11 @@ export class ThingFetch {
       hot: { hotValue: -1 },
       top: { votesCount: -1 },
       new: { publishedAt: -1 },
+      best: { bestValue: -1 },
     };
 
     if (!Object.keys(sortOptions).includes(sortType)) {
-      return sortOptions.top;
+      return sortOptions.new;
     }
 
     return sortOptions[sortType];
@@ -268,9 +269,25 @@ export class ThingFetch {
         $set: {
           hotValue: {
             $add: [
-              { $mod: [{ $toLong: '$publishedDate' }, 1_000_000] },
-              { $multiply: [5000, '$votesCount'] },
-              { $multiply: [3000, '$commentCount'] },
+              { $mod: [{ $toLong: '$publishedDate' }, 10_000_000] },
+              { $multiply: [50_000, '$votesCount'] },
+              { $multiply: [30_000, '$commentCount'] },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  private prepareToGetBestSorted() {
+    return [
+      {
+        $set: {
+          bestValue: {
+            $add: [
+              { $mod: [{ $toLong: '$publishedDate' }, 10_000_000] },
+              { $multiply: [70_000, '$votesCount'] },
+              { $multiply: [70_000, '$commentCount'] },
             ],
           },
         },
@@ -279,8 +296,12 @@ export class ThingFetch {
   }
 
   prepareBeforeStoring(sortType: string) {
-    if (sortType === 'hot') {
+    if (sortType.toLocaleLowerCase() === 'hot') {
       return this.prepareToGetHotSorted();
+    }
+
+    if (sortType.toLocaleLowerCase() === 'best') {
+      return this.prepareToGetBestSorted();
     }
 
     return [];
