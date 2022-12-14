@@ -1,6 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsPositive, Max } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsPositive, Max } from 'class-validator';
+export enum SortTypes {
+  top,
+  hot,
+  best,
+  new,
+}
 
 export class PaginationParamsDto {
   @ApiPropertyOptional({
@@ -25,6 +31,9 @@ export class PaginationParamsDto {
   @IsOptional()
   readonly limit: number = 15; // default value
 
-  @ApiPropertyOptional({})
-  readonly sort: string = 'best';
+  @ApiPropertyOptional({
+    description: 'may be top, hot, best or new and the default is new',
+  })
+  @IsEnum(SortTypes)
+  readonly sort: string = 'new';
 }
