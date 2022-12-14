@@ -32,7 +32,7 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { FollowService } from '../follow/follow.service';
-import { NormalizedPostDto } from '../post/dto';
+import { NormalizedPostDto, ReturnPostDto } from '../post/dto';
 import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -496,10 +496,7 @@ export class UserController {
   @ApiOperation({
     description: 'get saved posts',
   })
-  @ApiPaginatedOkResponse(
-    NormalizedPostDto,
-    'saved posts returned successfully ',
-  )
+  @ApiPaginatedOkResponse(ReturnPostDto, 'saved posts returned successfully ')
   @ApiUnauthorizedResponse({
     description: 'unautherized',
   })
