@@ -153,6 +153,10 @@ export class PostService {
       ...fetcher.matchForSpecificUser(),
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
+      ...fetcher.prepareBeforeStoring('hot'),
+      {
+        $sort: fetcher.getSortObject('hot'),
+      },
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),

@@ -248,6 +248,44 @@ export class ThingFetch {
     ];
   }
 
+  getSortObject(sortType: string) {
+    const sortOptions = {
+      hot: { hotValue: -1 },
+      top: { votesCount: -1 },
+      new: { publishedAt: -1 },
+    };
+
+    if (!Object.keys(sortOptions).includes(sortType)) {
+      return sortOptions.top;
+    }
+
+    return sortOptions[sortType];
+  }
+
+  private prepareToGetHotSorted() {
+    return [
+      {
+        $set: {
+          hotValue: {
+            $add: [
+              { $mod: [{ $toLong: '$publishedDate' }, 1_000_000] },
+              { $multiply: [5000, '$votesCount'] },
+              { $multiply: [3000, '$commentCount'] },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  prepareBeforeStoring(sortType: string) {
+    if (sortType === 'hot') {
+      return this.prepareToGetHotSorted();
+    }
+
+    return [];
+  }
+
   getPostProject() {
     return [
       {
@@ -274,6 +312,8 @@ export class ThingFetch {
           nsfw: 1,
           type: 1,
           visited: 1,
+          hotValue: 1,
+          numericDate: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
