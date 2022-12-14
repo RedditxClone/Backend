@@ -476,11 +476,11 @@ export class SubredditController {
     @Query('limit') limit: number | undefined,
     @Query('page') page: number | undefined,
     @Query('sort') sort: string | undefined,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
     return this.subredditService.getUnModeratedThings(
       subredditId,
-      userId,
+      username,
       limit,
       page,
       sort,
@@ -494,11 +494,11 @@ export class SubredditController {
     @Query('limit') limit: number | undefined,
     @Query('page') page: number | undefined,
     @Query('sort') sort: string | undefined,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
     return this.subredditService.getSpammedThings(
       subredditId,
-      userId,
+      username,
       limit,
       page,
       sort,
@@ -512,11 +512,11 @@ export class SubredditController {
     @Query('limit') limit: number | undefined,
     @Query('page') page: number | undefined,
     @Query('sort') sort: string | undefined,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
     return this.subredditService.getEditedThings(
       subredditId,
-      userId,
+      username,
       limit,
       page,
       sort,
