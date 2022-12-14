@@ -55,6 +55,21 @@ export class PostController {
   ) {}
 
   @ApiOkResponse({
+    description: 'your hidden posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('hidden')
+  @UseGuards(JWTUserGuard)
+  getHiddenPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.getHiddenPosts(userId, page, limit);
+  }
+
+  @ApiOkResponse({
     description: 'posts returned successfully',
     type: ReturnPostDto,
   })
@@ -186,21 +201,6 @@ export class PostController {
     @User('_id') userId: Types.ObjectId,
   ) {
     return this.postService.hide(postId, userId);
-  }
-
-  @ApiOkResponse({
-    description: 'your hidden posts returned successfully',
-    type: ReturnPostDto,
-  })
-  @ApiUnauthorizedResponse({ description: 'you must login' })
-  @Get('hidden')
-  @UseGuards(JWTUserGuard)
-  getHiddenPosts(
-    @User('_id') userId: Types.ObjectId,
-    @Query('page') page: number | undefined,
-    @Query('limit') limit: number | undefined,
-  ) {
-    return this.postService.getHiddenPosts(userId, page, limit);
   }
 
   @ApiOperation({
