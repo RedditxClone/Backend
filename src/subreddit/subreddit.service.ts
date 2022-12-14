@@ -336,6 +336,16 @@ export class SubredditService {
     );
   }
 
+  private modifiedCountResponse(modifiedCount, message?) {
+    if (modifiedCount === 0) {
+      throw new BadRequestException(message);
+    }
+
+    return {
+      status: 'success',
+    };
+  }
+
   async addNewModerator(
     moderatorUsername: string,
     newModuratorUsername: string,
@@ -355,15 +365,10 @@ export class SubredditService {
       throw new UnauthorizedException();
     }
 
-    if (res.modifiedCount === 0) {
-      throw new BadRequestException(
-        'You are already a moderator in that subreddit',
-      );
-    }
-
-    return {
-      status: 'success',
-    };
+    return this.modifiedCountResponse(
+      res.modifiedCount,
+      'You are already a moderator in that subreddit',
+    );
   }
 
   async subredditIModerate(username: string) {
@@ -528,8 +533,8 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!res.modifiedCount) {
+      throw new NotFoundException();
     }
 
     return ruleDto;
@@ -552,15 +557,7 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException('No subreddit with such id');
-    }
-
-    if (!res.modifiedCount) {
-      throw new NotFoundException('no rule with such id');
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async updateRule(
@@ -593,11 +590,7 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException();
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async askToJoinSr(subreddit: Types.ObjectId, userId: Types.ObjectId) {
@@ -612,11 +605,7 @@ export class SubredditService {
       },
     );
 
-    if (res.modifiedCount === 0) {
-      throw new BadRequestException();
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async getUsersAskingToJoinSubreddit(
@@ -688,6 +677,8 @@ export class SubredditService {
     if (!res.modifiedCount) {
       throw new BadRequestException("User didn't send request to join the sr");
     }
+
+    return { status: 'success' };
   }
 
   async acceptToJoinSr(
@@ -707,5 +698,128 @@ export class SubredditService {
     });
 
     return { status: 'success' };
+  }
+
+  async getUsersFromListUserDate(
+    subredditId: Types.ObjectId,
+    userId: string,
+    fieldName: string,
+  ) {
+    const prjectField1 = {};
+    prjectField1[fieldName] = 1;
+    const prjectField2 = {};
+    prjectField2[fieldName] = { date: 1 };
+
+    // We don't have to check if the request is bad
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [{ _id: subredditId }, { moderators: userId }],
+        },
+      },
+      { $project: prjectField1 },
+      { $unset: '_id' },
+      { $unwind: `$${fieldName}` },
+      {
+        $lookup: {
+          from: 'users',
+          localField: `${fieldName}.username`,
+          foreignField: 'username',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          ...prjectField2,
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+            date: 1,
+          },
+        },
+      },
+    ]);
+
+    return res.map((v) => ({ date: v[fieldName].date, ...v.user[0] }));
+  }
+
+  async removeUserFromListUserDate(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    username: string,
+    fieldName: string,
+  ) {
+    const properityObject = {};
+    properityObject[fieldName] = {
+      username,
+    };
+
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [{ _id: subredditId }, { moderators: moderatorUsername }],
+      },
+      {
+        $pull: properityObject,
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
+  }
+
+  private async checkIfUserAlreadyProccessed(
+    username: string,
+    subredditId: Types.ObjectId,
+    fieldName: string,
+  ) {
+    const filter = {};
+    filter[`${fieldName}.username`] = username;
+    const res = await this.subredditModel.exists({
+      ...filter,
+      _id: subredditId,
+    });
+
+    return Boolean(res);
+  }
+
+  async addUserToListUserDate(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    username: string,
+    fieldName: string,
+    extraStage = {},
+  ) {
+    const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
+      username,
+      subredditId,
+      fieldName,
+    );
+
+    if (isUserAlreadyProccessed) {
+      throw new BadRequestException();
+    }
+
+    const properityObject = {};
+    properityObject[fieldName] = {
+      username,
+      date: new Date(),
+    };
+
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [
+          { _id: subredditId },
+          { moderators: moderatorUsername },
+          extraStage,
+        ],
+      },
+      {
+        $push: properityObject,
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 }
