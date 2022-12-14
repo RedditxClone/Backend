@@ -248,7 +248,7 @@ export class ThingFetch {
     ];
   }
 
-  getSortObject(sortType: string) {
+  getSortObject(sortType: string | undefined) {
     const sortOptions = {
       hot: { hotValue: -1 },
       top: { votesCount: -1 },
@@ -256,7 +256,7 @@ export class ThingFetch {
       best: { bestValue: -1 },
     };
 
-    if (!Object.keys(sortOptions).includes(sortType)) {
+    if (!sortType || !Object.keys(sortOptions).includes(sortType)) {
       return sortOptions.new;
     }
 
@@ -295,12 +295,12 @@ export class ThingFetch {
     ];
   }
 
-  prepareBeforeStoring(sortType: string) {
-    if (sortType.toLocaleLowerCase() === 'hot') {
+  prepareBeforeStoring(sortType: string | undefined) {
+    if (sortType?.toLocaleLowerCase() === 'hot') {
       return this.prepareToGetHotSorted();
     }
 
-    if (sortType.toLocaleLowerCase() === 'best') {
+    if (sortType?.toLocaleLowerCase() === 'best') {
       return this.prepareToGetBestSorted();
     }
 
@@ -335,6 +335,7 @@ export class ThingFetch {
           type: 1,
           visited: 1,
           hotValue: 1,
+          bestValue: 1,
           numericDate: 1,
           voteType: {
             $cond: [

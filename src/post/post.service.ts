@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
@@ -143,17 +144,18 @@ export class PostService {
 
   async getPostsOfUser(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, sort, page } = pagination;
+    console.log(pagination);
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
-      ...fetcher.prepareBeforeStoring('hot'),
+      ...fetcher.prepareBeforeStoring(sort),
       {
-        $sort: fetcher.getSortObject('hot'),
+        $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),

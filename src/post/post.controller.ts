@@ -25,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { diskStorage } from 'multer';
+import { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
@@ -92,10 +93,9 @@ export class PostController {
   @UseGuards(JWTUserGuard)
   getMePosts(
     @User('_id') userId: Types.ObjectId,
-    @Query('page') page: number | undefined,
-    @Query('limit') limit: number | undefined,
+    @Query() pagination: PaginationParamsDto,
   ) {
-    return this.postService.getPostsOfUser(userId, page, limit);
+    return this.postService.getPostsOfUser(userId, pagination);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
