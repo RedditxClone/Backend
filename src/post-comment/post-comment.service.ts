@@ -165,12 +165,16 @@ export class PostCommentService {
 
   getSavedPosts(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
-    const { limit, page } = pagination;
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.filterForSavedOnly(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
@@ -238,24 +242,36 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
 
-  async getUpvoted(userId: Types.ObjectId) {
+  async getUpvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
-  async getDownvoted(userId: Types.ObjectId) {
+  async getDownvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetDownvoteOnly(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),

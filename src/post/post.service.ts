@@ -94,11 +94,9 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  private getRandomTimeLine(
-    page: number | undefined,
-    limit: number | undefined,
-  ) {
+  private getRandomTimeLine(pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(undefined);
+    const { limit } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
@@ -112,16 +110,20 @@ export class PostService {
 
   private async getUserTimeLine(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.filterOfMySRs(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
@@ -132,14 +134,13 @@ export class PostService {
 
   async getTimeLine(
     userId: Types.ObjectId | undefined,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     if (!userId) {
-      return this.getRandomTimeLine(page, limit);
+      return this.getRandomTimeLine(pagination);
     }
 
-    return this.getUserTimeLine(userId, page, limit);
+    return this.getUserTimeLine(userId, pagination);
   }
 
   async getPostsOfUser(
@@ -190,14 +191,18 @@ export class PostService {
 
   async getHiddenPosts(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { page, limit, sort } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.getHidden(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
