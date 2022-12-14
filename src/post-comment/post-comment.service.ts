@@ -386,6 +386,25 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
+  async getThingsOfUser(username: string, userId: Types.ObjectId | undefined) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.userInfo(),
+      {
+        $match: {
+          $expr: {
+            $eq: ['$user.username', username],
+          },
+        },
+      },
+      ...fetcher.filterBlocked(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
   private async getCommonThingsForSubreddit(
     subredditId: Types.ObjectId,
     filter: any,

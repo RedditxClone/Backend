@@ -473,6 +473,44 @@ describe('PostCommentService', () => {
       expect(res.length).toEqual(0);
     });
   });
+  describe('get user things', () => {
+    let user1, user2;
+    beforeAll(async () => {
+      user1 = await userService.createUser({
+        email: 'wkljwk@emkdms.com',
+        username: 'user1lkfs',
+        password: '1234556778',
+      });
+      user2 = await userService.createUser({
+        email: 'wkljwk@emkdms.com',
+        username: 'user1lkfsd',
+        password: '1234556778',
+      });
+      await postService.create(user1._id, {
+        text: 'texst',
+        title: 'title',
+        subredditId: subreddit._id,
+      });
+      await postService.create(user1._id, {
+        text: 'texst',
+        title: 'title',
+        subredditId: subreddit._id,
+      });
+    });
+    it('must get user post', async () => {
+      const res = await service.getThingsOfUser(user1.username, user2._id);
+      expect(res.length).toEqual(2);
+    });
+    it('must get nothing', async () => {
+      const res = await service.getThingsOfUser(user2.username, user1._id);
+      expect(res.length).toEqual(0);
+    });
+    it('must get nothing', async () => {
+      await userService.block(user1._id, user2._id);
+      const res = await service.getThingsOfUser(user1.username, user2._id);
+      expect(res.length).toEqual(0);
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
