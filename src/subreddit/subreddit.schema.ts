@@ -17,6 +17,48 @@ export class Flair {
   textColor: string;
 }
 
+class ApprovedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+}
+
+class MutedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  reason: string;
+}
+
+class BannedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  reason: string;
+
+  @Prop()
+  modNote: string;
+
+  @Prop()
+  permanent: boolean;
+
+  @Prop()
+  duration: string;
+
+  @Prop()
+  message: string;
+}
+
 export class Rule {
   @Prop({ required: true })
   rule: string;
@@ -150,6 +192,18 @@ export class Subreddit {
 
   @Prop({ default: [] })
   joinList: Types.ObjectId[];
+
+  @Prop({ default: [] })
+  bannedUsers: BannedUsers[];
+
+  @Prop({ default: [] })
+  mutedUsers: MutedUsers[];
+
+  @Prop({ default: [] })
+  approvedUsers: ApprovedUsers[];
+
+  @Prop({ default: 0 })
+  notificationType: number;
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

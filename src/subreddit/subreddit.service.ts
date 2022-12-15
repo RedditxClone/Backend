@@ -11,9 +11,17 @@ import mongoose, { Model } from 'mongoose';
 
 // import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
+import { subredditSelectedFields } from '../utils/project-selected-fields';
+import {
+  srGetUsersRelated,
+  srPagination,
+  srProjectionNumOfUsersAndIfIamJoined,
+  srProjectionNumOfUsersAndIfModerator,
+} from '../utils/subreddit-aggregate-stages';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
@@ -29,6 +37,7 @@ export class SubredditService {
     private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
+    private readonly userService: UserService,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeatureService: ApiFeaturesService,
     private readonly postCommentService: PostCommentService,
@@ -69,16 +78,27 @@ export class SubredditService {
     return sr;
   }
 
-  async findSubredditByName(subredditName: string): Promise<SubredditDocument> {
-    const filter: FilterSubredditDto = { name: subredditName };
-    const sr: SubredditDocument | null | undefined =
-      await this.subredditModel.findOne(filter);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async findSubredditByName(subredditName: string, userId?) {
+    let username;
 
-    if (!sr) {
+    if (userId) {
+      const user = await this.userService.getUserById(userId);
+      username = user.username;
+    }
+
+    const sr = await this.subredditModel.aggregate([
+      { $match: { name: subredditName } },
+      srGetUsersRelated,
+      srProjectionNumOfUsersAndIfModerator(userId, username),
+      { $unset: 'moderators' },
+    ]);
+
+    if (sr.length === 0) {
       throw new NotFoundException('No subreddit with such name');
     }
 
-    return sr;
+    return { ...sr[0], joined: Boolean(sr[0].joined) };
   }
 
   async checkSubredditAvailable(subredditName: string) {
@@ -157,7 +177,7 @@ export class SubredditService {
   }
 
   async removeIcon(subreddit: string) {
-    const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
+    const saveDir = `assets/subreddit_icons/${subreddit}.jpeg`;
     const sr = await this.subredditModel
       .findByIdAndUpdate(subreddit, {
         icon: '',
@@ -225,55 +245,77 @@ export class SubredditService {
     return 'Waiting for api features to use the sort function';
   }
 
-  getSearchSubredditAggregation(
-    searchPhrase: string,
-    page,
-    numberOfData: number,
-  ) {
-    const pageNumber = page ?? 1;
+  private getSrCommonStages(userId, page, limit) {
+    return [
+      {
+        $project: {
+          ...subredditSelectedFields,
+          srId: '$_id',
+        },
+      },
+      srGetUsersRelated,
+      srProjectionNumOfUsersAndIfIamJoined(userId),
+      ...srPagination(page, limit),
+    ];
+  }
 
-    return this.subredditModel.aggregate([
+  async getSubredditStartsWithChar(
+    searchPhrase: string,
+    username,
+    userId,
+    page = 1,
+    numberOfData = 50,
+  ) {
+    const res = await this.subredditModel.aggregate([
       {
         $match: {
-          $or: [
-            { name: { $regex: searchPhrase, $options: 'i' } },
-            { description: { $regex: searchPhrase, $options: 'i' } },
+          $and: [
+            { name: new RegExp(`^${searchPhrase}`, 'i') },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: username } },
           ],
         },
       },
-      {
-        $lookup: {
-          from: 'usersubreddits',
-          localField: '_id',
-          foreignField: 'subredditId',
-          as: 'users',
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          description: 1,
-          users: { $size: '$users' },
-        },
-      },
-      {
-        $skip: (pageNumber - 1) * numberOfData,
-      },
-      {
-        $limit: numberOfData,
-      },
+      ...this.getSrCommonStages(userId, page, numberOfData),
     ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+  }
+
+  async getSearchSubredditAggregation(
+    searchPhrase: string,
+    username,
+    userId,
+    pageNumber = 1,
+    numberOfData = 50,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              $or: [
+                { name: { $regex: searchPhrase, $options: 'i' } },
+                { description: { $regex: searchPhrase, $options: 'i' } },
+              ],
+            },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: username } },
+          ],
+        },
+      },
+      ...this.getSrCommonStages(userId, pageNumber, numberOfData),
+    ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
   }
 
   getSearchFlairsAggregate(
     searchPhrase: string,
     subreddit: Types.ObjectId,
-    page,
-    numberOfData: number,
+    page = 1,
+    limit = 50,
   ) {
-    const pageNumber = page ?? 1;
-
     return this.subredditModel.aggregate([
       {
         $match: {
@@ -295,10 +337,10 @@ export class SubredditService {
         },
       },
       {
-        $skip: (pageNumber - 1) * numberOfData,
+        $skip: ((Number(page) || 1) - 1) * Number(limit),
       },
       {
-        $limit: numberOfData,
+        $limit: Number(limit),
       },
     ]);
   }
@@ -337,6 +379,16 @@ export class SubredditService {
     );
   }
 
+  private modifiedCountResponse(modifiedCount, message?) {
+    if (modifiedCount === 0) {
+      throw new BadRequestException(message);
+    }
+
+    return {
+      status: 'success',
+    };
+  }
+
   async addNewModerator(
     moderatorUsername: string,
     newModuratorUsername: string,
@@ -356,15 +408,10 @@ export class SubredditService {
       throw new UnauthorizedException();
     }
 
-    if (res.modifiedCount === 0) {
-      throw new BadRequestException(
-        'You are already a moderator in that subreddit',
-      );
-    }
-
-    return {
-      status: 'success',
-    };
+    return this.modifiedCountResponse(
+      res.modifiedCount,
+      'You are already a moderator in that subreddit',
+    );
   }
 
   async subredditIModerate(username: string) {
@@ -517,8 +564,8 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!res.modifiedCount) {
+      throw new NotFoundException();
     }
 
     return ruleDto;
@@ -541,15 +588,7 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException('No subreddit with such id');
-    }
-
-    if (!res.modifiedCount) {
-      throw new NotFoundException('no rule with such id');
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async updateRule(
@@ -582,11 +621,7 @@ export class SubredditService {
       },
     );
 
-    if (!res.matchedCount) {
-      throw new NotFoundException();
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async askToJoinSr(subreddit: Types.ObjectId, userId: Types.ObjectId) {
@@ -601,11 +636,7 @@ export class SubredditService {
       },
     );
 
-    if (res.modifiedCount === 0) {
-      throw new BadRequestException();
-    }
-
-    return { status: 'success' };
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 
   async getUsersAskingToJoinSubreddit(
@@ -677,6 +708,8 @@ export class SubredditService {
     if (!res.modifiedCount) {
       throw new BadRequestException("User didn't send request to join the sr");
     }
+
+    return { status: 'success' };
   }
 
   async acceptToJoinSr(
@@ -696,5 +729,128 @@ export class SubredditService {
     });
 
     return { status: 'success' };
+  }
+
+  async getUsersFromListUserDate(
+    subredditId: Types.ObjectId,
+    userId: string,
+    fieldName: string,
+  ) {
+    const prjectField = {};
+    prjectField[fieldName] = 1;
+
+    // We don't have to check if the request is bad
+    // eslint-disable-next-line sonarjs/prefer-immediate-return
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [{ _id: subredditId }, { moderators: userId }],
+        },
+      },
+      { $project: prjectField },
+      { $unset: '_id' },
+      { $unwind: `$${fieldName}` },
+      {
+        $lookup: {
+          from: 'users',
+          localField: `${fieldName}.username`,
+          foreignField: 'username',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          ...prjectField,
+          user: {
+            _id: 1,
+            username: 1,
+            profilePhoto: 1,
+            displayName: 1,
+            about: 1,
+            date: 1,
+          },
+        },
+      },
+    ]);
+
+    return res.map((v) => ({ ...v[fieldName], ...v.user[0] }));
+  }
+
+  async removeUserFromListUserDate(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    username: string,
+    fieldName: string,
+  ) {
+    const properityObject = {};
+    properityObject[fieldName] = {
+      username,
+    };
+
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [{ _id: subredditId }, { moderators: moderatorUsername }],
+      },
+      {
+        $pull: properityObject,
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
+  }
+
+  private async checkIfUserAlreadyProccessed(
+    username: string,
+    subredditId: Types.ObjectId,
+    fieldName: string,
+  ) {
+    const filter = {};
+    filter[`${fieldName}.username`] = username;
+    const res = await this.subredditModel.exists({
+      ...filter,
+      _id: subredditId,
+    });
+
+    return Boolean(res);
+  }
+
+  async addUserToListUserDate(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    dataSent,
+    fieldName: string,
+    extraStage = {},
+  ) {
+    const { username } = dataSent;
+    const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
+      username,
+      subredditId,
+      fieldName,
+    );
+
+    if (isUserAlreadyProccessed) {
+      throw new BadRequestException();
+    }
+
+    const properityObject = {};
+    properityObject[fieldName] = {
+      ...dataSent,
+      date: new Date(),
+    };
+
+    const res = await this.subredditModel.updateOne(
+      {
+        $and: [
+          { _id: subredditId },
+          { moderators: moderatorUsername },
+          extraStage,
+        ],
+      },
+      {
+        $push: properityObject,
+      },
+    );
+
+    return this.modifiedCountResponse(res.modifiedCount);
   }
 }

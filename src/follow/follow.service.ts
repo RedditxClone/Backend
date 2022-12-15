@@ -8,6 +8,7 @@ import type {
   PaginationParamsDto,
 } from '../utils/apiFeatures/dto';
 
+import { NotificationService } from '../notification/notification.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { FollowDto } from './dto/follow.dto';
 import type { Follow } from './follow.schema';
@@ -17,6 +18,7 @@ export class FollowService {
   constructor(
     @InjectModel('Follow') private readonly followModel: Model<Follow>,
     private readonly apiFeaturesService: ApiFeaturesService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -31,6 +33,13 @@ export class FollowService {
       }
 
       await this.followModel.create(dto);
+      //get follower
+      await this.notificationService.notifyOnFollow(
+        dto.followed,
+        dto.follower,
+        dto.follower,
+        dto.followerUsername ?? '',
+      );
 
       return { status: 'success' };
     } catch (error) {

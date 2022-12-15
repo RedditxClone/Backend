@@ -78,8 +78,9 @@ export class PostCommentController {
   upvote(
     @Param('thing', ParseObjectIdPipe) thingId,
     @User('_id') userId: Types.ObjectId,
+    @User('dontNotifyIds') dontNotifyIds: Types.ObjectId[],
   ) {
-    return this.postCommentService.upvote(thingId, userId);
+    return this.postCommentService.upvote(thingId, userId, dontNotifyIds);
   }
 
   @ApiOperation({
