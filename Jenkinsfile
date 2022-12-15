@@ -12,6 +12,9 @@ pipeline {
 				SU_PASS = credentials('SU_PASS')
         EMAIL_USER = credentials('EMAIL_USER')
 				EMAIL_PASS = credentials('EMAIL_PASS')
+        GOOGLE_CREDIENTIALS_CLIENT_ID_web = credentials('GOOGLE_CREDIENTIALS_CLIENT_ID_web')
+        GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_web = credentials('GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_web')
+				GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_android = credentials('GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_android')
     		}
             steps {
 				sh  '''

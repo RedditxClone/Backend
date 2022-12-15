@@ -105,6 +105,7 @@ describe('UserControllerSpec', () => {
         email: _email,
         authType: _authType,
         hashPassword: _hashPassword,
+        dontNotifyIds: _dontNotifyIds,
         savedPosts: _savedPosts,
         ...user
       } = stubUser();

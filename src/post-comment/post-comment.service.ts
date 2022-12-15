@@ -7,12 +7,17 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
+import { NotificationService } from '../notification/notification.service';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
+import {
+  postSelectedFileds,
+  subredditSelectedFields,
+  userSelectedFields,
+} from '../utils/project-selected-fields';
 import type { Vote } from '../vote/vote.schema';
-// import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
@@ -23,6 +28,7 @@ export class PostCommentService {
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
+    private readonly notificationService: NotificationService,
     private readonly featureService: ApiFeaturesService,
   ) {}
 
@@ -148,6 +154,7 @@ export class PostCommentService {
     if (
       !(
         thing.userId.equals(userId)
+        // TODO: Fix it after it becomes name,
         // || thing.subredditId.moderators.includes(userId) // moderators works with name now
       )
     ) {
@@ -165,12 +172,16 @@ export class PostCommentService {
 
   getSavedPosts(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
-    const { limit, page } = pagination;
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.filterForSavedOnly(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
@@ -209,12 +220,41 @@ export class PostCommentService {
     return isUpvote ? 1 : -1;
   }
 
-  async upvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+  async upvote(
+    thingId: Types.ObjectId,
+    userId: Types.ObjectId,
+    dontNotifyIds: Types.ObjectId[],
+  ) {
     const res = await this.voteModel.findOneAndUpdate(
       { thingId, userId },
       { isUpvote: true },
-      { upsert: true, new: false },
+      { upsert: true },
     );
+
+    if (res === null && !dontNotifyIds.includes(thingId)) {
+      //get thing info
+      const [info] = await this.postCommentModel.aggregate([
+        { $match: { _id: thingId } },
+        {
+          $lookup: {
+            from: 'subreddits',
+            localField: 'subredditId',
+            foreignField: '_id',
+            as: 'subreddit',
+          },
+        },
+      ]);
+
+      if (info !== undefined && !info.userId.equals(userId)) {
+        await this.notificationService.notifyOnVotes(
+          userId,
+          thingId,
+          info.type,
+          info.subreddit[0].name,
+          info.subreddit[0]._id,
+        );
+      }
+    }
 
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1).then();
   }
@@ -238,84 +278,171 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
 
-  async getUpvoted(userId: Types.ObjectId) {
+  async getUpvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
-  async getDownvoted(userId: Types.ObjectId) {
+  async getDownvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetDownvoteOnly(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
-  searchPostQuery = (searchPhrase: string, usersBlockedMe) =>
-    this.postCommentModel
-      .find({
-        $or: [
-          { title: { $regex: searchPhrase, $options: 'i' } },
-          { text: { $regex: searchPhrase, $options: 'i' } },
-        ],
-        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
-        type: 'Post',
-      })
-      .populate([
-        {
-          path: 'subredditId',
-          model: 'Subreddit',
-          select: 'name',
-        },
-        {
-          path: 'userId',
-          model: 'User',
-          select: 'username profilePhoto',
-        },
-      ]);
+  searchPostAggregate(
+    searchPhrase: string,
+    userId: Types.ObjectId,
+    page,
+    limit,
+  ) {
+    const fetcher = new ThingFetch(userId);
 
-  searchCommentQuery = (searchPhrase: string, usersBlockedMe) =>
-    this.postCommentModel
-      .find({
-        text: { $regex: searchPhrase, $options: 'i' },
-        userId: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
-        type: 'Comment',
-      })
-      .populate([
-        {
-          path: 'postId',
-          model: 'Post',
-          select: 'title publishedDate',
-          populate: [
+    return this.postCommentModel.aggregate([
+      {
+        $match: {
+          $and: [
             {
-              path: 'userId',
-              model: 'User',
-              select: 'username profilePhoto',
+              $or: [
+                { title: { $regex: searchPhrase, $options: 'i' } },
+                { text: { $regex: searchPhrase, $options: 'i' } },
+              ],
             },
+            { type: 'Post' },
+            { isDeleted: false },
           ],
         },
-        {
-          path: 'userId',
-          model: 'User',
-          select: 'username profilePhoto',
+      },
+      {
+        $set: {
+          thingId: { $toObjectId: '$_id' },
+          subredditId: {
+            $toObjectId: '$subredditId',
+          },
         },
-        {
-          path: 'subredditId',
-          model: 'Subreddit',
-          select: 'name',
+      },
+      ...fetcher.userInfo(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.SRInfo(),
+      {
+        $project: {
+          ...postSelectedFileds,
+          subreddit: subredditSelectedFields,
+          user: userSelectedFields,
         },
-      ]);
+      },
+      {
+        $project: {
+          ...postSelectedFileds,
+          user: 1,
+          subreddit: {
+            $arrayElemAt: ['$subreddit', 0],
+          },
+        },
+      },
+      ...fetcher.getPaginated(page, limit),
+    ]);
+  }
+
+  searchCommentQuery = (
+    searchPhrase: string,
+    userId: Types.ObjectId,
+    page = 1,
+    limit = 50,
+  ) => {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postCommentModel.aggregate([
+      {
+        $match: {
+          $and: [
+            { text: { $regex: searchPhrase, $options: 'i' } },
+            { type: 'Comment' },
+          ],
+        },
+      },
+      {
+        $set: {
+          thingId: { $toObjectId: '$_id' },
+          subredditId: {
+            $toObjectId: '$subredditId',
+          },
+          commentPostId: { $toObjectId: '$postId' },
+          userId: {
+            $toObjectId: '$userId',
+          },
+        },
+      },
+      ...fetcher.userInfo(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.SRInfo(),
+      {
+        $lookup: {
+          from: 'postcomments',
+          as: 'post',
+          foreignField: '_id',
+          localField: 'postId',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          as: 'postOwner',
+          foreignField: '_id',
+          localField: 'post.userId',
+        },
+      },
+      {
+        $project: {
+          ...postSelectedFileds,
+          user: userSelectedFields,
+          subreddit: subredditSelectedFields,
+          post: postSelectedFileds,
+          postOwner: userSelectedFields,
+        },
+      },
+      {
+        $project: {
+          ...postSelectedFileds,
+          user: 1,
+          subreddit: {
+            $arrayElemAt: ['$subreddit', 0],
+          },
+          post: {
+            $arrayElemAt: ['$post', 0],
+          },
+          postOwner: {
+            $arrayElemAt: ['$postOwner', 0],
+          },
+        },
+      },
+      ...fetcher.getPaginated(page, limit),
+    ]);
+  };
 
   async getThingIModerate(modUsername: string, thingId: Types.ObjectId) {
     return this.postCommentModel.aggregate([
@@ -410,8 +537,13 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
-  async getThingsOfUser(username: string, userId: Types.ObjectId | undefined) {
+  async getThingsOfUser(
+    username: string,
+    userId: Types.ObjectId | undefined,
+    pagination: PaginationParamsDto,
+  ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
@@ -423,6 +555,11 @@ export class PostCommentService {
           },
         },
       },
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.filterBlocked(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
@@ -432,15 +569,19 @@ export class PostCommentService {
   private async getCommonThingsForSubreddit(
     subredditId: Types.ObjectId,
     filter: any,
-    paginationParameters: any,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(undefined);
-    const { limit, page } = paginationParameters;
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificFilter({ ...filter, subredditId }),
-      ...fetcher.getPaginated(limit, page),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -448,22 +589,18 @@ export class PostCommentService {
 
   async getUnModeratedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
       { approvedBy: null, removedBy: null, spammedBy: null },
-      { limit, page, sort },
+      pagination,
     );
   }
 
   async getSpammedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
@@ -472,15 +609,13 @@ export class PostCommentService {
         isDeleted: false,
         removedBy: null,
       },
-      { limit, page, sort },
+      pagination,
     );
   }
 
   async getEditedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     return this.getCommonThingsForSubreddit(
       subredditId,
@@ -490,7 +625,7 @@ export class PostCommentService {
         isDeleted: false,
         removedBy: null,
       },
-      { limit, page, sort },
+      pagination,
     );
   }
 }

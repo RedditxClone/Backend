@@ -10,6 +10,7 @@ import { BlockModule } from '../block/block.module';
 import { BlockSchema } from '../block/block.schema';
 import { FollowModule } from '../follow/follow.module';
 import { FollowSchema } from '../follow/follow.schema';
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
@@ -17,6 +18,7 @@ import { UserModule } from '../user/user.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -26,6 +28,7 @@ import {
 import { VoteSchema } from '../vote/vote.schema';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
+import type { MuteUserDto } from './dto/mute-user.dto';
 import type { RuleDto } from './dto/rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
@@ -44,9 +47,17 @@ describe('SubredditService', () => {
   let userIdNewAskToJoin;
   let username;
   let usernameNewModerator;
+  const userMute1: MuteUserDto = {
+    username: '',
+    reason: 'bad words',
+  };
+  const userMute2: MuteUserDto = {
+    username: '',
+    reason: 'funny',
+  };
   let ruleId1;
   let ruleId2;
-
+  const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
   const rule: RuleDto = {
     rule: 'No photo',
     to: 2,
@@ -98,6 +109,7 @@ describe('SubredditService', () => {
         UserModule,
         FollowModule,
         BlockModule,
+        NotificationModule,
         MongooseModule.forFeature([
           {
             name: 'PostComment',
@@ -134,10 +146,16 @@ describe('SubredditService', () => {
     const u2 = await userService.createUser(userData);
     userData.username = 'kamal';
     const u3 = await userService.createUser(userData);
+    userData.username = 'abdelhady';
+    const u4 = await userService.createUser(userData);
+    userData.username = 'assad';
+    const u5 = await userService.createUser(userData);
     userId = u1._id;
     userIdNewAskToJoin = u3._id;
     username = u1.username;
     usernameNewModerator = u2.username;
+    userMute1.username = u4.username;
+    userMute2.username = u5.username;
     subredditDocument = await subredditService.create(
       subredditDefault,
       username,
@@ -717,10 +735,119 @@ describe('SubredditService', () => {
     });
   });
 
+  describe('mute, approve and banned user used function', () => {
+    it('should add a user successfully', async () => {
+      const res1 = await subredditService.addUserToListUserDate(
+        subredditDocument._id,
+        username,
+        userMute1,
+        'mutedUsers',
+      );
+      expect(res1).toEqual({ status: 'success' });
+
+      const res2 = await subredditService.addUserToListUserDate(
+        subredditDocument._id,
+        username,
+        userMute2,
+        'mutedUsers',
+      );
+      expect(res2).toEqual({ status: 'success' });
+    });
+    it('should throw error already added', async () => {
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          username,
+          userMute1,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error moderator cant mute another moderator', async () => {
+      const userMuteModerator: MuteUserDto = {
+        reason: 'funny',
+        username: usernameNewModerator,
+      };
+      // extra stage is not exist with approve operation.
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          username,
+          userMuteModerator,
+          'mutedUsers',
+          { moderators: { $ne: usernameNewModerator } },
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error not a moderator', async () => {
+      const userNew: MuteUserDto = {
+        reason: 'funny',
+        username,
+      };
+
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          'not_moderator',
+          userNew,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('get users from userDate list', () => {
+    it('should get users successfully', async () => {
+      const res = await subredditService.getUsersFromListUserDate(
+        subredditDocument._id,
+        username,
+        'mutedUsers',
+      );
+      expect(res).toEqual([
+        expect.objectContaining({
+          username: userMute1.username,
+        }),
+        expect.objectContaining({
+          username: userMute2.username,
+        }),
+      ]);
+    });
+  });
+
+  describe('remove user from list data', () => {
+    it('should throw error not a moderator', async () => {
+      await expect(
+        subredditService.removeUserFromListUserDate(
+          subredditDocument._id,
+          userMute1.username,
+          userMute2.username,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should remove a user from the list successfully', async () => {
+      await subredditService.removeUserFromListUserDate(
+        subredditDocument._id,
+        username,
+        userMute2.username,
+        'mutedUsers',
+      );
+      await subredditService.removeUserFromListUserDate(
+        subredditDocument._id,
+        username,
+        userMute1.username,
+        'mutedUsers',
+      );
+      const res = await subredditService.getUsersFromListUserDate(
+        subredditDocument._id,
+        username,
+        'mutedUsers',
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
   describe('get subreddits', () => {
-    const limit = undefined;
-    const page = undefined;
-    const sort = undefined;
     let sr;
     beforeAll(async () => {
       sr = await subredditService.create(
@@ -736,72 +863,54 @@ describe('SubredditService', () => {
       const res = await subredditService.getUnModeratedThings(
         sr._id,
         userId,
-        limit,
-        page,
-        sort,
+        pagination,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getUnModeratedThings(
-          sr._id,
-          sr._id,
-          limit,
-          page,
-          sort,
-        ),
+        subredditService.getUnModeratedThings(sr._id, sr._id, pagination),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getUnModeratedThings(
-          userId,
-          userId,
-          limit,
-          page,
-          sort,
-        ),
+        subredditService.getUnModeratedThings(userId, userId, pagination),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getSpammedThings(
         sr._id,
         userId,
-        limit,
-        page,
-        sort,
+        pagination,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getSpammedThings(sr._id, sr._id, limit, page, sort),
+        subredditService.getSpammedThings(sr._id, sr._id, pagination),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getSpammedThings(userId, userId, limit, page, sort),
+        subredditService.getSpammedThings(userId, userId, pagination),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getEditedThings(
         sr._id,
         userId,
-        limit,
-        page,
-        sort,
+        pagination,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getEditedThings(sr._id, sr._id, limit, page, sort),
+        subredditService.getEditedThings(sr._id, sr._id, pagination),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getEditedThings(userId, userId, limit, page, sort),
+        subredditService.getEditedThings(userId, userId, pagination),
       ).rejects.toThrow('wrong');
     });
   });

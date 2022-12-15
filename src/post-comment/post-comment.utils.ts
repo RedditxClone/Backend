@@ -248,6 +248,66 @@ export class ThingFetch {
     ];
   }
 
+  getSortObject(sortType: string | undefined) {
+    const sortOptions = {
+      hot: { hotValue: -1, _id: 1 },
+      top: { votesCount: -1, _id: 1 },
+      new: { publishedAt: -1, _id: 1 },
+      old: { publishedAt: 1, _id: -1 },
+      best: { bestValue: -1, _id: 1 },
+    };
+
+    if (!sortType || !Object.keys(sortOptions).includes(sortType)) {
+      return sortOptions.new;
+    }
+
+    return sortOptions[sortType];
+  }
+
+  private prepareToGetHotSorted() {
+    return [
+      {
+        $set: {
+          hotValue: {
+            $add: [
+              { $mod: [{ $toLong: '$publishedDate' }, 10_000_000] },
+              { $multiply: [50_000, '$votesCount'] },
+              { $multiply: [30_000, '$commentCount'] },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  private prepareToGetBestSorted() {
+    return [
+      {
+        $set: {
+          bestValue: {
+            $add: [
+              { $mod: [{ $toLong: '$publishedDate' }, 10_000_000] },
+              { $multiply: [70_000, '$votesCount'] },
+              { $multiply: [70_000, '$commentCount'] },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  prepareBeforeStoring(sortType: string | undefined) {
+    if (sortType?.toLocaleLowerCase() === 'hot') {
+      return this.prepareToGetHotSorted();
+    }
+
+    if (sortType?.toLocaleLowerCase() === 'best') {
+      return this.prepareToGetBestSorted();
+    }
+
+    return [];
+  }
+
   getPostProject() {
     return [
       {

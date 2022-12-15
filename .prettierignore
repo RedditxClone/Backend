@@ -3,3 +3,4 @@
 .npmrc
 coverage
 .czrc
+/collections

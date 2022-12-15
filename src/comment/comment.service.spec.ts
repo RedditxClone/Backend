@@ -3,6 +3,7 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 
+import { NotificationModule } from '../notification/notification.module';
 import { PostSchema } from '../post/post.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import {
@@ -13,6 +14,7 @@ import { CommentSchema } from './comment.schema';
 import { CommentService } from './comment.service';
 import type { CreateCommentDto } from './dto';
 import { stubComment } from './test/stubs/comment.stubs';
+
 describe('CommentService', () => {
   let service: CommentService;
   let module: TestingModule;
@@ -25,6 +27,7 @@ describe('CommentService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
+        NotificationModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           {
