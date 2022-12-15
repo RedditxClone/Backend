@@ -161,6 +161,7 @@ describe('UserService', () => {
         username: userDto.username,
         profilePhoto: '',
         _id: id,
+        createdAt: userAccount.createdAt,
       });
     });
   });
