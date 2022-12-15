@@ -106,7 +106,10 @@ export class PostService {
       );
     }
 
-    return { status: 'success', media };
+    return {
+      status: 'success',
+      images: media.map((name) => `assets/post-media/${name}`),
+    };
   }
 
   findAll() {
