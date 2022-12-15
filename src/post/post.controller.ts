@@ -45,6 +45,7 @@ import {
   UploadMediaDto,
   VotePostDto,
 } from './dto';
+import { DiscoverReturnDto } from './dto/discover-return-dto';
 import { PostService } from './post.service';
 
 @ApiTags('Post')
@@ -67,6 +68,20 @@ export class PostController {
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postService.getHiddenPosts(userId, pagination);
+  }
+
+  @ApiOkResponse({
+    description: 'posts returned successfully',
+    type: DiscoverReturnDto,
+  })
+  @Get('discover')
+  @UseGuards(JWTUserGuard)
+  discover(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.discover(userId, page, limit);
   }
 
   @ApiOkResponse({

@@ -108,7 +108,7 @@ export class PostService {
 
     return {
       status: 'success',
-      images: media.map((name) => `assets/post-media/${name}`),
+      images: media.map((name) => `/assets/post-media/${name}`),
     };
   }
 
@@ -145,7 +145,7 @@ export class PostService {
   async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
     const fetcher = new ThingFetch(userId);
 
-    return this.postModel.aggregate([
+    const post = await this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.onlyOnePost(postId),
       ...fetcher.filterBlocked(),
@@ -155,6 +155,12 @@ export class PostService {
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
+
+    if (post.length === 0) {
+      throw new BadRequestException(`there is no post with id ${postId}`);
+    }
+
+    return post[0];
   }
 
   private async getUserTimeLine(
@@ -257,6 +263,29 @@ export class PostService {
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async discover(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterOfMySRs(),
+      ...fetcher.filterHidden(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.SRInfo(),
+      {
+        $unwind: {
+          path: '$images',
+        },
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.getDiscoverProject(),
     ]);
   }
 }

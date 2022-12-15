@@ -435,6 +435,24 @@ export class ThingFetch {
     ];
   }
 
+  getDiscoverProject() {
+    return [
+      {
+        $project: {
+          image: { $concat: ['/assets/post-media/', '$images'] },
+          subredditInfo: {
+            id: { $arrayElemAt: ['$subreddit._id', 0] },
+            name: { $arrayElemAt: ['$subreddit.name', 0] },
+          },
+          _id: 0,
+          postId: {
+            $toObjectId: '$_id',
+          },
+        },
+      },
+    ];
+  }
+
   matchToGetUpvoteOnly() {
     return [
       ...this.voteInfo(),
