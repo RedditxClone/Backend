@@ -18,9 +18,11 @@ import { Model } from 'mongoose';
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { ThingFetch } from '../post-comment/post-comment.utils';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
+import { userSelectedFields } from '../utils/project-selected-fields';
 import type {
   AvailableUsernameDto,
   CreateUserDto,
@@ -29,7 +31,6 @@ import type {
 } from './dto';
 import { PrefsDto } from './dto';
 import type { User, UserDocument, UserWithId } from './user.schema';
-
 @Global()
 @Injectable()
 export class UserService {
@@ -62,13 +63,59 @@ export class UserService {
     return 'delete a friend';
   }
 
-  searchUserQuery = (usersBlockedMe, searchPhrase) =>
-    this.userModel
-      .find({
-        username: new RegExp(`^${searchPhrase}`, 'i'),
-        _id: { $not: { $all: usersBlockedMe.map((v) => v.blocker) } },
-      })
-      .select('username profilePhoto about');
+  async searchPeopleAggregate(
+    searchPhrase,
+    userId,
+    page = 1,
+    numberOfData = 50,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    const res = await this.userModel.aggregate([
+      {
+        $match: {
+          $and: [
+            { username: new RegExp(`^${searchPhrase}`, 'i') },
+            { showInSearch: { $ne: 0 } },
+          ],
+        },
+      },
+      {
+        $project: {
+          userId: '$_id',
+          ...userSelectedFields,
+        },
+      },
+      ...fetcher.filterBlocked(),
+      {
+        $unset: 'block',
+      },
+      {
+        $lookup: {
+          from: 'follows',
+          as: 'followed',
+          let: {
+            userId: '$userId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$follower', userId] },
+                    { $eq: ['$followed', '$$userId'] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      ...fetcher.getPaginated(page, numberOfData),
+    ]);
+
+    return res.map((v) => ({ ...v, followed: v.followed.length > 0 }));
+  }
 
   /**
    *
@@ -425,10 +472,7 @@ export class UserService {
     return { status: 'success' };
   }
 
-  async getSavedPosts(
-    userId: Types.ObjectId,
-    paginationParams: PaginationParamsDto,
-  ) {
+  getSavedPosts(userId: Types.ObjectId, paginationParams: PaginationParamsDto) {
     return this.postCommentService.getSavedPosts(userId, paginationParams);
   }
 

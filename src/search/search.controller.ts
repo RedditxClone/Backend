@@ -18,11 +18,12 @@ export class SearchController {
   }
 
   @ApiProperty({ description: 'search for communities' })
+  @UseGuards(IsUserExistGuard)
   @Get('/communities')
-  searchCommunities(@Query('word') word, @Query('page') page) {
+  searchCommunities(@Query('word') word, @Query('page') page, @Req() { _id }) {
     page = Number(page);
 
-    return this.searchService.searchCommunities(word, page ?? 1, 10);
+    return this.searchService.searchCommunities(word, _id, page ?? 1, 10);
   }
 
   @UseGuards(IsUserExistGuard)
@@ -45,7 +46,7 @@ export class SearchController {
   searchGeneral(@Query('word') word, @Req() req) {
     return Promise.all([
       this.searchService.searchPeople(word, 1, 5, req._id),
-      this.searchService.searchCommunities(word, 1, 5),
+      // this.searchService.searchCommunities(word, 1, 5),
     ]);
   }
 
