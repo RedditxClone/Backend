@@ -146,6 +146,30 @@ export class PostController {
     return this.postService.uploadMedia(files);
   }
 
+  @ApiOperation({ description: 'upload a post media.' })
+  @ApiCreatedResponse({
+    description: 'The resource was uploaded successfully',
+    type: UploadMediaDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      storage: diskStorage({
+        destination: './assets/posts-media',
+        filename: uniqueFileName,
+      }),
+    }),
+  )
+  @Post('/:post_id/upload-media')
+  uploadPostMedia(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Param('post_id') postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.uploadPostMedia(files, postId, userId);
+  }
+
   @ApiOperation({ description: 'Deletes a post.' })
   @ApiOkResponse({ description: 'The resource was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
