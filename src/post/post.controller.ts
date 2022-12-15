@@ -31,6 +31,7 @@ import { JWTUserGuard } from '../auth/guards';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { uniqueFileName } from '../utils';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreatePostDto,
@@ -55,6 +56,20 @@ export class PostController {
   ) {}
 
   @ApiOkResponse({
+    description: 'your hidden posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('hidden')
+  @UseGuards(JWTUserGuard)
+  getHiddenPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getHiddenPosts(userId, pagination);
+  }
+
+  @ApiOkResponse({
     description: 'posts returned successfully',
     type: ReturnPostDto,
   })
@@ -74,12 +89,8 @@ export class PostController {
   })
   @Get('timeline')
   @UseGuards(IsUserExistGuard)
-  getTimeLine(
-    @Req() req,
-    @Query('page') page: number | undefined,
-    @Query('limit') limit: number | undefined,
-  ) {
-    return this.postService.getTimeLine(req._id, page, limit);
+  getTimeLine(@Req() req, @Query() pagination: PaginationParamsDto) {
+    return this.postService.getTimeLine(req._id, pagination);
   }
 
   @ApiOkResponse({
@@ -91,10 +102,9 @@ export class PostController {
   @UseGuards(JWTUserGuard)
   getMePosts(
     @User('_id') userId: Types.ObjectId,
-    @Query('page') page: number | undefined,
-    @Query('limit') limit: number | undefined,
+    @Query() pagination: PaginationParamsDto,
   ) {
-    return this.postService.getPostsOfUser(userId, page, limit);
+    return this.postService.getPostsOfUser(userId, pagination);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
@@ -126,7 +136,7 @@ export class PostController {
   @UseInterceptors(
     AnyFilesInterceptor({
       storage: diskStorage({
-        destination: './statics/posts-media',
+        destination: './assets/posts-media',
         filename: uniqueFileName,
       }),
     }),
@@ -167,9 +177,10 @@ export class PostController {
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
+  @UseGuards(IsUserExistGuard)
   @Get(':id')
-  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.postCommentService.get(id, 'Post');
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req) {
+    return this.postService.getPost(id, req._id);
   }
 
   @ApiOperation({

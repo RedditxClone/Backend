@@ -142,12 +142,18 @@ export class User {
   @Prop({ default: true })
   cakeDay: boolean;
 
+  @Prop({ default: [] })
+  dontNotifyIds: Types.ObjectId[];
+
   //messages
   @Prop({ enum: [`everyone`, `whitelisted`], default: 'everyone' })
   acceptPms: string;
 
   @Prop({ default: [] })
   whitelisted: string[];
+
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
 
   //Miscellaneous
   @Prop({ default: false })

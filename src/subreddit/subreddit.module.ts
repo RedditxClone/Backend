@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserModule } from '../user/user.module';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { VoteSchema } from '../vote/vote.schema';
@@ -30,7 +32,9 @@ import { SubredditUserSchema } from './subreddit-user.schema';
         schema: HideSchema,
       },
     ]),
+    UserModule,
     ImagesHandlerModule,
+    NotificationModule,
   ],
   controllers: [SubredditController],
   providers: [SubredditService, ApiFeaturesService, PostCommentService],

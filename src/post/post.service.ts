@@ -8,6 +8,7 @@ import { Model, Types } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
 import type { Hide } from './hide.schema';
@@ -93,11 +94,9 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  private getRandomTimeLine(
-    page: number | undefined,
-    limit: number | undefined,
-  ) {
+  private getRandomTimeLine(pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(undefined);
+    const { limit } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
@@ -109,18 +108,37 @@ export class PostService {
     ]);
   }
 
+  async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.onlyOnePost(postId),
+      ...fetcher.filterBlocked(),
+      ...fetcher.filterHidden(),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
   private async getUserTimeLine(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.filterOfMySRs(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
@@ -131,26 +149,29 @@ export class PostService {
 
   async getTimeLine(
     userId: Types.ObjectId | undefined,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     if (!userId) {
-      return this.getRandomTimeLine(page, limit);
+      return this.getRandomTimeLine(pagination);
     }
 
-    return this.getUserTimeLine(userId, page, limit);
+    return this.getUserTimeLine(userId, pagination);
   }
 
   async getPostsOfUser(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, sort, page } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
@@ -181,6 +202,28 @@ export class PostService {
     });
 
     return { status: 'success' };
+  }
+
+  async getHiddenPosts(
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { page, limit, sort } = pagination;
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.getHidden(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
   }
 
   async discover(

@@ -27,6 +27,67 @@ export class ThingFetch {
     ];
   }
 
+  onlyOnePost(postId: Types.ObjectId) {
+    return [
+      {
+        $match: {
+          $expr: {
+            $eq: [postId, '$_id'],
+          },
+        },
+      },
+    ];
+  }
+
+  getHidden() {
+    return [
+      this.filterHidden()[0],
+      {
+        $match: {
+          $expr: {
+            $ne: ['$hide', []],
+          },
+        },
+      },
+    ];
+  }
+
+  getMe() {
+    return [
+      {
+        $lookup: {
+          as: 'me',
+          from: 'users',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', this.userId],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: '$me',
+      },
+    ];
+  }
+
+  filterForSavedOnly() {
+    return [
+      ...this.getMe(),
+      {
+        $match: {
+          $expr: {
+            $in: ['$_id', '$me.savedPosts'],
+          },
+        },
+      },
+    ];
+  }
+
   filterOfMySRs() {
     return [
       {
@@ -199,6 +260,66 @@ export class ThingFetch {
     ];
   }
 
+  getSortObject(sortType: string | undefined) {
+    const sortOptions = {
+      hot: { hotValue: -1, _id: 1 },
+      top: { votesCount: -1, _id: 1 },
+      new: { publishedAt: -1, _id: 1 },
+      old: { publishedAt: 1, _id: -1 },
+      best: { bestValue: -1, _id: 1 },
+    };
+
+    if (!sortType || !Object.keys(sortOptions).includes(sortType)) {
+      return sortOptions.new;
+    }
+
+    return sortOptions[sortType];
+  }
+
+  private prepareToGetHotSorted() {
+    return [
+      {
+        $set: {
+          hotValue: {
+            $add: [
+              { $mod: [{ $toLong: '$publishedDate' }, 10_000_000] },
+              { $multiply: [50_000, '$votesCount'] },
+              { $multiply: [30_000, '$commentCount'] },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  private prepareToGetBestSorted() {
+    return [
+      {
+        $set: {
+          bestValue: {
+            $add: [
+              { $mod: [{ $toLong: '$publishedDate' }, 10_000_000] },
+              { $multiply: [70_000, '$votesCount'] },
+              { $multiply: [70_000, '$commentCount'] },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  prepareBeforeStoring(sortType: string | undefined) {
+    if (sortType?.toLocaleLowerCase() === 'hot') {
+      return this.prepareToGetHotSorted();
+    }
+
+    if (sortType?.toLocaleLowerCase() === 'best') {
+      return this.prepareToGetBestSorted();
+    }
+
+    return [];
+  }
+
   getPostProject() {
     return [
       {
@@ -210,6 +331,8 @@ export class ThingFetch {
           subredditInfo: {
             id: { $arrayElemAt: ['$subreddit._id', 0] },
             name: { $arrayElemAt: ['$subreddit.name', 0] },
+            isJoin: { $toBool: false },
+            isModerator: { $toBool: false },
           },
           votesCount: 1,
           commentCount: 1,
@@ -325,6 +448,38 @@ export class ThingFetch {
             id: '$subreddit._id',
           },
           postId: 1,
+        },
+      },
+    ];
+  }
+
+  matchToGetUpvoteOnly() {
+    return [
+      ...this.voteInfo(),
+      {
+        $unwind: '$vote',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$vote.isUpvote', true],
+          },
+        },
+      },
+    ];
+  }
+
+  matchToGetDownvoteOnly() {
+    return [
+      ...this.voteInfo(),
+      {
+        $unwind: '$vote',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$vote.isUpvote', false],
+          },
         },
       },
     ];

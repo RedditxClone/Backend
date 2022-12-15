@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -10,6 +20,8 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
@@ -17,6 +29,28 @@ import { PostCommentService } from './post-comment.service';
 @Controller('thing')
 export class PostCommentController {
   constructor(private readonly postCommentService: PostCommentService) {}
+
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('upvoted')
+  getUpvoted(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getUpvoted(userId, pagination);
+  }
+
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('downvoted')
+  getDownvoted(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getDownvoted(userId, pagination);
+  }
 
   @Post()
   create(@Body() createPostCommentDto: CreatePostCommentDto) {
@@ -44,8 +78,9 @@ export class PostCommentController {
   upvote(
     @Param('thing', ParseObjectIdPipe) thingId,
     @User('_id') userId: Types.ObjectId,
+    @User('dontNotifyIds') dontNotifyIds: Types.ObjectId[],
   ) {
-    return this.postCommentService.upvote(thingId, userId);
+    return this.postCommentService.upvote(thingId, userId, dontNotifyIds);
   }
 
   @ApiOperation({
@@ -130,5 +165,19 @@ export class PostCommentController {
     @User('username') username: string,
   ) {
     return this.postCommentService.disApprove(username, thingId);
+  }
+
+  @UseGuards(IsUserExistGuard)
+  @Get('user/:username')
+  getThingsOfUser(
+    @Param('username') username: string,
+    @Req() req,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getThingsOfUser(
+      username,
+      req._id,
+      pagination,
+    );
   }
 }

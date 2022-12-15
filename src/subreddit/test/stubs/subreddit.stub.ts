@@ -17,7 +17,8 @@ export const stubSubreddit = (): Subreddit => ({
   allowImages: true,
   allowVideos: true,
   acceptingRequestsToJoin: true,
-  communityTopics: [],
+  activeTopic: 'Activism',
+  subTopics: [],
   requirePostFlair: false,
   postTextBodyRule: 0,
   restrictPostTitleLength: false,
@@ -37,4 +38,8 @@ export const stubSubreddit = (): Subreddit => ({
   createdDate: new Date('2022-12-12T17:10:28.332Z'),
   rules: [],
   joinList: [],
+  approvedUsers: [],
+  mutedUsers: [],
+  bannedUsers: [],
+  notificationType: 0,
 });
