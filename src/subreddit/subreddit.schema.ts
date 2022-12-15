@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { Document } from 'mongoose';
 import { Types } from 'mongoose';
@@ -14,6 +15,68 @@ export class Flair {
 
   @Prop({ required: true })
   textColor: string;
+}
+
+class ApprovedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+}
+
+class MutedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  reason: string;
+}
+
+class BannedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  reason: string;
+
+  @Prop()
+  modNote: string;
+
+  @Prop()
+  permanent: boolean;
+
+  @Prop()
+  duration: string;
+
+  @Prop()
+  message: string;
+}
+
+export class Rule {
+  @Prop({ required: true })
+  rule: string;
+
+  @Prop({ required: true, enum: [0, 1, 2] })
+  to: number;
+
+  @Prop()
+  reason?: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop({ default: Date.now() })
+  createdDate?: Date;
+
+  @Prop({ required: true })
+  _id: Types.ObjectId;
 }
 
 @Schema()
@@ -112,11 +175,35 @@ export class Subreddit {
   @Prop({ default: [] })
   flairList: Flair[];
 
-  @Prop({ default: [], ref: 'User' })
-  moderators: Types.ObjectId[];
+  @Prop({ default: [] })
+  moderators: string[];
 
   @Prop()
   icon: string;
+
+  @Prop({ default: [] })
+  categories: string[];
+
+  @Prop({ default: new Date(Date.now()) })
+  createdDate: Date;
+
+  @Prop({ default: [] })
+  rules: Rule[];
+
+  @Prop({ default: [] })
+  joinList: Types.ObjectId[];
+
+  @Prop({ default: [] })
+  bannedUsers: BannedUsers[];
+
+  @Prop({ default: [] })
+  mutedUsers: MutedUsers[];
+
+  @Prop({ default: [] })
+  approvedUsers: ApprovedUsers[];
+
+  @Prop({ default: 0 })
+  notificationType: number;
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);
