@@ -163,9 +163,10 @@ export class PostController {
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
+  @UseGuards(IsUserExistGuard)
   @Get(':id')
-  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.postCommentService.get(id, 'Post');
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req) {
+    return this.postService.getPost(id, req._id);
   }
 
   @ApiOperation({
