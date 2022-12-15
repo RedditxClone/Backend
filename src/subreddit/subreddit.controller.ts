@@ -166,52 +166,52 @@ export class SubredditController {
     return this.subredditService.getFlairs(subreddit);
   }
 
-  @ApiOperation({ description: 'Get the current settings of a subreddit.' })
-  @ApiOkResponse({ description: 'The resource was returned successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Get(':subreddit/about/edit')
-  findSettings(@Param('subreddit') _subreddit: string) {
-    // TODO: implement service
-  }
+  // @ApiOperation({ description: 'Get the current settings of a subreddit.' })
+  // @ApiOkResponse({ description: 'The resource was returned successfully' })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'Resource not found' })
+  // @Get(':subreddit/about/edit')
+  // findSettings(@Param('subreddit') _subreddit: string) {
+  //   // TODO: implement service
+  // }
 
-  @ApiOperation({ description: 'Get a list of users relevant to moderators.' })
-  @ApiOkResponse({ description: 'The resource was returned successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Get(':subreddit/about/user')
-  findUsersForMods(
-    @Param('subreddit') _subreddit: string,
-    @Query('role') _role: string,
-  ) {
-    // TODO: implement service
-  }
+  // @ApiOperation({ description: 'Get a list of users relevant to moderators.' })
+  // @ApiOkResponse({ description: 'The resource was returned successfully' })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'Resource not found' })
+  // @Get(':subreddit/about/user')
+  // findUsersForMods(
+  //   @Param('subreddit') _subreddit: string,
+  //   @Query('role') _role: string,
+  // ) {
+  //   // TODO: implement service
+  // }
 
-  @ApiOperation({ description: 'Get a list of posts relevant to moderators.' })
-  @ApiOkResponse({ description: 'The resource was returned successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Get(':subreddit/about/post')
-  findPostsForMods(
-    @Param('subreddit') _subreddit: string,
-    @Query('location') _location: string,
-  ) {
-    // TODO: implement service
-  }
+  // @ApiOperation({ description: 'Get a list of posts relevant to moderators.' })
+  // @ApiOkResponse({ description: 'The resource was returned successfully' })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'Resource not found' })
+  // @Get(':subreddit/about/post')
+  // findPostsForMods(
+  //   @Param('subreddit') _subreddit: string,
+  //   @Query('location') _location: string,
+  // ) {
+  //   // TODO: implement service
+  // }
 
-  @ApiOperation({
-    description: 'Get subreddits the user has a specific role in.',
-  })
-  @ApiOkResponse({ description: 'The resource was returned successfully' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @Get('mine')
-  findUserSubreddits(
-    @Param('subreddit') _subreddit: string,
-    @Query('role') _role: string,
-  ) {
-    // TODO: implement service
-  }
+  // @ApiOperation({
+  //   description: 'Get subreddits the user has a specific role in.',
+  // })
+  // @ApiOkResponse({ description: 'The resource was returned successfully' })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @ApiNotFoundResponse({ description: 'Resource not found' })
+  // @Get('mine')
+  // findUserSubreddits(
+  //   @Param('subreddit') _subreddit: string,
+  //   @Query('role') _role: string,
+  // ) {
+  //   // TODO: implement service
+  // }
 
   @ApiOperation({ description: 'Update a subreddit settings' })
   @ApiOkResponse({ description: 'The resource was updated successfully' })
@@ -246,14 +246,14 @@ export class SubredditController {
     return this.subredditService.deleteFlairById(subreddit, flair_id);
   }
 
-  @ApiOperation({ description: 'Get the flairs of the user in a subreddit' })
-  @ApiOkResponse({ description: 'The flairs returned successfully' })
-  @ApiBadRequestResponse({ description: 'User is not part of that community' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @Get('/:subreddit/user/me/flair')
-  getMyFlairsInSubreddit(@Param('subreddit') _subreddit: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get the flairs of the user in a subreddit' })
+  // @ApiOkResponse({ description: 'The flairs returned successfully' })
+  // @ApiBadRequestResponse({ description: 'User is not part of that community' })
+  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  // @Get('/:subreddit/user/me/flair')
+  // getMyFlairsInSubreddit(@Param('subreddit') _subreddit: string) {
+  //   // TODO
+  // }
 
   @ApiOperation({ description: 'Get the hottest subreddits' })
   @ApiOkResponse({ description: 'The hottest subreddits returned' })
@@ -262,26 +262,26 @@ export class SubredditController {
     return this.subredditService.getHotSubreddits(subreddit);
   }
 
-  @ApiOperation({ description: 'Get the newest subreddits' })
-  @ApiOkResponse({ description: 'The newest subreddits returned successfully' })
-  @Get('/:subreddit/new')
-  getNewSubreddits(@Param('subreddit') _subreddit: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get the newest subreddits' })
+  // @ApiOkResponse({ description: 'The newest subreddits returned successfully' })
+  // @Get('/:subreddit/new')
+  // getNewSubreddits(@Param('subreddit') _subreddit: string) {
+  //   // TODO
+  // }
 
-  @ApiOperation({ description: 'Get the top subreddits' })
-  @ApiOkResponse({ description: 'The top subreddits returned successfully' })
-  @Get('/:subreddit/top')
-  getTopSubreddits(@Param('subreddit') _subreddit: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get the top subreddits' })
+  // @ApiOkResponse({ description: 'The top subreddits returned successfully' })
+  // @Get('/:subreddit/top')
+  // getTopSubreddits(@Param('subreddit') _subreddit: string) {
+  //   // TODO
+  // }
 
-  @ApiOperation({ description: 'Get subreddits randomally' })
-  @ApiOkResponse({ description: 'The random subreddits returned successfully' })
-  @Get('/:subreddit/random')
-  getRandomSubreddits(@Param('subreddit') _subreddit: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get subreddits randomally' })
+  // @ApiOkResponse({ description: 'The random subreddits returned successfully' })
+  // @Get('/:subreddit/random')
+  // getRandomSubreddits(@Param('subreddit') _subreddit: string) {
+  //   // TODO
+  // }
 
   @ApiOperation({ description: 'Add new categories to a subreddit' })
   @ApiOkResponse({ description: 'The categories were added successfully' })
