@@ -17,12 +17,46 @@ export class Flair {
   textColor: string;
 }
 
-class UserDate {
+class ApprovedUsers {
   @Prop()
   username: string;
 
   @Prop()
   date: Date;
+}
+
+class MutedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  reason: string;
+}
+
+class BannedUsers {
+  @Prop()
+  username: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  reason: string;
+
+  @Prop()
+  modNote: string;
+
+  @Prop()
+  permanent: boolean;
+
+  @Prop()
+  duration: string;
+
+  @Prop()
+  message: string;
 }
 
 export class Rule {
@@ -160,13 +194,16 @@ export class Subreddit {
   joinList: Types.ObjectId[];
 
   @Prop({ default: [] })
-  panedUsers: UserDate[];
+  bannedUsers: BannedUsers[];
 
   @Prop({ default: [] })
-  mutedUsers: UserDate[];
+  mutedUsers: MutedUsers[];
 
   @Prop({ default: [] })
-  approvedUsers: UserDate[];
+  approvedUsers: ApprovedUsers[];
+
+  @Prop({ default: 0 })
+  notificationType: number;
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

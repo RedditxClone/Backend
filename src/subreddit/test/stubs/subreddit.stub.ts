@@ -39,5 +39,6 @@ export const stubSubreddit = (): Subreddit => ({
   joinList: [],
   approvedUsers: [],
   mutedUsers: [],
-  panedUsers: [],
+  bannedUsers: [],
+  notificationType: 0,
 });

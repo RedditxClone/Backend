@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Types } from 'mongoose';
 
-import { BlockService } from '../block/block.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { UserService } from '../user/user.service';
@@ -9,14 +8,10 @@ import { UserService } from '../user/user.service';
 @Injectable()
 export class SearchService {
   constructor(
-    private readonly blockService: BlockService,
     private readonly userService: UserService,
     private readonly postCommentService: PostCommentService,
     private readonly subredditService: SubredditService,
   ) {}
-
-  getUsersBlockedMe = async (blocker: Types.ObjectId) =>
-    this.blockService.getBlockerUsersIds(blocker);
 
   searchPeople(data: string, page, numberOfData, blocker: Types.ObjectId) {
     return this.userService.searchPeopleAggregate(
@@ -44,7 +39,24 @@ export class SearchService {
     );
   };
 
-  searchPosts = async (
+  searchCommunitiesStartsWith = async (
+    data: string,
+    userId: Types.ObjectId,
+    page,
+    numberOfData,
+  ) => {
+    const { username } = await this.userService.getUserById(userId);
+
+    return this.subredditService.getSubredditStartsWithChar(
+      data,
+      username,
+      userId,
+      page,
+      numberOfData,
+    );
+  };
+
+  searchPosts = (
     data: string,
     page = 1,
     numberOfData = 50,

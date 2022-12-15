@@ -206,16 +206,19 @@ describe('SearchService', () => {
           _id: subredditId1,
           name: subreddit1.name,
           users: 2,
+          joined: true,
         }),
         expect.objectContaining({
           _id: subredditId2,
           name: subreddit2.name,
           users: 1,
+          joined: true,
         }),
       ]);
     });
-    it('should find only 1', async () => {
+    it('should find only 1 (Testing Joining and pagination)', async () => {
       const data = await searchService.searchCommunities('11', id2, 2, 1);
+
       expect(data).toEqual([
         expect.objectContaining({
           _id: subredditId2,
@@ -238,6 +241,34 @@ describe('SearchService', () => {
     });
     it('should find nothing', async () => {
       const data = await searchService.searchCommunities('arref', id1, 1, 20);
+      expect(data.length).toBe(0);
+    });
+  });
+
+  describe('search for communities starts with character', () => {
+    it('should find the communities successfully', async () => {
+      const data = await searchService.searchCommunitiesStartsWith(
+        '11',
+        id1,
+        1,
+        10,
+      );
+      expect(data.length).toBe(1);
+      expect(data[0]).toEqual(
+        expect.objectContaining({
+          _id: subredditId1,
+          name: subreddit1.name,
+          users: 2,
+        }),
+      );
+    });
+    it('should find nothing', async () => {
+      const data = await searchService.searchCommunitiesStartsWith(
+        '23',
+        id2,
+        1,
+        10,
+      );
       expect(data.length).toBe(0);
     });
   });

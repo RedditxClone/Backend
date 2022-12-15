@@ -11,9 +11,16 @@ import mongoose, { Model } from 'mongoose';
 
 // import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { subredditSelectedFields } from '../utils/project-selected-fields';
+import {
+  srGetUsersRelated,
+  srPagination,
+  srProjectionNumOfUsersAndIfIamJoined,
+  srProjectionNumOfUsersAndIfModerator,
+} from '../utils/subreddit-aggregate-stages';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
@@ -29,6 +36,7 @@ export class SubredditService {
     private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
+    private readonly userService: UserService,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeatureService: ApiFeaturesService,
     private readonly postCommentService: PostCommentService,
@@ -69,16 +77,27 @@ export class SubredditService {
     return sr;
   }
 
-  async findSubredditByName(subredditName: string): Promise<SubredditDocument> {
-    const filter: FilterSubredditDto = { name: subredditName };
-    const sr: SubredditDocument | null | undefined =
-      await this.subredditModel.findOne(filter);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async findSubredditByName(subredditName: string, userId?) {
+    let username;
 
-    if (!sr) {
+    if (userId) {
+      const user = await this.userService.getUserById(userId);
+      username = user.username;
+    }
+
+    const sr = await this.subredditModel.aggregate([
+      { $match: { name: subredditName } },
+      srGetUsersRelated,
+      srProjectionNumOfUsersAndIfModerator(userId, username),
+      { $unset: 'moderators' },
+    ]);
+
+    if (sr.length === 0) {
       throw new NotFoundException('No subreddit with such name');
     }
 
-    return sr;
+    return { ...sr[0], joined: Boolean(sr[0].joined) };
   }
 
   async checkSubredditAvailable(subredditName: string) {
@@ -225,15 +244,50 @@ export class SubredditService {
     return 'Waiting for api features to use the sort function';
   }
 
+  private getSrCommonStages(userId, page, limit) {
+    return [
+      {
+        $project: {
+          ...subredditSelectedFields,
+          srId: '$_id',
+        },
+      },
+      srGetUsersRelated,
+      srProjectionNumOfUsersAndIfIamJoined(userId),
+      ...srPagination(page, limit),
+    ];
+  }
+
+  async getSubredditStartsWithChar(
+    searchPhrase: string,
+    username,
+    userId,
+    page = 1,
+    numberOfData = 50,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      {
+        $match: {
+          $and: [
+            { name: new RegExp(`^${searchPhrase}`, 'i') },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: username } },
+          ],
+        },
+      },
+      ...this.getSrCommonStages(userId, page, numberOfData),
+    ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+  }
+
   async getSearchSubredditAggregation(
     searchPhrase: string,
     username,
     userId,
-    page,
+    pageNumber = 1,
     numberOfData = 50,
   ) {
-    const pageNumber = page ?? 1;
-
     const res = await this.subredditModel.aggregate([
       {
         $match: {
@@ -244,49 +298,12 @@ export class SubredditService {
                 { description: { $regex: searchPhrase, $options: 'i' } },
               ],
             },
-            {
-              pannedUsers: { $ne: username },
-            },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: username } },
           ],
         },
       },
-      {
-        $project: {
-          ...subredditSelectedFields,
-          srId: '$_id',
-        },
-      },
-      {
-        $lookup: {
-          from: 'usersubreddits',
-          localField: '_id',
-          foreignField: 'subredditId',
-          as: 'users',
-        },
-      },
-      {
-        $project: {
-          ...subredditSelectedFields,
-          users: { $size: '$users' },
-          joined: {
-            $arrayElemAt: [
-              {
-                $filter: {
-                  input: '$users',
-                  cond: { $eq: ['$$this.userId', userId] },
-                },
-              },
-              0,
-            ],
-          },
-        },
-      },
-      {
-        $skip: (pageNumber - 1) * numberOfData,
-      },
-      {
-        $limit: numberOfData,
-      },
+      ...this.getSrCommonStages(userId, pageNumber, numberOfData),
     ]);
 
     return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
@@ -295,11 +312,9 @@ export class SubredditService {
   getSearchFlairsAggregate(
     searchPhrase: string,
     subreddit: Types.ObjectId,
-    page,
-    numberOfData: number,
+    page = 1,
+    limit = 50,
   ) {
-    const pageNumber = page ?? 1;
-
     return this.subredditModel.aggregate([
       {
         $match: {
@@ -321,10 +336,10 @@ export class SubredditService {
         },
       },
       {
-        $skip: (pageNumber - 1) * numberOfData,
+        $skip: ((Number(page) || 1) - 1) * Number(limit),
       },
       {
-        $limit: numberOfData,
+        $limit: Number(limit),
       },
     ]);
   }
@@ -732,19 +747,18 @@ export class SubredditService {
     userId: string,
     fieldName: string,
   ) {
-    const prjectField1 = {};
-    prjectField1[fieldName] = 1;
-    const prjectField2 = {};
-    prjectField2[fieldName] = { date: 1 };
+    const prjectField = {};
+    prjectField[fieldName] = 1;
 
     // We don't have to check if the request is bad
+    // eslint-disable-next-line sonarjs/prefer-immediate-return
     const res = await this.subredditModel.aggregate([
       {
         $match: {
           $and: [{ _id: subredditId }, { moderators: userId }],
         },
       },
-      { $project: prjectField1 },
+      { $project: prjectField },
       { $unset: '_id' },
       { $unwind: `$${fieldName}` },
       {
@@ -757,7 +771,7 @@ export class SubredditService {
       },
       {
         $project: {
-          ...prjectField2,
+          ...prjectField,
           user: {
             _id: 1,
             username: 1,
@@ -770,7 +784,7 @@ export class SubredditService {
       },
     ]);
 
-    return res.map((v) => ({ date: v[fieldName].date, ...v.user[0] }));
+    return res.map((v) => ({ ...v[fieldName], ...v.user[0] }));
   }
 
   async removeUserFromListUserDate(
@@ -814,10 +828,11 @@ export class SubredditService {
   async addUserToListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
-    username: string,
+    dataSent,
     fieldName: string,
     extraStage = {},
   ) {
+    const { username } = dataSent;
     const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
       username,
       subredditId,
@@ -830,7 +845,7 @@ export class SubredditService {
 
     const properityObject = {};
     properityObject[fieldName] = {
-      username,
+      ...dataSent,
       date: new Date(),
     };
 
