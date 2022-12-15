@@ -493,7 +493,6 @@ export class UserService {
     );
   }
 
-
   async canRecieveMessages(
     userId: Types.ObjectId,
     senderName?: string,
