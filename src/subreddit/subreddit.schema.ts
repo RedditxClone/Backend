@@ -136,7 +136,7 @@ export class Subreddit {
   @Prop({ default: true })
   acceptingRequestsToJoin: boolean;
 
-  @Prop()
+  @Prop({ default: [] })
   subTopics: string[];
 
   @Prop()
