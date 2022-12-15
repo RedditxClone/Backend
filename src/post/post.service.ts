@@ -108,7 +108,7 @@ export class PostService {
 
     return {
       status: 'success',
-      images: media.map((name) => `assets/post-media/${name}`),
+      images: media.map((name) => `/assets/post-media/${name}`),
     };
   }
 
