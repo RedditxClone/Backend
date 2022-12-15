@@ -34,4 +34,11 @@ export const stubSubreddit = (): Subreddit => ({
   welcomeMessageText: '',
   moderators: [],
   categories: [],
+  createdDate: new Date('2022-12-12T17:10:28.332Z'),
+  rules: [],
+  joinList: [],
+  approvedUsers: [],
+  mutedUsers: [],
+  bannedUsers: [],
+  notificationType: 0,
 });

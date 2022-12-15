@@ -27,6 +27,55 @@ export class ThingFetch {
     ];
   }
 
+  getHidden() {
+    return [
+      this.filterHidden()[0],
+      {
+        $match: {
+          $expr: {
+            $ne: ['$hide', []],
+          },
+        },
+      },
+    ];
+  }
+
+  getMe() {
+    return [
+      {
+        $lookup: {
+          as: 'me',
+          from: 'users',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', this.userId],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: '$me',
+      },
+    ];
+  }
+
+  filterForSavedOnly() {
+    return [
+      ...this.getMe(),
+      {
+        $match: {
+          $expr: {
+            $in: ['$_id', '$me.savedPosts'],
+          },
+        },
+      },
+    ];
+  }
+
   filterOfMySRs() {
     return [
       {
@@ -187,6 +236,7 @@ export class ThingFetch {
     ];
   }
 
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   getPaginated(page = 1, limit = 10) {
     return [
       {
@@ -215,7 +265,16 @@ export class ThingFetch {
           publishedDate: 1,
           flair: 1,
           spoiler: 1,
+          approvedBy: 1,
+          approvedAt: 1,
+          isEdited: 1,
+          removedBy: 1,
+          removedAt: 1,
+          editCheckedBy: 1,
+          vote: 1,
           nsfw: 1,
+          type: 1,
+          visited: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
@@ -291,6 +350,46 @@ export class ThingFetch {
     return [
       {
         $match: { userId: this.userId },
+      },
+    ];
+  }
+
+  matchForSpecificFilter(filter: any) {
+    return [
+      {
+        $match: filter,
+      },
+    ];
+  }
+
+  matchToGetUpvoteOnly() {
+    return [
+      ...this.voteInfo(),
+      {
+        $unwind: '$vote',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$vote.isUpvote', true],
+          },
+        },
+      },
+    ];
+  }
+
+  matchToGetDownvoteOnly() {
+    return [
+      ...this.voteInfo(),
+      {
+        $unwind: '$vote',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$vote.isUpvote', false],
+          },
+        },
       },
     ];
   }

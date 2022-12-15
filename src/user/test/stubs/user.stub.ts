@@ -52,6 +52,7 @@ export const stubUser = (): User => ({
   commentsYouFollow: true,
   redditAnnouncements: true,
   cakeDay: true,
+  dontNotifyIds: [],
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
@@ -60,6 +61,7 @@ export const stubUser = (): User => ({
   chatRequest: true,
   newFollower: false,
   unSubscribe: false,
+  savedPosts: [],
 });
 
 export const stubUserFresh = (): User => ({
@@ -110,6 +112,7 @@ export const stubUserFresh = (): User => ({
   commentsYouFollow: true,
   redditAnnouncements: true,
   cakeDay: true,
+  dontNotifyIds: [],
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
@@ -118,4 +121,5 @@ export const stubUserFresh = (): User => ({
   chatRequest: true,
   newFollower: false,
   unSubscribe: false,
+  savedPosts: [],
 });

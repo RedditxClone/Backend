@@ -6,6 +6,17 @@ import { Test } from '@nestjs/testing';
 import { readFile } from 'fs/promises';
 import mongoose, { Types } from 'mongoose';
 
+import { BlockModule } from '../block/block.module';
+import { BlockSchema } from '../block/block.schema';
+import { FollowModule } from '../follow/follow.module';
+import { FollowSchema } from '../follow/follow.schema';
+import { NotificationModule } from '../notification/notification.module';
+import { HideSchema } from '../post/hide.schema';
+import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserModule } from '../user/user.module';
+import { UserSchema } from '../user/user.schema';
+import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
@@ -13,8 +24,11 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
+import type { MuteUserDto } from './dto/mute-user.dto';
+import type { RuleDto } from './dto/rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
 import { SubredditSchema } from './subreddit.schema';
@@ -28,8 +42,25 @@ describe('SubredditService', () => {
   let id: string;
   let subredditDocument: SubredditDocument;
 
-  const userId = new Types.ObjectId(1);
-  const userIdNewModerator = new Types.ObjectId(2);
+  let userId;
+  let userIdNewAskToJoin;
+  let username;
+  let usernameNewModerator;
+  const userMute1: MuteUserDto = {
+    username: '',
+    reason: 'bad words',
+  };
+  const userMute2: MuteUserDto = {
+    username: '',
+    reason: 'funny',
+  };
+  let ruleId1;
+  let ruleId2;
+
+  const rule: RuleDto = {
+    rule: 'No photo',
+    to: 2,
+  };
 
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
@@ -74,15 +105,60 @@ describe('SubredditService', () => {
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
         ImagesHandlerModule,
+        UserModule,
+        FollowModule,
+        BlockModule,
+        NotificationModule,
         MongooseModule.forFeature([
+          {
+            name: 'PostComment',
+            schema: PostCommentSchema,
+          },
+          { name: 'Follow', schema: FollowSchema },
+          { name: 'Block', schema: BlockSchema },
+          { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'User', schema: UserSchema },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
+          },
         ]),
       ],
-      providers: [SubredditService, ApiFeaturesService],
+      providers: [
+        SubredditService,
+        ApiFeaturesService,
+        UserService,
+        PostCommentService,
+      ],
     }).compile();
     subredditService = module.get<SubredditService>(SubredditService);
-    subredditDocument = await subredditService.create(subredditDefault, userId);
+    const userService = module.get<UserService>(UserService);
+    const userData = {
+      username: 'omarfareed',
+      password: '12345678',
+      email: 'email@example.com',
+    };
+    const u1 = await userService.createUser(userData);
+    userData.username = 'aref';
+    const u2 = await userService.createUser(userData);
+    userData.username = 'kamal';
+    const u3 = await userService.createUser(userData);
+    userData.username = 'abdelhady';
+    const u4 = await userService.createUser(userData);
+    userData.username = 'assad';
+    const u5 = await userService.createUser(userData);
+    userId = u1._id;
+    userIdNewAskToJoin = u3._id;
+    username = u1.username;
+    usernameNewModerator = u2.username;
+    userMute1.username = u4.username;
+    userMute2.username = u5.username;
+    subredditDocument = await subredditService.create(
+      subredditDefault,
+      username,
+    );
     id = subredditDocument._id.toString();
   });
 
@@ -91,7 +167,7 @@ describe('SubredditService', () => {
   });
   describe('create', () => {
     it('should create subreddit successfully', async () => {
-      const subreddit = await subredditService.create(subreddit1, userId);
+      const subreddit = await subredditService.create(subreddit1, username);
       expect(subreddit).toEqual(
         expect.objectContaining({
           name: subreddit1.name,
@@ -336,7 +412,7 @@ describe('SubredditService', () => {
     it('should add cateogries successfully', async () => {
       const res = await subredditService.addSubredditCategories(
         subredditDocument._id,
-        userId,
+        username,
         ['sport', 'news'],
       );
       expect(res).toEqual({ status: 'success' });
@@ -345,7 +421,7 @@ describe('SubredditService', () => {
     it('should add cateogries successfully', async () => {
       await subredditService.addSubredditCategories(
         subredditDocument._id,
-        userId,
+        username,
         ['finance', 'news'],
       );
       const sr = await subredditService.findSubreddit(subredditDocument._id);
@@ -355,9 +431,11 @@ describe('SubredditService', () => {
 
     it('should throw error', async () => {
       await expect(
-        subredditService.addSubredditCategories(subredditDocument._id, userId, [
-          'sport',
-        ]),
+        subredditService.addSubredditCategories(
+          subredditDocument._id,
+          username,
+          ['sport'],
+        ),
       ).rejects.toThrowError();
     });
   });
@@ -379,19 +457,19 @@ describe('SubredditService', () => {
   describe('add new moderator', () => {
     it('should add moderator successfully', async () => {
       const res = await subredditService.addNewModerator(
-        userId,
-        userIdNewModerator,
+        username,
+        usernameNewModerator,
         subredditDocument._id,
       );
       const sr = await subredditService.findSubreddit(subredditDocument._id);
       expect(res).toEqual({ status: 'success' });
-      expect(sr.moderators).toEqual([userId, userIdNewModerator]);
+      expect(sr.moderators).toEqual([username, usernameNewModerator]);
     });
     it('should return unauth error', async () => {
       await expect(
         subredditService.addNewModerator(
-          new Types.ObjectId(3),
-          userIdNewModerator,
+          'not_exist_user',
+          usernameNewModerator,
           subredditDocument._id,
         ),
       ).rejects.toThrowError('Unauthorized');
@@ -399,8 +477,8 @@ describe('SubredditService', () => {
     it('should return you are already a moderator', async () => {
       await expect(
         subredditService.addNewModerator(
-          userId,
-          userIdNewModerator,
+          username,
+          usernameNewModerator,
           subredditDocument._id,
         ),
       ).rejects.toThrowError('You are already a moderator in that subreddit');
@@ -409,19 +487,453 @@ describe('SubredditService', () => {
 
   describe('get subreddits I moderate', () => {
     it('should get subreddits successfully', async () => {
-      const res = await subredditService.subredditIModerate(userId);
+      const res = await subredditService.subredditIModerate(username);
       expect(res.length).toEqual(2);
       expect(res[0]._id).toEqual(subredditDocument._id);
     });
 
     it('should return empty array', async () => {
-      const res = await subredditService.subredditIModerate(
-        new Types.ObjectId(91),
+      const res = await subredditService.subredditIModerate('hf91');
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('get subreddits I joined', () => {
+    it('should get subreddits successfully', async () => {
+      const res = await subredditService.subredditsIJoined(userId);
+      expect(res.length).toEqual(1);
+      expect(res[0]._id).toEqual(subredditDocument._id);
+    });
+    it('should return empty array', async () => {
+      const res = await subredditService.subredditsIJoined(
+        new Types.ObjectId(13),
       );
       expect(res.length).toEqual(0);
     });
   });
 
+  describe('get subreddit moderators', () => {
+    it('should get moderators successfully', async () => {
+      const res = await subredditService.getSubredditModerators(
+        subredditDocument._id,
+      );
+      expect(res.length).toEqual(2);
+      expect(res[0]._id).toEqual(userId);
+    });
+    it('should return empty array', async () => {
+      const res = await subredditService.subredditsIJoined(
+        new Types.ObjectId(13),
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('is in a subreddit', () => {
+    it('should be part of that subreddit', async () => {
+      const res = await subredditService.isJoined(
+        userId,
+        subredditDocument._id,
+      );
+      expect(res).toBe(true);
+    });
+
+    it('should not be in that subreddit', async () => {
+      const res = await subredditService.isJoined(
+        userId,
+        new Types.ObjectId(20),
+      );
+      expect(res).toBe(false);
+    });
+  });
+
+  describe('is a moderator in subreddit', () => {
+    it('should be part of that subreddit', async () => {
+      const res = await subredditService.isModerator(
+        username,
+        subredditDocument._id,
+      );
+      expect(res).toBe(true);
+    });
+
+    it('should not be in that subreddit', async () => {
+      const res = await subredditService.isModerator(
+        username,
+        new Types.ObjectId(20),
+      );
+      expect(res).toBe(false);
+    });
+  });
+
+  describe('add subreddit rule', () => {
+    it('should add rule successfully', async () => {
+      const res1 = await subredditService.addRule(
+        subredditDocument._id,
+        username,
+        rule,
+      );
+      expect(res1).toEqual(expect.objectContaining(rule));
+      ruleId1 = res1._id;
+      rule.description = 'test';
+      const res2 = await subredditService.addRule(
+        subredditDocument._id,
+        username,
+        rule,
+      );
+      expect(res2).toEqual(expect.objectContaining(rule));
+      ruleId2 = res2._id;
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.addRule(new Types.ObjectId(1431), username, rule),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('update subreddit rule', () => {
+    it('should update rule successfully', async () => {
+      const updateObject = {
+        rule: 'nothing is allowed',
+        to: 0,
+      };
+
+      await subredditService.updateRule(
+        subredditDocument._id,
+        ruleId2,
+        username,
+        updateObject,
+      );
+
+      const { rules } = await subredditService.findSubreddit(
+        subredditDocument._id,
+      );
+
+      expect(rules[1]).toEqual(
+        expect.objectContaining({
+          ...rule,
+          ...updateObject,
+          _id: ruleId2,
+        }),
+      );
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.updateRule(
+          new Types.ObjectId(1431),
+          ruleId1,
+          username,
+          rule,
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('delete subreddit rule', () => {
+    it('should delete rule successfully', async () => {
+      await subredditService.deleteRule(
+        subredditDocument._id,
+        ruleId2,
+        username,
+      );
+
+      const { rules } = await subredditService.findSubreddit(
+        subredditDocument._id,
+      );
+
+      expect(rules.length).toEqual(1);
+      expect(rules[0]._id).toEqual(ruleId1);
+    });
+    it('should throw error', async () => {
+      await expect(
+        subredditService.deleteRule(
+          subredditDocument._id,
+          ruleId1,
+          '5y198yhdwq',
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('ask to join a sr', () => {
+    it('should ask to join a sr successfully', async () => {
+      const res = await subredditService.askToJoinSr(
+        subredditDocument._id,
+        userIdNewAskToJoin,
+      );
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('should return an error', async () => {
+      await expect(
+        subredditService.askToJoinSr(subredditDocument._id, userIdNewAskToJoin),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('getUsersAskToJoin', () => {
+    it('should return users successfully', async () => {
+      const res = await subredditService.getUsersAskingToJoinSubreddit(
+        subredditDocument._id,
+        username,
+      );
+
+      expect(res.length).toEqual(1);
+      expect(res[0]).toEqual(
+        expect.objectContaining({
+          username: 'kamal',
+          _id: userIdNewAskToJoin,
+        }),
+      );
+    });
+  });
+
+  describe('accept user request to join', () => {
+    it('should return users successfully', async () => {
+      await subredditService.acceptToJoinSr(
+        subredditDocument._id,
+        username,
+        userIdNewAskToJoin,
+      );
+      expect(
+        await subredditService.isJoined(
+          userIdNewAskToJoin,
+          subredditDocument._id,
+        ),
+      ).toBe(true);
+
+      expect(
+        await subredditService.getUsersAskingToJoinSubreddit(
+          subredditDocument._id,
+          username,
+        ),
+      ).toEqual([]);
+    });
+
+    it('should return errors', async () => {
+      await expect(
+        subredditService.acceptToJoinSr(
+          subredditDocument._id,
+          username,
+          userIdNewAskToJoin,
+        ),
+      ).rejects.toThrowError();
+
+      await expect(
+        subredditService.acceptToJoinSr(
+          new Types.ObjectId(186),
+          username,
+          userIdNewAskToJoin,
+        ),
+      ).rejects.toThrowError();
+
+      await expect(
+        subredditService.acceptToJoinSr(
+          subredditDocument._id,
+          'hfdioa33',
+          userIdNewAskToJoin,
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('mute, approve and banned user used function', () => {
+    it('should add a user successfully', async () => {
+      const res1 = await subredditService.addUserToListUserDate(
+        subredditDocument._id,
+        username,
+        userMute1,
+        'mutedUsers',
+      );
+      expect(res1).toEqual({ status: 'success' });
+
+      const res2 = await subredditService.addUserToListUserDate(
+        subredditDocument._id,
+        username,
+        userMute2,
+        'mutedUsers',
+      );
+      expect(res2).toEqual({ status: 'success' });
+    });
+    it('should throw error already added', async () => {
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          username,
+          userMute1,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error moderator cant mute another moderator', async () => {
+      const userMuteModerator: MuteUserDto = {
+        reason: 'funny',
+        username: usernameNewModerator,
+      };
+      // extra stage is not exist with approve operation.
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          username,
+          userMuteModerator,
+          'mutedUsers',
+          { moderators: { $ne: usernameNewModerator } },
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should throw error not a moderator', async () => {
+      const userNew: MuteUserDto = {
+        reason: 'funny',
+        username,
+      };
+
+      await expect(
+        subredditService.addUserToListUserDate(
+          subredditDocument._id,
+          'not_moderator',
+          userNew,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('get users from userDate list', () => {
+    it('should get users successfully', async () => {
+      const res = await subredditService.getUsersFromListUserDate(
+        subredditDocument._id,
+        username,
+        'mutedUsers',
+      );
+      expect(res).toEqual([
+        expect.objectContaining({
+          username: userMute1.username,
+        }),
+        expect.objectContaining({
+          username: userMute2.username,
+        }),
+      ]);
+    });
+  });
+
+  describe('remove user from list data', () => {
+    it('should throw error not a moderator', async () => {
+      await expect(
+        subredditService.removeUserFromListUserDate(
+          subredditDocument._id,
+          userMute1.username,
+          userMute2.username,
+          'mutedUsers',
+        ),
+      ).rejects.toThrowError();
+    });
+    it('should remove a user from the list successfully', async () => {
+      await subredditService.removeUserFromListUserDate(
+        subredditDocument._id,
+        username,
+        userMute2.username,
+        'mutedUsers',
+      );
+      await subredditService.removeUserFromListUserDate(
+        subredditDocument._id,
+        username,
+        userMute1.username,
+        'mutedUsers',
+      );
+      const res = await subredditService.getUsersFromListUserDate(
+        subredditDocument._id,
+        username,
+        'mutedUsers',
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('get subreddits', () => {
+    const limit = undefined;
+    const page = undefined;
+    const sort = undefined;
+    let sr;
+    beforeAll(async () => {
+      sr = await subredditService.create(
+        {
+          name: 'sr',
+          over18: true,
+          type: 'ty',
+        },
+        userId,
+      );
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getUnModeratedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getUnModeratedThings(
+          sr._id,
+          sr._id,
+          limit,
+          page,
+          sort,
+        ),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getUnModeratedThings(
+          userId,
+          userId,
+          limit,
+          page,
+          sort,
+        ),
+      ).rejects.toThrow('wrong');
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getSpammedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getSpammedThings(sr._id, sr._id, limit, page, sort),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getSpammedThings(userId, userId, limit, page, sort),
+      ).rejects.toThrow('wrong');
+    });
+    it('must get all posts successfully', async () => {
+      const res = await subredditService.getEditedThings(
+        sr._id,
+        userId,
+        limit,
+        page,
+        sort,
+      );
+      expect(res).toEqual([]);
+    });
+    it('must throw an error because not a moderator', async () => {
+      await expect(
+        subredditService.getEditedThings(sr._id, sr._id, limit, page, sort),
+      ).rejects.toThrow('moderator');
+    });
+    it('must throw an error because wrong subredditId', async () => {
+      await expect(
+        subredditService.getEditedThings(userId, userId, limit, page, sort),
+      ).rejects.toThrow('wrong');
+    });
+  });
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);
@@ -440,6 +952,7 @@ describe('SubredditService', () => {
       expect(res).toEqual({ status: 'success' });
     });
   });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
