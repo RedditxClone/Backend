@@ -7,10 +7,10 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { Vote } from '../vote/vote.schema';
 // import { SubredditService } from '../subreddit/subreddit.service';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
@@ -470,7 +470,7 @@ export class PostCommentService {
       {
         $sort: fetcher.getSortObject(sort),
       },
-      ...fetcher.getPaginated(limit, page),
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
     ]);

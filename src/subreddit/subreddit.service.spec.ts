@@ -17,6 +17,7 @@ import { UserModule } from '../user/user.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -46,7 +47,7 @@ describe('SubredditService', () => {
   let usernameNewModerator;
   let ruleId1;
   let ruleId2;
-
+  const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
   const rule: RuleDto = {
     rule: 'No photo',
     to: 2,
@@ -718,9 +719,6 @@ describe('SubredditService', () => {
   });
 
   describe('get subreddits', () => {
-    const limit = undefined;
-    const page = undefined;
-    const sort = undefined;
     let sr;
     beforeAll(async () => {
       sr = await subredditService.create(
@@ -736,72 +734,54 @@ describe('SubredditService', () => {
       const res = await subredditService.getUnModeratedThings(
         sr._id,
         userId,
-        limit,
-        page,
-        sort,
+        pagination,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getUnModeratedThings(
-          sr._id,
-          sr._id,
-          limit,
-          page,
-          sort,
-        ),
+        subredditService.getUnModeratedThings(sr._id, sr._id, pagination),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getUnModeratedThings(
-          userId,
-          userId,
-          limit,
-          page,
-          sort,
-        ),
+        subredditService.getUnModeratedThings(userId, userId, pagination),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getSpammedThings(
         sr._id,
         userId,
-        limit,
-        page,
-        sort,
+        pagination,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getSpammedThings(sr._id, sr._id, limit, page, sort),
+        subredditService.getSpammedThings(sr._id, sr._id, pagination),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getSpammedThings(userId, userId, limit, page, sort),
+        subredditService.getSpammedThings(userId, userId, pagination),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getEditedThings(
         sr._id,
         userId,
-        limit,
-        page,
-        sort,
+        pagination,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getEditedThings(sr._id, sr._id, limit, page, sort),
+        subredditService.getEditedThings(sr._id, sr._id, pagination),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getEditedThings(userId, userId, limit, page, sort),
+        subredditService.getEditedThings(userId, userId, pagination),
       ).rejects.toThrow('wrong');
     });
   });
