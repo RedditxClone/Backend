@@ -78,6 +78,40 @@ export class PostService {
     return res;
   };
 
+  /**
+   * Uploads users media on a post
+   * @param files the files the user uploaded
+   * @returns a list of uploaded images Ids for referencing.
+   */
+  async uploadPostMedia(
+    files: Express.Multer.File[],
+    postId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    if (files.length === 0) {
+      throw new BadRequestException('no media uploaded');
+    }
+
+    const media = files.map((file: Express.Multer.File) => file.filename);
+    const data = await this.postModel.updateOne(
+      { _id: postId, userId },
+      {
+        $push: { images: { $each: media } },
+      },
+    );
+
+    if (data.modifiedCount === 0) {
+      throw new NotFoundException(
+        `you are not an owner of the post with id ${postId}`,
+      );
+    }
+
+    return {
+      status: 'success',
+      images: media.map((name) => `assets/post-media/${name}`),
+    };
+  }
+
   findAll() {
     return `This action returns all post`;
   }

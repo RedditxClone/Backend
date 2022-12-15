@@ -122,6 +122,15 @@ describe('PostService', () => {
       expect(res.status).toEqual('success');
     });
   });
+  describe('upload media for post spec', () => {
+    it('must upload them successfully', async () => {
+      const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
+      const post = await service.create(userId, postDto);
+      await expect(
+        service.uploadPostMedia([], post._id, userId),
+      ).rejects.toThrow('media');
+    });
+  });
   describe('hide', () => {
     const userId = new Types.ObjectId(1);
     it('should hide successfully', async () => {
