@@ -256,22 +256,19 @@ describe('SubredditService', () => {
     };
 
     it('Should update the subreddit successfully', async () => {
-      const subredditUpdated = await subredditService.update(id, updatedFields);
+      const subredditUpdated = await subredditService.update(
+        subredditDocument.name,
+        updatedFields,
+      );
       expect(subredditUpdated).toEqual({ status: 'success' });
     });
 
     it('Should throw an error', async () => {
       await expect(async () => {
-        await subredditService.update(
-          '6363fba4ab2c2f94f3ac9f31',
-          updatedFields,
-        );
+        await subredditService.update('dsah1', updatedFields);
       }).rejects.toThrow('No subreddit with such id');
       await expect(async () => {
-        await subredditService.update(
-          '6363fba4ab2c2f94f3ac9f31',
-          updatedFields,
-        );
+        await subredditService.update('ad;slkj1', updatedFields);
       }).rejects.toThrowError();
     });
   });

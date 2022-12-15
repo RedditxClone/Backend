@@ -166,60 +166,13 @@ export class SubredditController {
     return this.subredditService.getFlairs(subreddit);
   }
 
-  // @ApiOperation({ description: 'Get the current settings of a subreddit.' })
-  // @ApiOkResponse({ description: 'The resource was returned successfully' })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiNotFoundResponse({ description: 'Resource not found' })
-  // @Get(':subreddit/about/edit')
-  // findSettings(@Param('subreddit') _subreddit: string) {
-  //   // TODO: implement service
-  // }
-
-  // @ApiOperation({ description: 'Get a list of users relevant to moderators.' })
-  // @ApiOkResponse({ description: 'The resource was returned successfully' })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiNotFoundResponse({ description: 'Resource not found' })
-  // @Get(':subreddit/about/user')
-  // findUsersForMods(
-  //   @Param('subreddit') _subreddit: string,
-  //   @Query('role') _role: string,
-  // ) {
-  //   // TODO: implement service
-  // }
-
-  // @ApiOperation({ description: 'Get a list of posts relevant to moderators.' })
-  // @ApiOkResponse({ description: 'The resource was returned successfully' })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiNotFoundResponse({ description: 'Resource not found' })
-  // @Get(':subreddit/about/post')
-  // findPostsForMods(
-  //   @Param('subreddit') _subreddit: string,
-  //   @Query('location') _location: string,
-  // ) {
-  //   // TODO: implement service
-  // }
-
-  // @ApiOperation({
-  //   description: 'Get subreddits the user has a specific role in.',
-  // })
-  // @ApiOkResponse({ description: 'The resource was returned successfully' })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiNotFoundResponse({ description: 'Resource not found' })
-  // @Get('mine')
-  // findUserSubreddits(
-  //   @Param('subreddit') _subreddit: string,
-  //   @Query('role') _role: string,
-  // ) {
-  //   // TODO: implement service
-  // }
-
   @ApiOperation({ description: 'Update a subreddit settings' })
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':subreddit')
+  @Patch('r/:subreddit_name')
   updateSubreddit(
-    @Param('subreddit') subreddit: string,
+    @Param('subreddit_name') subreddit: string,
     @Body() updateSubredditDto: UpdateSubredditDto,
   ) {
     return this.subredditService.update(subreddit, updateSubredditDto);
