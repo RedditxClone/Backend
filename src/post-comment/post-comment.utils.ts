@@ -253,6 +253,7 @@ export class ThingFetch {
       hot: { hotValue: -1, _id: 1 },
       top: { votesCount: -1, _id: 1 },
       new: { publishedAt: -1, _id: 1 },
+      old: { publishedAt: 1, _id: -1 },
       best: { bestValue: -1, _id: 1 },
     };
 

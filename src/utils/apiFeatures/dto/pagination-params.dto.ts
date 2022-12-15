@@ -6,6 +6,7 @@ export enum SortTypes {
   hot,
   best,
   new,
+  old,
 }
 
 export class PaginationParamsDto {
@@ -34,6 +35,9 @@ export class PaginationParamsDto {
   @ApiPropertyOptional({
     description: 'may be top, hot, best or new and the default is new',
   })
-  @IsEnum(SortTypes)
+  @IsEnum(SortTypes, {
+    message: ({ value }) =>
+      `${value} must one of the types(top, hot, new, best, old)`,
+  })
   readonly sort: string = 'new';
 }

@@ -17,11 +17,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
@@ -34,16 +34,22 @@ export class PostCommentController {
   @ApiUnauthorizedResponse({ description: 'you must login first' })
   @UseGuards(JWTUserGuard)
   @Get('upvoted')
-  getUpvoted(@User('_id') userId: Types.ObjectId) {
-    return this.postCommentService.getUpvoted(userId);
+  getUpvoted(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getUpvoted(userId, pagination);
   }
 
   @ApiOkResponse({ description: 'posts returned successfully' })
   @ApiUnauthorizedResponse({ description: 'you must login first' })
   @UseGuards(JWTUserGuard)
   @Get('downvoted')
-  getDownvoted(@User('_id') userId: Types.ObjectId) {
-    return this.postCommentService.getDownvoted(userId);
+  getDownvoted(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getDownvoted(userId, pagination);
   }
 
   @Post()
