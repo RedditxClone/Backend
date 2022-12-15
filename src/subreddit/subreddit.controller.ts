@@ -40,6 +40,7 @@ import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
+import { ThingTypeDto } from './dto/thing-type.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
@@ -405,12 +406,14 @@ export class SubredditController {
   unmoderated(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
     @Query() pagination: PaginationParamsDto,
+    @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getUnModeratedThings(
       subredditId,
       username,
       pagination,
+      thingType.type,
     );
   }
 
@@ -419,12 +422,14 @@ export class SubredditController {
   spammed(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
     @Query() pagination: PaginationParamsDto,
+    @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getSpammedThings(
       subredditId,
       username,
       pagination,
+      thingType.type,
     );
   }
 
@@ -433,12 +438,14 @@ export class SubredditController {
   edited(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
     @Query() pagination: PaginationParamsDto,
+    @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getEditedThings(
       subredditId,
       username,
       pagination,
+      thingType.type,
     );
   }
 

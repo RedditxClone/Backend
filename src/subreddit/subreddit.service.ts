@@ -437,12 +437,14 @@ export class SubredditService {
     subredditId: Types.ObjectId,
     modUsername: string,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
       subredditId,
       pagination,
+      type,
     );
   }
 
@@ -450,12 +452,14 @@ export class SubredditService {
     subredditId: Types.ObjectId,
     modUsername: string,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getSpammedThingsForSubreddit(
       subredditId,
       pagination,
+      type,
     );
   }
 
@@ -463,12 +467,14 @@ export class SubredditService {
     subredditId: Types.ObjectId,
     modUsername: string,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getEditedThingsForSubreddit(
       subredditId,
       pagination,
+      type,
     );
   }
 

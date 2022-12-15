@@ -590,42 +590,51 @@ export class PostCommentService {
   async getUnModeratedThingsForSubreddit(
     subredditId: Types.ObjectId,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
-    return this.getCommonThingsForSubreddit(
-      subredditId,
-      { approvedBy: null, removedBy: null, spammedBy: null },
-      pagination,
-    );
+    const filter: any = { approvedBy: null, removedBy: null, spammedBy: null };
+
+    if (type) {
+      filter.type = type;
+    }
+
+    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
   }
 
   async getSpammedThingsForSubreddit(
     subredditId: Types.ObjectId,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
-    return this.getCommonThingsForSubreddit(
-      subredditId,
-      {
-        spammedBy: { $ne: null },
-        isDeleted: false,
-        removedBy: null,
-      },
-      pagination,
-    );
+    const filter: any = {
+      spammedBy: { $ne: null },
+      isDeleted: false,
+      removedBy: null,
+    };
+
+    if (type) {
+      filter.type = type;
+    }
+
+    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
   }
 
   async getEditedThingsForSubreddit(
     subredditId: Types.ObjectId,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
-    return this.getCommonThingsForSubreddit(
-      subredditId,
-      {
-        editedAt: { $ne: null },
-        editCheckedBy: null,
-        isDeleted: false,
-        removedBy: null,
-      },
-      pagination,
-    );
+    const filter: any = {
+      editedAt: { $ne: null },
+      editCheckedBy: null,
+      isDeleted: false,
+      removedBy: null,
+    };
+
+    if (type) {
+      filter.type = type;
+    }
+
+    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
   }
 }

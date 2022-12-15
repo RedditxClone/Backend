@@ -399,6 +399,7 @@ describe('PostCommentService', () => {
     let post: Post & { _id: Types.ObjectId };
     let comment: Comment & { _id: Types.ObjectId };
     const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
+    const type = undefined;
     beforeAll(async () => {
       // userId = new Types.ObjectId(1);
       post = await postService.create(userSR, {
@@ -420,6 +421,7 @@ describe('PostCommentService', () => {
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
         pagination,
+        type,
       );
       expect(res.length).toEqual(2);
     });
@@ -428,6 +430,7 @@ describe('PostCommentService', () => {
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
         pagination,
+        type,
       );
       expect(res.length).toEqual(1);
       expect(res[0].type).toEqual('Post');
@@ -436,6 +439,7 @@ describe('PostCommentService', () => {
       const res = await service.getSpammedThingsForSubreddit(
         subreddit._id,
         pagination,
+        type,
       );
       expect(res.length).toEqual(1);
       expect(res[0].type).toEqual('Comment');
@@ -451,6 +455,7 @@ describe('PostCommentService', () => {
       const res = await service.getEditedThingsForSubreddit(
         subreddit._id,
         pagination,
+        type,
       );
       expect(res.length).toEqual(1);
       expect(res[0].type).toEqual('Post');
@@ -460,6 +465,7 @@ describe('PostCommentService', () => {
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
         pagination,
+        type,
       );
       expect(res.length).toEqual(0);
     });
