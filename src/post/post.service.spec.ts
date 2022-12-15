@@ -10,6 +10,7 @@ import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
 import { NotificationModule } from '../notification/notification.module';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
+import { PostCommentService } from '../post-comment/post-comment.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
@@ -23,6 +24,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
+import { VoteSchema } from '../vote/vote.schema';
 import type { CreatePostDto } from './dto';
 import { HideSchema } from './hide.schema';
 import type { Post } from './post.schema';
@@ -65,14 +67,24 @@ describe('PostService', () => {
             ],
           },
           { name: 'Follow', schema: FollowSchema },
+          { name: 'Vote', schema: VoteSchema },
           { name: 'Block', schema: BlockSchema },
           { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
           { name: 'User', schema: UserSchema },
+          {
+            name: 'Vote',
+            schema: VoteSchema,
+          },
+          {
+            name: 'Hide',
+            schema: HideSchema,
+          },
         ]),
       ],
       providers: [
+        PostCommentService,
         PostService,
         SubredditService,
         UserService,
@@ -89,6 +101,8 @@ describe('PostService', () => {
 
   let id: Types.ObjectId;
   it('should be defined', () => {
+    expect(subredditService).toBeDefined();
+    expect(userService).toBeDefined();
     expect(service).toBeDefined();
   });
   describe('create post spec', () => {
@@ -137,17 +151,14 @@ describe('PostService', () => {
     return [user1, user2];
   };
 
-  const generateSRs = async (
-    user1Id: Types.ObjectId,
-    user2Id: Types.ObjectId,
-  ) => {
+  const generateSRs = async (user1: string, user2: string) => {
     const sr1 = await subredditService.create(
       {
         name: 'sr1',
         over18: true,
         type: 'type',
       },
-      user1Id,
+      user1,
     );
     const sr2 = await subredditService.create(
       {
@@ -155,7 +166,7 @@ describe('PostService', () => {
         over18: true,
         type: 'type',
       },
-      user2Id,
+      user2,
     );
 
     return [sr1, sr2];
@@ -172,7 +183,7 @@ describe('PostService', () => {
       const users = await generateUsers();
       user1 = users[0];
       user2 = users[1];
-      const [sr1, sr2] = await generateSRs(user1._id, user2._id);
+      const [sr1, sr2] = await generateSRs(user1.username, user2.username);
       subreddits.push(sr1, sr2);
 
       await subredditService.joinSubreddit(user1._id, sr1._id);
@@ -202,10 +213,9 @@ describe('PostService', () => {
             text: posts[0].text,
             title: posts[0].title,
             voteType: null,
-            subreddit: {
+            subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
-              type: subreddits[0].type,
             },
             user: {
               id: user2._id,
@@ -231,10 +241,9 @@ describe('PostService', () => {
             text: posts[0].text,
             title: posts[0].title,
             voteType: null,
-            subreddit: {
+            subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
-              type: subreddits[0].type,
             },
             user: {
               id: user2._id,
@@ -272,6 +281,55 @@ describe('PostService', () => {
         const res = await service.getPostsOfUser(user1._id, page, limit);
         expect(res.length).toEqual(0);
       });
+    });
+    describe('get hidden posts', () => {
+      it('must return on post', async () => {
+        // hidden from the last test
+        const res = await service.getHiddenPosts(user1._id, page, limit);
+        expect(res.length).toEqual(1);
+        await service.unhide(res[0]._id, user1._id);
+      });
+      it('must return empty set', async () => {
+        const res = await service.getHiddenPosts(user1._id, page, limit);
+        expect(res.length).toEqual(0);
+      });
+    });
+  });
+
+  describe('approve', () => {
+    let post: Post & { _id: Types.ObjectId };
+
+    const username = 'fred';
+    const userId = new Types.ObjectId(1);
+    beforeAll(async () => {
+      const sr = await subredditService.create(
+        {
+          name: 'sr',
+          over18: true,
+          type: 'sr',
+        },
+        username,
+      );
+      post = await service.create(userId, {
+        subredditId: sr._id,
+        text: 'this is a post',
+        title: 'post title',
+      });
+      expect(post._id).toBeInstanceOf(Types.ObjectId);
+    });
+    it('must approve post successfully', async () => {
+      const res = await service.approve(username, post._id);
+      expect(res).toEqual({ status: 'success' });
+    });
+    it('must throw error because already approved', async () => {
+      await expect(service.approve(username, post._id)).rejects.toThrow(
+        'approved',
+      );
+    });
+    it('must throw error because not mod', async () => {
+      await expect(service.approve('aref', post._id)).rejects.toThrow(
+        'moderator',
+      );
     });
   });
   afterAll(async () => {

@@ -4,6 +4,7 @@ import { createResponse } from 'node-mocks-http';
 
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowService } from '../follow/follow.service';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { AvailableUsernameDto } from './dto';
 import { PrefsDto } from './dto';
 import { stubUser } from './test/stubs/user.stub';
@@ -105,6 +106,7 @@ describe('UserControllerSpec', () => {
         authType: _authType,
         hashPassword: _hashPassword,
         dontNotifyIds: _dontNotifyIds,
+        savedPosts: _savedPosts,
         ...user
       } = stubUser();
       expect(res).toEqual(user);
@@ -142,6 +144,29 @@ describe('UserControllerSpec', () => {
       const userId = new Types.ObjectId(1);
       expect(await userController.uploadCoverPhoto(userId, null)).toEqual({
         photo: 'statics/somefolder/636c31ef6b71bf1c6226a5a4.jpeg',
+      });
+    });
+  });
+  describe('save post', () => {
+    it('must be saved successfully', async () => {
+      const id1: Types.ObjectId = new Types.ObjectId(1);
+      const id2: Types.ObjectId = new Types.ObjectId(2);
+      const user = { _id: id1 };
+      const res: any = await userController.savePost(id2, { user });
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
+
+  describe('get saved post', () => {
+    it('must be returned successfully', async () => {
+      const id1: Types.ObjectId = new Types.ObjectId(1);
+      const res: any = await userController.getSavedPosts(
+        id1,
+        new PaginationParamsDto(),
+      );
+      expect(res).toEqual({
+        _id: '6366f73606cdac163ace51b1',
+        savedPosts: ['636a7faa18454a10a4791426'],
       });
     });
   });
