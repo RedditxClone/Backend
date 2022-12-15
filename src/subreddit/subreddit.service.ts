@@ -90,7 +90,6 @@ export class SubredditService {
       { $match: { name: subredditName } },
       srGetUsersRelated,
       srProjectionNumOfUsersAndIfModerator(userId, username),
-      { $unset: 'moderators' },
     ]);
 
     if (sr.length === 0) {

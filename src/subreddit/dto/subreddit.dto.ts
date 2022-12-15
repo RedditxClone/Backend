@@ -66,4 +66,6 @@ export class SubredditDto {
   createdDate: Date;
 
   notificationType: number;
+
+  title: string;
 }

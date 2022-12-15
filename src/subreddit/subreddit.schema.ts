@@ -88,6 +88,9 @@ export class Subreddit {
   })
   name: string;
 
+  @Prop()
+  title: string;
+
   @Prop({ required: true })
   type: string;
 
