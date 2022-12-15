@@ -335,9 +335,6 @@ export class ThingFetch {
           nsfw: 1,
           type: 1,
           visited: 1,
-          hotValue: 1,
-          bestValue: 1,
-          numericDate: 1,
           voteType: {
             $cond: [
               { $eq: ['$vote', []] },
