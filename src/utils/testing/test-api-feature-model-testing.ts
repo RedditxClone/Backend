@@ -1,5 +1,5 @@
-import { Optional } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IsOptional } from 'class-validator';
 
 @Schema()
 export class TestModel {
@@ -12,7 +12,7 @@ export class TestModel {
   @Prop()
   birthDate: Date;
 
-  @Optional()
+  @IsOptional()
   @Prop({ default: '' })
   optionalTestField?: string;
 }
