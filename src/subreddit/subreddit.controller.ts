@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -29,6 +30,7 @@ import {
 import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { ApproveUserDto } from './dto/approve-user.dto';
@@ -64,11 +66,13 @@ export class SubredditController {
   @ApiOperation({ description: 'Get subreddit by name' })
   @ApiOkResponse({ description: 'The subreddit returned succesfully' })
   @ApiBadRequestResponse({ description: "The subreddit name doesn't exist" })
+  @UseGuards(IsUserExistGuard)
   @Get('/r/:subreddit_name')
   getSubredditByName(
     @Param('subreddit_name') subredditName: string,
-  ): Promise<SubredditDocument> {
-    return this.subredditService.findSubredditByName(subredditName);
+    @Req() { _id },
+  ) {
+    return this.subredditService.findSubredditByName(subredditName, _id);
   }
 
   @ApiOperation({ description: 'Check if subreddit name is available' })

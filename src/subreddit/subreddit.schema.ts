@@ -201,6 +201,9 @@ export class Subreddit {
 
   @Prop({ default: [] })
   approvedUsers: ApprovedUsers[];
+
+  @Prop({ default: 0 })
+  notificationType: number;
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

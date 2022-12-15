@@ -11,9 +11,16 @@ import mongoose, { Model } from 'mongoose';
 
 // import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { subredditSelectedFields } from '../utils/project-selected-fields';
+import {
+  srGetUsersRelated,
+  srPagination,
+  srProjectionNumOfUsersAndIfIamJoined,
+  srProjectionNumOfUsersAndIfModerator,
+} from '../utils/subreddit-aggregate-stages';
 import type { CreateSubredditDto } from './dto/create-subreddit.dto';
 import type { FilterSubredditDto } from './dto/filter-subreddit.dto';
 import type { FlairDto } from './dto/flair.dto';
@@ -29,6 +36,7 @@ export class SubredditService {
     private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
+    private readonly userService: UserService,
     private readonly imagesHandlerService: ImagesHandlerService,
     private readonly apiFeatureService: ApiFeaturesService,
     private readonly postCommentService: PostCommentService,
@@ -69,16 +77,27 @@ export class SubredditService {
     return sr;
   }
 
-  async findSubredditByName(subredditName: string): Promise<SubredditDocument> {
-    const filter: FilterSubredditDto = { name: subredditName };
-    const sr: SubredditDocument | null | undefined =
-      await this.subredditModel.findOne(filter);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async findSubredditByName(subredditName: string, userId?) {
+    let username;
 
-    if (!sr) {
+    if (userId) {
+      const user = await this.userService.getUserById(userId);
+      username = user.username;
+    }
+
+    const sr = await this.subredditModel.aggregate([
+      { $match: { name: subredditName } },
+      srGetUsersRelated,
+      srProjectionNumOfUsersAndIfModerator(userId, username),
+      { $unset: 'moderators' },
+    ]);
+
+    if (sr.length === 0) {
       throw new NotFoundException('No subreddit with such name');
     }
 
-    return sr;
+    return { ...sr[0], joined: Boolean(sr[0].joined) };
   }
 
   async checkSubredditAvailable(subredditName: string) {
@@ -233,37 +252,9 @@ export class SubredditService {
           srId: '$_id',
         },
       },
-      {
-        $lookup: {
-          from: 'usersubreddits',
-          localField: '_id',
-          foreignField: 'subredditId',
-          as: 'users',
-        },
-      },
-      {
-        $project: {
-          ...subredditSelectedFields,
-          users: { $size: '$users' },
-          joined: {
-            $arrayElemAt: [
-              {
-                $filter: {
-                  input: '$users',
-                  cond: { $eq: ['$$this.userId', userId] },
-                },
-              },
-              0,
-            ],
-          },
-        },
-      },
-      {
-        $skip: ((Number(page) || 1) - 1) * Number(limit),
-      },
-      {
-        $limit: Number(limit),
-      },
+      srGetUsersRelated,
+      srProjectionNumOfUsersAndIfIamJoined(userId),
+      ...srPagination(page, limit),
     ];
   }
 

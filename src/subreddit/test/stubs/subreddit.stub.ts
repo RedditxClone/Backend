@@ -40,4 +40,5 @@ export const stubSubreddit = (): Subreddit => ({
   approvedUsers: [],
   mutedUsers: [],
   bannedUsers: [],
+  notificationType: 0,
 });
