@@ -137,7 +137,10 @@ export class Subreddit {
   acceptingRequestsToJoin: boolean;
 
   @Prop()
-  communityTopics: string[];
+  subTopics: string[];
+
+  @Prop()
+  activeTopic: string;
 
   @Prop({ default: false })
   requirePostFlair: boolean;
