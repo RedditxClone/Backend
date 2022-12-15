@@ -469,7 +469,7 @@ describe('PostCommentService', () => {
     });
     it('must return element after upvoting it', async () => {
       await service.upvote(post._id, userSR, []);
-      const res = await service.getUpvoted(userSR);
+      const res = await service.getUpvoted(userSR, pagination);
       expect(res.length).toEqual(1);
       expect(res[0]._id).toEqual(post._id);
     });
