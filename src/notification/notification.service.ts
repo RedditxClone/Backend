@@ -23,9 +23,13 @@ export class NotificationService {
    */
   countNew = async (userId: Types.ObjectId) => {
     const [count] = await this.notificationModel.aggregate([
-      { $match: { userId, hidden: false } },
+      { $match: { userId, hidden: false, new: true } },
       { $count: 'count' },
     ]);
+
+    if (!count) {
+      return { count: 0 };
+    }
 
     return count;
   };

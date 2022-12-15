@@ -1,7 +1,9 @@
+import { BadRequestException } from '@nestjs/common';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 
+import type { PaginatedResponseDto } from '../utils/apiFeatures/dto';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import {
   closeInMongodConnection,
@@ -126,6 +128,27 @@ describe('NotificationService', () => {
         'You got an upvote on your post in r/folan1',
       );
       expect(res.data[2].body).toEqual('u/folan1 started following you.');
+    });
+  });
+  describe('mark notifications hidden', () => {
+    let res: PaginatedResponseDto;
+    beforeAll(async () => {
+      res = await service.findAll(id2, new PaginationParamsDto());
+    });
+    it('should throw because post id is not found', async () => {
+      await expect(async () => {
+        await service.hide(id2, id2);
+      }).rejects.toThrow(BadRequestException);
+    });
+    it('should throw because user is not the same', async () => {
+      await expect(async () => {
+        await service.hide(new Types.ObjectId(123), res.data[0]._id);
+      }).rejects.toThrow(BadRequestException);
+    });
+
+    it('should pass', async () => {
+      const res1 = await service.hide(id2, res.data[0]._id);
+      expect(res1.status).toEqual('success');
     });
   });
   afterAll(async () => {
