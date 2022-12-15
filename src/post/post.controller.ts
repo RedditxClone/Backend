@@ -45,6 +45,7 @@ import {
   UploadMediaDto,
   VotePostDto,
 } from './dto';
+import { DiscoverReturnDto } from './dto/discover-return-dto';
 import { PostService } from './post.service';
 
 @ApiTags('Post')
@@ -71,7 +72,7 @@ export class PostController {
 
   @ApiOkResponse({
     description: 'posts returned successfully',
-    type: ReturnPostDto,
+    type: DiscoverReturnDto,
   })
   @Get('discover')
   @UseGuards(JWTUserGuard)
