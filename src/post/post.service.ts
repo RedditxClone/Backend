@@ -145,7 +145,7 @@ export class PostService {
   async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
     const fetcher = new ThingFetch(userId);
 
-    return this.postModel.aggregate([
+    const post = await this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.onlyOnePost(postId),
       ...fetcher.filterBlocked(),
@@ -155,6 +155,12 @@ export class PostService {
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
+
+    if (post.length === 0) {
+      throw new BadRequestException(`there is no post with id ${postId}`);
+    }
+
+    return post[0];
   }
 
   private async getUserTimeLine(
