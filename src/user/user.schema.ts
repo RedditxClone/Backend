@@ -149,6 +149,9 @@ export class User {
   @Prop({ default: [] })
   whitelisted: string[];
 
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
+
   //Miscellaneous
   @Prop({ default: false })
   safeBrowsingMode: boolean;
@@ -163,11 +166,11 @@ export class User {
   unSubscribe: boolean;
 
   // google auth
-  @Prop({ sparse: true })
+  @Prop({ unique: true, sparse: true })
   continueWithGoogleAccount?: string;
 
   // github auth
-  @Prop({ sparse: true })
+  @Prop({ unique: true, sparse: true })
   continueWithGithubAccount?: string;
 }
 

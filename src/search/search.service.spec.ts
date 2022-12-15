@@ -10,6 +10,7 @@ import type { CreatePostDto } from '../post/dto';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import type { CreateSubredditDto } from '../subreddit/dto/create-subreddit.dto';
+import type { FlairDto } from '../subreddit/dto/flair.dto';
 import { SubredditModule } from '../subreddit/subreddit.module';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { UserModule } from '../user/user.module';
@@ -26,7 +27,6 @@ describe('SearchService', () => {
   let searchService: SearchService;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
-  let id3: Types.ObjectId;
   let postId: Types.ObjectId;
   let commentId: Types.ObjectId;
   let subredditId1: Types.ObjectId;
@@ -72,6 +72,11 @@ describe('SearchService', () => {
     type: 'public',
     over18: false,
   };
+  const flair: FlairDto = {
+    backgroundColor: 'aaa321',
+    textColor: 'fff',
+    text: 'test',
+  };
 
   let module: TestingModule;
   beforeAll(async () => {
@@ -96,11 +101,16 @@ describe('SearchService', () => {
     id1 = user1._id;
     const user2 = await userService.createUser(user2Data);
     id2 = user2._id;
-    const user3 = await userService.createUser(user3Data);
-    id3 = user3._id;
+    await userService.createUser(user3Data);
 
-    const subredditDocument1 = await subredditService.create(subreddit1, id1);
-    const subredditDocument2 = await subredditService.create(subreddit2, id3);
+    const subredditDocument1 = await subredditService.create(
+      subreddit1,
+      user1.username,
+    );
+    const subredditDocument2 = await subredditService.create(
+      subreddit2,
+      user2.username,
+    );
     subredditId1 = subredditDocument1._id;
     subredditId2 = subredditDocument2._id;
 
@@ -116,6 +126,12 @@ describe('SearchService', () => {
 
     commentData.postId = p._id;
     commentData.subredditId = subredditId1;
+
+    await subredditService.createFlair(subredditId1.toString(), flair);
+    flair.text += 'Ha';
+    await subredditService.createFlair(subredditId1.toString(), flair);
+    flair.text += 'kB';
+    await subredditService.createFlair(subredditId1.toString(), flair);
 
     const c = await commentService.create(id1, commentData);
     commentId = c._id;
@@ -222,6 +238,35 @@ describe('SearchService', () => {
       expect(data.length).toBe(0);
     });
   });
+
+  describe('search for flairs', () => {
+    it('should find the flairs successfully', async () => {
+      const data = await searchService.searchFlairs(
+        'test',
+        subredditId1,
+        1,
+        10,
+      );
+
+      expect(data.length).toBe(3);
+      expect(data[2]).toEqual(expect.objectContaining(flair));
+    });
+    it('should find only 2 flair', async () => {
+      const data = await searchService.searchFlairs('ha', subredditId1, 1, 20);
+      expect(data.length).toBe(2);
+      expect(data[1]).toEqual(expect.objectContaining(flair));
+    });
+    it('should find nothing', async () => {
+      const data = await searchService.searchFlairs(
+        'h3124ka',
+        subredditId1,
+        1,
+        20,
+      );
+      expect(data.length).toBe(0);
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

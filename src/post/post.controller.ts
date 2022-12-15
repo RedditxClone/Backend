@@ -20,6 +20,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
@@ -54,6 +55,21 @@ export class PostController {
   ) {}
 
   @ApiOkResponse({
+    description: 'your hidden posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('hidden')
+  @UseGuards(JWTUserGuard)
+  getHiddenPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.getHiddenPosts(userId, page, limit);
+  }
+
+  @ApiOkResponse({
     description: 'posts returned successfully',
     type: ReturnPostDto,
   })
@@ -65,6 +81,21 @@ export class PostController {
     @Query('limit') limit: number | undefined,
   ) {
     return this.postService.getTimeLine(req._id, page, limit);
+  }
+
+  @ApiOkResponse({
+    description: 'your posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('me')
+  @UseGuards(JWTUserGuard)
+  getMePosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.getPostsOfUser(userId, page, limit);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
@@ -346,5 +377,14 @@ export class PostController {
     insightsPostDto.insightsCount = 0;
 
     return insightsPostDto;
+  }
+
+  @UseGuards(JWTUserGuard)
+  @Post('/:post/approve')
+  approve(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.postService.approve(username, postId);
   }
 }
