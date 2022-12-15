@@ -33,7 +33,9 @@ export class SubredditDto {
 
   acceptingRequestsToJoin: boolean;
 
-  communityTopics: string[];
+  subTopics: string[];
+
+  activeTopic: string;
 
   requirePostFlair: boolean;
 
