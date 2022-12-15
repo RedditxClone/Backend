@@ -193,10 +193,114 @@ export class UserService {
     }
   }
 
-  getUserInfo(user: UserWithId): UserAccountDto {
-    const { _id, profilePhoto, username, createdAt } = user;
+  /**
+   * returns a data of the user's about page
+   * @param user1Id the user with token
+   * @param user2Id the user to be requested
+   * @returns UserAccountDto
+   */
+  async getUserInfo(
+    user1Id: Types.ObjectId,
+    user2Id: string,
+  ): Promise<UserAccountDto> {
+    // eslint-disable-next-line unicorn/no-await-expression-member
+    const userId = (await this.getUserByUsername(user2Id))._id;
+    const [isCurrentUserBlocked] = await this.userModel.aggregate([
+      { $match: { username: user2Id } },
+      {
+        $lookup: {
+          from: 'blocks',
+          as: 'blocks',
+          let: { id: '$_id' },
 
-    return { _id, profilePhoto, username, createdAt };
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$blocks.blocked', user1Id] },
+                    { $eq: ['$blocks.blocker', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    if (
+      isCurrentUserBlocked.blocks !== undefined &&
+      isCurrentUserBlocked.blocks.length > 0
+    ) {
+      throw new UnauthorizedException('User has blocked you');
+    }
+
+    const [user]: any = await this.userModel.aggregate([
+      { $match: { username: user2Id } },
+      {
+        $lookup: {
+          from: 'blocks',
+          as: 'blocks',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: ['$blocker', user1Id],
+                    },
+                    { $eq: ['$blocked', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'follows',
+          as: 'follows',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$follower', user1Id] },
+                    { $eq: ['$followed', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+    const { _id, profilePhoto, coverPhoto, createdAt, username } = user;
+    let isBlocked = false;
+
+    // eslint-disable-next-line unicorn/consistent-destructuring
+    if (user.blocks !== undefined && user.blocks.length > 0) {
+      isBlocked = true;
+    }
+
+    let isFollowed = false;
+
+    // eslint-disable-next-line unicorn/consistent-destructuring
+    if (user.follows !== undefined && user.follows.length > 0) {
+      isFollowed = true;
+    }
+
+    return {
+      _id,
+      profilePhoto,
+      coverPhoto,
+      username,
+      createdAt,
+      isBlocked,
+      isFollowed,
+    };
   }
 
   async validPassword(
