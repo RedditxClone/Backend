@@ -8,6 +8,7 @@ import { BlockService } from '../block/block.service';
 import { CommentSchema } from '../comment/comment.schema';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
+import { NotificationModule } from '../notification/notification.module';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
@@ -30,6 +31,7 @@ import type { Post } from './post.schema';
 import { PostSchema } from './post.schema';
 import { PostService } from './post.service';
 import { stubPost } from './test/stubs/post.stub';
+
 describe('PostService', () => {
   let service: PostService;
   let module: TestingModule;
@@ -48,6 +50,7 @@ describe('PostService', () => {
       imports: [
         rootMongooseTestModule(),
         ImagesHandlerModule,
+        NotificationModule,
         MongooseModule.forFeature([
           {
             name: 'PostComment',

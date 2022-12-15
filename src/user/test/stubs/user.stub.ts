@@ -52,6 +52,7 @@ export const stubUser = (): User => ({
   commentsYouFollow: true,
   redditAnnouncements: true,
   cakeDay: true,
+  dontNotifyIds: [],
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
@@ -111,6 +112,7 @@ export const stubUserFresh = (): User => ({
   commentsYouFollow: true,
   redditAnnouncements: true,
   cakeDay: true,
+  dontNotifyIds: [],
   //messages
   acceptPms: 'everyone',
   whitelisted: [],

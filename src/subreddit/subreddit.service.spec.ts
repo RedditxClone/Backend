@@ -10,6 +10,7 @@ import { BlockModule } from '../block/block.module';
 import { BlockSchema } from '../block/block.schema';
 import { FollowModule } from '../follow/follow.module';
 import { FollowSchema } from '../follow/follow.schema';
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
@@ -107,6 +108,7 @@ describe('SubredditService', () => {
         UserModule,
         FollowModule,
         BlockModule,
+        NotificationModule,
         MongooseModule.forFeature([
           {
             name: 'PostComment',
