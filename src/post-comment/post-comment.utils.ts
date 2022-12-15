@@ -63,6 +63,16 @@ export class ThingFetch {
     ];
   }
 
+  unionWithFollowedUsers() {
+    return [
+      {
+        $unionWith: {
+          
+        },
+      },
+    ];
+  }
+
   filterForSavedOnly() {
     return [
       ...this.getMe(),

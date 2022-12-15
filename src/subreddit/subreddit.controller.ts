@@ -466,7 +466,7 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
   @Delete('/:subreddit/user/:username/mute')
-  async unMuteUser(
+  unMuteUser(
     @User('username') moderatorUsername: string,
     @Param('username') username: string,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
