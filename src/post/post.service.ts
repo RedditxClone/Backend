@@ -278,9 +278,14 @@ export class PostService {
       ...fetcher.filterOfMySRs(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
-      ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
-      ...fetcher.spreadForDiscover(),
+      {
+        $unwind: {
+          path: '$images',
+        },
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.getDiscoverProject(),
     ]);
   }
 }

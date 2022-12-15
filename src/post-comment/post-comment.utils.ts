@@ -435,19 +435,18 @@ export class ThingFetch {
     ];
   }
 
-  spreadForDiscover() {
+  getDiscoverProject() {
     return [
-      {
-        $unwind: '$images',
-      },
       {
         $project: {
           images: 1,
-          subreddit: {
-            name: '$subreddit.name',
-            id: '$subreddit._id',
+          subredditInfo: {
+            id: { $arrayElemAt: ['$subreddit._id', 0] },
+            name: { $arrayElemAt: ['$subreddit.name', 0] },
           },
-          postId: 1,
+          postId: {
+            $toObjectId: '$_id',
+          },
         },
       },
     ];
