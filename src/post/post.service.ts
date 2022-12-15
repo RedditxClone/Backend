@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
@@ -13,6 +18,7 @@ export class PostService {
   constructor(
     @InjectModel('Post') private readonly postModel: Model<Post>,
     @InjectModel('Hide') private readonly hideModel: Model<Hide>,
+    private readonly postCommentService: PostCommentService,
   ) {}
 
   async hide(postId: Types.ObjectId, userId: Types.ObjectId) {
@@ -145,6 +151,48 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async approve(modUsername: string, thingId: Types.ObjectId) {
+    const [post] = await this.postCommentService.getThingIModerate(
+      modUsername,
+      thingId,
+    );
+
+    if (!post) {
+      throw new NotFoundException(
+        'either wrong id or you are not a moderator of the subreddit',
+      );
+    }
+
+    if (post.approvedBy !== null) {
+      throw new BadRequestException('post is already approved');
+    }
+
+    await this.postModel.findByIdAndUpdate(thingId, {
+      approvedBy: modUsername,
+      approvedAt: Date.now(),
+    });
+
+    return { status: 'success' };
+  }
+
+  async getHiddenPosts(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.getHidden(),
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),

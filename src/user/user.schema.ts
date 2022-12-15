@@ -152,6 +152,9 @@ export class User {
   @Prop({ default: [] })
   whitelisted: string[];
 
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
+
   //Miscellaneous
   @Prop({ default: false })
   safeBrowsingMode: boolean;

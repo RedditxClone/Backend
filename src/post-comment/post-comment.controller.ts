@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -10,6 +19,7 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
@@ -17,6 +27,22 @@ import { PostCommentService } from './post-comment.service';
 @Controller('thing')
 export class PostCommentController {
   constructor(private readonly postCommentService: PostCommentService) {}
+
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('upvoted')
+  getUpvoted(@User('_id') userId: Types.ObjectId) {
+    return this.postCommentService.getUpvoted(userId);
+  }
+
+  @ApiOkResponse({ description: 'posts returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'you must login first' })
+  @UseGuards(JWTUserGuard)
+  @Get('downvoted')
+  getDownvoted(@User('_id') userId: Types.ObjectId) {
+    return this.postCommentService.getDownvoted(userId);
+  }
 
   @Post()
   create(@Body() createPostCommentDto: CreatePostCommentDto) {
@@ -92,9 +118,9 @@ export class PostCommentController {
   @Post('/:thing/spam')
   spam(
     @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.spam(userId, thingId);
+    return this.postCommentService.spam(username, thingId);
   }
 
   @ApiOperation({
@@ -110,8 +136,32 @@ export class PostCommentController {
   @Post('/:thing/unspam')
   unspam(
     @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
-    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.unspam(userId, thingId);
+    return this.postCommentService.unspam(username, thingId);
+  }
+
+  @ApiOperation({
+    description: 'remove post or comment',
+  })
+  @ApiCreatedResponse({ description: 'removed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @ApiNotFoundResponse({
+    description: 'wrong post id or you are not the moderator',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('/:thing/remove')
+  disapprove(
+    @Param('thing', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.postCommentService.disApprove(username, thingId);
+  }
+
+  @UseGuards(IsUserExistGuard)
+  @Get('user/:username')
+  getThingsOfUser(@Param('username') username: string, @Req() req) {
+    return this.postCommentService.getThingsOfUser(username, req._id);
   }
 }

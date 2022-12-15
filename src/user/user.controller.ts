@@ -3,12 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseFilePipeBuilder,
   ParseIntPipe,
   Patch,
   Post,
   Query,
+  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -17,6 +19,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -29,6 +33,7 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
 import { FollowService } from '../follow/follow.service';
+import { ReturnPostDto } from '../post/dto';
 import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -408,6 +413,18 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
   })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        photo: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseGuards(JWTUserGuard)
   @Post('/me/profile')
   uploadProfilePhoto(
@@ -433,6 +450,18 @@ export class UserController {
     description: 'you are not allowed to make this action',
   })
   @UseGuards(JWTUserGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        photo: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Post('/me/cover')
   uploadCoverPhoto(
     @User('_id') userId: Types.ObjectId,
@@ -463,5 +492,38 @@ export class UserController {
     @User('_id') userId: Types.ObjectId,
   ) {
     return this.userService.notifyPostComment(userId, thingId, option);
+  }
+
+  @ApiOperation({
+    description: 'Save post',
+  })
+  @ApiOkResponse({ description: 'post saved successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @HttpCode(200)
+  @UseGuards(JWTUserGuard)
+  @Post('/post/:post_id/save')
+  savePost(
+    @Param('post_id', ParseObjectIdPipe) post_id: Types.ObjectId,
+    @Req() { user },
+  ) {
+    return this.userService.savePost(user._id, post_id);
+  }
+
+  @ApiOperation({
+    description: 'get saved posts',
+  })
+  @ApiPaginatedOkResponse(ReturnPostDto, 'saved posts returned successfully ')
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/post/save')
+  getSavedPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.userService.getSavedPosts(userId, paginationParams);
   }
 }

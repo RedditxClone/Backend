@@ -6,6 +6,7 @@ import type { Types } from 'mongoose';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
 import { NotificationModule } from '../notification/notification.module';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -27,6 +28,7 @@ describe('BlockService', () => {
         NotificationModule,
         rootMongooseTestModule(),
         ImagesHandlerModule,
+        PostCommentModule,
         MongooseModule.forFeature([
           { name: 'Block', schema: BlockSchema },
           { name: 'User', schema: UserSchema },

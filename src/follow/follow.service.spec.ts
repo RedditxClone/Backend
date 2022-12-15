@@ -6,6 +6,7 @@ import type { Types } from 'mongoose';
 import { BlockSchema } from '../block/block.schema';
 import { BlockService } from '../block/block.service';
 import { NotificationModule } from '../notification/notification.module';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -30,6 +31,7 @@ describe('FollowService', () => {
     module = await Test.createTestingModule({
       imports: [
         NotificationModule,
+        PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
