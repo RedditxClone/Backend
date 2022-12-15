@@ -56,7 +56,7 @@ export class SearchService {
     );
   };
 
-  searchPosts = async (
+  searchPosts = (
     data: string,
     page = 1,
     numberOfData = 50,

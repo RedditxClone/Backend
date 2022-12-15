@@ -279,7 +279,8 @@ export class SubredditService {
         $match: {
           $and: [
             { name: new RegExp(`^${searchPhrase}`, 'i') },
-            { pannedUsers: { $ne: username } },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: username } },
           ],
         },
       },
@@ -306,9 +307,8 @@ export class SubredditService {
                 { description: { $regex: searchPhrase, $options: 'i' } },
               ],
             },
-            {
-              pannedUsers: { $ne: username },
-            },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: username } },
           ],
         },
       },
@@ -756,19 +756,18 @@ export class SubredditService {
     userId: string,
     fieldName: string,
   ) {
-    const prjectField1 = {};
-    prjectField1[fieldName] = 1;
-    const prjectField2 = {};
-    prjectField2[fieldName] = { date: 1 };
+    const prjectField = {};
+    prjectField[fieldName] = 1;
 
     // We don't have to check if the request is bad
+    // eslint-disable-next-line sonarjs/prefer-immediate-return
     const res = await this.subredditModel.aggregate([
       {
         $match: {
           $and: [{ _id: subredditId }, { moderators: userId }],
         },
       },
-      { $project: prjectField1 },
+      { $project: prjectField },
       { $unset: '_id' },
       { $unwind: `$${fieldName}` },
       {
@@ -781,7 +780,7 @@ export class SubredditService {
       },
       {
         $project: {
-          ...prjectField2,
+          ...prjectField,
           user: {
             _id: 1,
             username: 1,
@@ -794,7 +793,7 @@ export class SubredditService {
       },
     ]);
 
-    return res.map((v) => ({ date: v[fieldName].date, ...v.user[0] }));
+    return res.map((v) => ({ ...v[fieldName], ...v.user[0] }));
   }
 
   async removeUserFromListUserDate(
@@ -838,10 +837,11 @@ export class SubredditService {
   async addUserToListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
-    username: string,
+    dataSent,
     fieldName: string,
     extraStage = {},
   ) {
+    const { username } = dataSent;
     const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
       username,
       subredditId,
@@ -854,7 +854,7 @@ export class SubredditService {
 
     const properityObject = {};
     properityObject[fieldName] = {
-      username,
+      ...dataSent,
       date: new Date(),
     };
 

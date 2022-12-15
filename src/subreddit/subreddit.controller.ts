@@ -31,8 +31,11 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ParseObjectIdPipe } from '../utils/utils.service';
+import { ApproveUserDto } from './dto/approve-user.dto';
+import { BanUserDto } from './dto/ban-user.dto';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
+import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -527,18 +530,18 @@ export class SubredditController {
   @ApiCreatedResponse({ description: 'The user muted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
-  @Post('/:subreddit/user/:username/mute')
+  @Post('/:subreddit/user/mute')
   muteUser(
     @User('username') moderatorUsername: string,
-    @Param('username') username: string,
+    @Body() mutedUserDto: MuteUserDto,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
   ) {
     return this.subredditService.addUserToListUserDate(
       subredditId,
       moderatorUsername,
-      username,
+      mutedUserDto,
       'mutedUsers',
-      { moderators: { $ne: username } },
+      { moderators: { $ne: mutedUserDto.username } },
     );
   }
 
@@ -576,31 +579,31 @@ export class SubredditController {
     );
   }
 
-  @ApiOperation({ description: 'pan a user' })
-  @ApiCreatedResponse({ description: 'The user paned successfully' })
+  @ApiOperation({ description: 'ban a user' })
+  @ApiCreatedResponse({ description: 'The user banned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
-  @Post('/:subreddit/user/:username/pan')
-  panUser(
+  @Post('/:subreddit/user/ban')
+  banUser(
     @User('username') moderatorUsername: string,
-    @Param('username') username: string,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Body() bannedUserDto: BanUserDto,
   ) {
     return this.subredditService.addUserToListUserDate(
       subredditId,
       moderatorUsername,
-      username,
-      'panedUsers',
-      { moderators: { $ne: username } },
+      bannedUserDto,
+      'bannedUsers',
+      { moderators: { $ne: bannedUserDto.username } },
     );
   }
 
-  @ApiOperation({ description: 'unpan user' })
-  @ApiCreatedResponse({ description: 'The user unpaned successfully' })
+  @ApiOperation({ description: 'unban user' })
+  @ApiCreatedResponse({ description: 'The user unbanned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
-  @Delete('/:subreddit/user/:username/pan')
-  async unpanUser(
+  @Delete('/:subreddit/user/:username/ban')
+  async unbanUser(
     @User('username') moderatorUsername: string,
     @Param('username') username: string,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
@@ -609,23 +612,23 @@ export class SubredditController {
       subredditId,
       moderatorUsername,
       username,
-      'panedUsers',
+      'bannedUsers',
     );
   }
 
-  @ApiOperation({ description: 'get paned users' })
+  @ApiOperation({ description: 'get banned users' })
   @ApiCreatedResponse({ description: 'The users returned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
-  @Get('/:subreddit/user/pan')
-  async getpanedUsers(
+  @Get('/:subreddit/user/ban')
+  async getbanedUsers(
     @User('username') moderatorUsername: string,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
   ) {
     return this.subredditService.getUsersFromListUserDate(
       subredditId,
       moderatorUsername,
-      'panedUsers',
+      'bannedUsers',
     );
   }
 
@@ -633,16 +636,16 @@ export class SubredditController {
   @ApiCreatedResponse({ description: 'The user approved successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
-  @Post('/:subreddit/user/:username/approve')
+  @Post('/:subreddit/user/approve')
   approveUser(
     @User('username') moderatorUsername: string,
-    @Param('username') username: string,
+    @Body() approvedUserDto: ApproveUserDto,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
   ) {
     return this.subredditService.addUserToListUserDate(
       subredditId,
       moderatorUsername,
-      username,
+      approvedUserDto,
       'approvedUsers',
     );
   }
