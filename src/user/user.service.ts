@@ -194,9 +194,9 @@ export class UserService {
   }
 
   getUserInfo(user: UserWithId): UserAccountDto {
-    const { _id, profilePhoto, username } = user;
+    const { _id, profilePhoto, username, createdAt } = user;
 
-    return { _id, profilePhoto, username };
+    return { _id, profilePhoto, username, createdAt };
   }
 
   async validPassword(

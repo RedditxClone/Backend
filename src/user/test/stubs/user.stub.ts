@@ -62,9 +62,11 @@ export const stubUser = (): User => ({
   newFollower: false,
   unSubscribe: false,
   savedPosts: [],
+  createdAt: new Date(),
 });
 
 export const stubUserFresh = (): User => ({
+  createdAt: new Date(),
   username: 'username',
   email: 'email@example.com',
   hashPassword: 'thisIsHashedPassword',

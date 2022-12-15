@@ -10,4 +10,7 @@ export class UserAccountDto {
 
   @ApiProperty({ description: 'id of current user' })
   _id: Types.ObjectId;
+
+  @ApiProperty({ description: `The CakeDay of the user's account` })
+  createdAt: Date;
 }
