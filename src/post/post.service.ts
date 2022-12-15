@@ -108,6 +108,21 @@ export class PostService {
     ]);
   }
 
+  async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.onlyOnePost(postId),
+      ...fetcher.filterBlocked(),
+      ...fetcher.filterHidden(),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
   private async getUserTimeLine(
     userId: Types.ObjectId,
     pagination: PaginationParamsDto,
