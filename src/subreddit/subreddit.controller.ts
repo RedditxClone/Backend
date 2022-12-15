@@ -32,6 +32,7 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { BanUserDto } from './dto/ban-user.dto';
@@ -403,17 +404,13 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   unmoderated(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getUnModeratedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
@@ -421,17 +418,13 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   spammed(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getSpammedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
@@ -439,17 +432,13 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   edited(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getEditedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 

@@ -2,11 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import type { UserSimpleDto } from 'user/dto';
+import type { UserSimpleDto } from '../user/dto';
 import type {
   PaginatedResponseDto,
   PaginationParamsDto,
-} from 'utils/apiFeatures/dto';
+} from '../utils/apiFeatures/dto';
 
 import { NotificationService } from '../notification/notification.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';

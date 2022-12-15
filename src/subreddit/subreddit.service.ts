@@ -13,6 +13,7 @@ import mongoose, { Model } from 'mongoose';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { subredditSelectedFields } from '../utils/project-selected-fields';
 import {
@@ -435,51 +436,39 @@ export class SubredditService {
   async getUnModeratedThings(
     subredditId: Types.ObjectId,
     modUsername: string,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
       subredditId,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
   async getSpammedThings(
     subredditId: Types.ObjectId,
     modUsername: string,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getSpammedThingsForSubreddit(
       subredditId,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
   async getEditedThings(
     subredditId: Types.ObjectId,
     modUsername: string,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getEditedThingsForSubreddit(
       subredditId,
-      limit,
-      page,
-      sort,
+      pagination,
     );
   }
 
