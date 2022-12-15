@@ -172,9 +172,9 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':subreddit')
+  @Patch('r/:subreddit_name')
   updateSubreddit(
-    @Param('subreddit') subreddit: string,
+    @Param('subreddit_name') subreddit: string,
     @Body() updateSubredditDto: UpdateSubredditDto,
   ) {
     return this.subredditService.update(subreddit, updateSubredditDto);

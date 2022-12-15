@@ -114,7 +114,7 @@ export class SubredditService {
 
   async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
     const sr: SubredditDocument | null | undefined = await this.subredditModel
-      .findByIdAndUpdate(subreddit, updateSubredditDto)
+      .findOneAndUpdate({ name: subreddit }, updateSubredditDto)
       .select('_id');
 
     if (!sr) {
