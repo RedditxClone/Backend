@@ -22,9 +22,14 @@ services:
       - db-network
       - proxy-network
     restart: always
+    volumes:
+    - backend_assets:/app/assets/
 
 networks:
   db-network:
     external: true
   proxy-network:
+    external: true
+volumes:
+  backend_assets:
     external: true
