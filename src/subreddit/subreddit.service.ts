@@ -156,7 +156,7 @@ export class SubredditService {
   }
 
   async removeIcon(subreddit: string) {
-    const saveDir = `src/statics/subreddit_icons/${subreddit}.jpeg`;
+    const saveDir = `assets/subreddit_icons/${subreddit}.jpeg`;
     const sr = await this.subredditModel
       .findByIdAndUpdate(subreddit, {
         icon: '',
