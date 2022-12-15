@@ -153,15 +153,25 @@ describe('UserService', () => {
     });
   });
   describe('getUserInfo', () => {
+    it('should throw user successfully', async () => {
+      const user: any = await service.getUserById(id);
+      expect(user).toBeTruthy();
+      await expect(async () => {
+        await service.getUserInfo(user._id, 'hi');
+      }).rejects.toThrowError();
+    });
     it('should return user successfully', async () => {
       const user: any = await service.getUserById(id);
       expect(user).toBeTruthy();
-      const userAccount = service.getUserInfo(user);
+      const userAccount = await service.getUserInfo(user._id, user.username);
       expect(userAccount).toEqual({
         username: userDto.username,
         profilePhoto: '',
+        coverPhoto: '',
         _id: id,
         createdAt: userAccount.createdAt,
+        isFollowed: false,
+        isBlocked: false,
       });
     });
   });
