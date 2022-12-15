@@ -28,11 +28,18 @@ export class SearchService {
     page,
     numberOfData,
   ) => {
-    const { username } = await this.userService.getUserById(userId);
+    let usernameData;
+
+    try {
+      const { username } = await this.userService.getUserById(userId);
+      usernameData = username;
+    } catch {
+      /* empty */
+    }
 
     return this.subredditService.getSearchSubredditAggregation(
       data,
-      username,
+      usernameData,
       userId,
       page,
       numberOfData,
@@ -45,11 +52,18 @@ export class SearchService {
     page,
     numberOfData,
   ) => {
-    const { username } = await this.userService.getUserById(userId);
+    let usernameData;
+
+    try {
+      const { username } = await this.userService.getUserById(userId);
+      usernameData = username;
+    } catch {
+      /* empty */
+    }
 
     return this.subredditService.getSubredditStartsWithChar(
       data,
-      username,
+      usernameData,
       userId,
       page,
       numberOfData,
