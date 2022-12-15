@@ -849,6 +849,7 @@ describe('SubredditService', () => {
 
   describe('get subreddits', () => {
     let sr;
+    const type = undefined;
     beforeAll(async () => {
       sr = await subredditService.create(
         {
@@ -864,17 +865,18 @@ describe('SubredditService', () => {
         sr._id,
         userId,
         pagination,
+        type,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getUnModeratedThings(sr._id, sr._id, pagination),
+        subredditService.getUnModeratedThings(sr._id, sr._id, pagination, type),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getUnModeratedThings(userId, userId, pagination),
+        subredditService.getUnModeratedThings(userId, userId, pagination, type),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
@@ -882,17 +884,18 @@ describe('SubredditService', () => {
         sr._id,
         userId,
         pagination,
+        type,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getSpammedThings(sr._id, sr._id, pagination),
+        subredditService.getSpammedThings(sr._id, sr._id, pagination, type),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getSpammedThings(userId, userId, pagination),
+        subredditService.getSpammedThings(userId, userId, pagination, type),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
@@ -900,17 +903,18 @@ describe('SubredditService', () => {
         sr._id,
         userId,
         pagination,
+        type,
       );
       expect(res).toEqual([]);
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getEditedThings(sr._id, sr._id, pagination),
+        subredditService.getEditedThings(sr._id, sr._id, pagination, type),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getEditedThings(userId, userId, pagination),
+        subredditService.getEditedThings(userId, userId, pagination, type),
       ).rejects.toThrow('wrong');
     });
   });
