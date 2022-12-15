@@ -470,7 +470,7 @@ describe('UserService', () => {
       expect(
         await service.uploadPhoto(id, { buffer: null }, 'profilePhoto'),
       ).toEqual(stubImagesHandler());
-    });
+    }); 
   });
 
   describe('canRecieveMessages', () => {
