@@ -45,7 +45,6 @@ export class NotificationService {
   ) => {
     const res = this.notificationModel.aggregate([
       { $match: { userId, hidden: false } },
-      { $set: { new: false } },
       {
         $lookup: {
           from: 'users',
@@ -89,6 +88,7 @@ export class NotificationService {
         $sort: { createdAt: -1 },
       },
     ]);
+    await this.notificationModel.updateMany({ userId }, { new: false });
 
     return this.apiFeaturesService.getPaginatedResponseFromAggregate(
       res,

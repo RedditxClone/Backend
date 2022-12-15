@@ -48,7 +48,10 @@ export class NotificationController {
     return this.notificationService.countNew(userId);
   }
 
-  @ApiOperation({ description: 'get all notifications for current user' })
+  @ApiOperation({ description: 'Hides a notification makes it disappear.' })
+  @ApiOkResponse({
+    description: 'successfully hidden the notification',
+  })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
   @Post(':notification_id/hide')
