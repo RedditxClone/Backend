@@ -1,1 +1,0 @@
-### directory created temporarily to save cover photos

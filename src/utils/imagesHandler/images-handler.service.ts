@@ -12,7 +12,7 @@ export class ImagesHandlerService {
     targetId: Types.ObjectId,
     fieldName: string,
   ) {
-    const saveDir = `assets/${folderName}/${targetId}.jpeg`;
+    const saveDir = `src/statics/${folderName}/${targetId}.jpeg`;
     const accessedField: any = {};
     accessedField[fieldName] = saveDir;
     await Promise.all([
@@ -44,7 +44,7 @@ export class ImagesHandlerService {
     targetId: Types.ObjectId,
     fieldName: string,
   ) {
-    const saveDir = `assets/${folderName}/${targetId}.jpeg`;
+    const saveDir = `src/statics/${folderName}/${targetId}.jpeg`;
     const accessedField: any = {};
     accessedField[fieldName] = '';
     const res = await Model.updateOne({ _id: targetId }, accessedField).select(

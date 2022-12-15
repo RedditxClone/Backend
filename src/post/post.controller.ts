@@ -112,7 +112,7 @@ export class PostController {
   @UseInterceptors(
     AnyFilesInterceptor({
       storage: diskStorage({
-        destination: './assets/posts-media',
+        destination: './statics/posts-media',
         filename: uniqueFileName,
       }),
     }),
