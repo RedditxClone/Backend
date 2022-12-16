@@ -327,6 +327,7 @@ export class ThingFetch {
       new: { publishedAt: -1, _id: 1 },
       old: { publishedAt: 1, _id: -1 },
       best: { bestValue: -1, _id: 1 },
+      comments: { commentCount: -1, _id: 1 },
     };
 
     if (!sortType || !Object.keys(sortOptions).includes(sortType)) {
