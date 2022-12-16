@@ -640,4 +640,42 @@ export class SubredditController {
       'approvedUsers',
     );
   }
+
+  @ApiOperation({ description: 'Add subtopics list' })
+  @ApiCreatedResponse({ description: 'The list was added successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/subtopics')
+  addSubTopics(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('username') username: string,
+    @Body() subTopics: string[],
+  ) {
+    return this.subredditService.addSubTobics(subreddit, subTopics, username);
+  }
+
+  @ApiOperation({ description: 'Add activeTopic' })
+  @ApiCreatedResponse({ description: 'The activeTopic was added successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/activetopic')
+  addActiveTopic(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('username') username: string,
+    @Body() activeTopic: string,
+  ) {
+    return this.subredditService.addActiveTobic(
+      subreddit,
+      activeTopic,
+      username,
+    );
+  }
 }

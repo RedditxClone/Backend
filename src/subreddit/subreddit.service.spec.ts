@@ -61,6 +61,8 @@ describe('SubredditService', () => {
     to: 2,
   };
 
+  const subTopics = ['a', 'b', 'c', 'd', 'e'];
+
   const subredditDefault: CreateSubredditDto = {
     name: 'subredditDefault',
     type: 'public',
@@ -929,6 +931,75 @@ describe('SubredditService', () => {
       ).rejects.toThrow('wrong');
     });
   });
+
+  // So dependable ==> have to test both of them together
+  describe('add subTopics and activeTopic', () => {
+    it('should add subtopic successfully', async () => {
+      const res1 = await subredditService.addSubTobics(
+        subredditDocument._id,
+        subTopics,
+        username,
+      );
+      expect(res1).toEqual({ status: 'success' });
+    });
+    it('should add activeTopic successfully', async () => {
+      const res2 = await subredditService.addActiveTobic(
+        subredditDocument._id,
+        subTopics[1],
+        username,
+      );
+      expect(res2).toEqual({ status: 'success' });
+      const sr = await subredditService.findSubreddit(
+        subredditDocument._id.toString(),
+      );
+
+      expect(sr).toEqual(
+        expect.objectContaining({
+          activeTopic: subTopics[1],
+          subTopics: subTopics.filter((_, i) => i !== 1),
+        }),
+      );
+    });
+    it('should throw error (activeTopic not in subTopics)', async () => {
+      await expect(
+        subredditService.addActiveTobic(
+          subredditDocument._id,
+          'noExist',
+          username,
+        ),
+      ).rejects.toThrowError();
+    });
+
+    it('should throw error (activeTopic not in new subTopics)', async () => {
+      await expect(
+        subredditService.addSubTobics(
+          subredditDocument._id,
+          ['sport', 'math', 'physics'],
+          username,
+        ),
+      ).rejects.toThrowError();
+    });
+
+    it('should add subTopics successfully', async () => {
+      const res = await subredditService.addSubTobics(
+        subredditDocument._id,
+        ['sport', 'math', 'physics', 'b'],
+        username,
+      );
+      expect(res).toEqual({ status: 'success' });
+      const sr = await subredditService.findSubreddit(
+        subredditDocument._id.toString(),
+      );
+
+      expect(sr).toEqual(
+        expect.objectContaining({
+          activeTopic: subTopics[1],
+          subTopics: ['sport', 'math', 'physics'],
+        }),
+      );
+    });
+  });
+
   describe('leave subreddit', () => {
     it('should throw bad exception', async () => {
       const subId = new Types.ObjectId(1);
