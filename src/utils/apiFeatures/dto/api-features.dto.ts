@@ -1,15 +1,15 @@
-import { Optional } from '@nestjs/common';
+import { IsOptional } from 'class-validator';
 
 export class ApiFeaturesOptionsDto {
-  @Optional()
+  @IsOptional()
   sort?: boolean;
 
-  @Optional()
+  @IsOptional()
   pagination?: boolean;
 
-  @Optional()
+  @IsOptional()
   fields?: boolean;
 
-  @Optional()
+  @IsOptional()
   searchBy?: boolean;
 }

@@ -122,6 +122,60 @@ describe('PostService', () => {
       expect(res.status).toEqual('success');
     });
   });
+  // describe('upload media for post spec', () => {
+  //   it('must upload them successfully', async () => {
+  //     const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
+  //     const post = await service.create(userId, postDto);
+  //     const files: any = [{ filename: 'file1' }];
+  //     const res = await service.uploadPostMedia(files, post._id, userId);
+  //     expect(res.images).toEqual(['assets/post-media/file1']);
+  //   });
+  // });
+  describe('get discover page', () => {
+    let sr, post, user, user2;
+    beforeAll(async () => {
+      user = await userService.createUser({
+        email: 'email@example.com',
+        username: 'usernameewe',
+        password: '123456778',
+      });
+      user2 = await userService.createUser({
+        email: 'email@example.com',
+        username: 'usernamee',
+        password: '123456778',
+      });
+      sr = await subredditService.create(
+        {
+          name: 'sr100',
+          over18: true,
+          type: 'sr1',
+        },
+        user.username,
+      );
+      await subredditService.joinSubreddit(user._id, sr._id);
+      post = await service.create(user._id, {
+        title: 'title',
+        subredditId: sr._id,
+        text: 'text',
+      });
+      const files: any = [
+        { filename: 'file1' },
+        { filename: 'file2' },
+        { filename: 'file3' },
+      ];
+      await service.uploadPostMedia(files, post._id, user._id);
+      await userService.block(user._id, user2._id);
+    });
+    it('must get 3 photos successfully', async () => {
+      const res = await service.discover(user._id, 1, 10);
+      expect(res.length).toEqual(3);
+    });
+    it('must return 0 images', async () => {
+      const res = await service.discover(user2._id, 1, 10);
+      expect(res).toEqual([]);
+    });
+  });
+
   describe('hide', () => {
     const userId = new Types.ObjectId(1);
     it('should hide successfully', async () => {
@@ -216,6 +270,8 @@ describe('PostService', () => {
             subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
+              isModerator: false,
+              isJoin: false,
             },
             user: {
               id: user2._id,
@@ -244,6 +300,8 @@ describe('PostService', () => {
             subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
+              isModerator: false,
+              isJoin: false,
             },
             user: {
               id: user2._id,
@@ -256,7 +314,7 @@ describe('PostService', () => {
       it('must get all posts randomly', async () => {
         const userId = undefined;
         const timeline = await service.getTimeLine(userId, pagination);
-        expect(timeline.length).toEqual(2);
+        expect(timeline.length).toEqual(3);
       });
       it('must limit return to only one post', async () => {
         const timeline = await service.getTimeLine(user1._id, {

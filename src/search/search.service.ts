@@ -28,11 +28,11 @@ export class SearchService {
     page,
     numberOfData,
   ) => {
-    const { username } = await this.userService.getUserById(userId);
+    const user = await this.userService.getUserIfExist(userId);
 
     return this.subredditService.getSearchSubredditAggregation(
       data,
-      username,
+      user?.username,
       userId,
       page,
       numberOfData,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
@@ -23,9 +23,13 @@ export class NotificationService {
    */
   countNew = async (userId: Types.ObjectId) => {
     const [count] = await this.notificationModel.aggregate([
-      { $match: { userId, hidden: false } },
+      { $match: { userId, hidden: false, new: true } },
       { $count: 'count' },
     ]);
+
+    if (!count) {
+      return { count: 0 };
+    }
 
     return count;
   };
@@ -41,7 +45,6 @@ export class NotificationService {
   ) => {
     const res = this.notificationModel.aggregate([
       { $match: { userId, hidden: false } },
-      { $set: { new: false } },
       {
         $lookup: {
           from: 'users',
@@ -85,6 +88,7 @@ export class NotificationService {
         $sort: { createdAt: -1 },
       },
     ]);
+    await this.notificationModel.updateMany({ userId }, { new: false });
 
     return this.apiFeaturesService.getPaginatedResponseFromAggregate(
       res,
@@ -191,5 +195,25 @@ export class NotificationService {
       type: refType + '_reply',
       notifierId,
     });
+  };
+
+  /**
+   * Mark as hidden will not show again for the user
+   * @param userId the user's id
+   * @param notificationId  the notification id
+   */
+  hide = async (userId: Types.ObjectId, notificationId: Types.ObjectId) => {
+    const info = await this.notificationModel.updateOne(
+      { userId, _id: notificationId },
+      { hidden: true },
+    );
+
+    if (info.matchedCount === 0) {
+      throw new BadRequestException(
+        `Your notification Id is either invalid or you are trying to hide someone else's notifications`,
+      );
+    }
+
+    return { status: 'success', timestamp: new Date() };
   };
 }

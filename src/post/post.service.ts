@@ -78,6 +78,40 @@ export class PostService {
     return res;
   };
 
+  /**
+   * Uploads users media on a post
+   * @param files the files the user uploaded
+   * @returns a list of uploaded images Ids for referencing.
+   */
+  async uploadPostMedia(
+    files: Express.Multer.File[],
+    postId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    if (files.length === 0) {
+      throw new BadRequestException('no media uploaded');
+    }
+
+    const media = files.map((file: Express.Multer.File) => file.filename);
+    const data = await this.postModel.updateOne(
+      { _id: postId, userId },
+      {
+        $push: { images: { $each: media } },
+      },
+    );
+
+    if (data.modifiedCount === 0) {
+      throw new NotFoundException(
+        `you are not an owner of the post with id ${postId}`,
+      );
+    }
+
+    return {
+      status: 'success',
+      images: media.map((name) => `/assets/post-media/${name}`),
+    };
+  }
+
   findAll() {
     return `This action returns all post`;
   }
@@ -106,6 +140,27 @@ export class PostService {
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
     ]);
+  }
+
+  async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
+    const fetcher = new ThingFetch(userId);
+
+    const post = await this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.onlyOnePost(postId),
+      ...fetcher.filterBlocked(),
+      ...fetcher.filterHidden(),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+
+    if (post.length === 0) {
+      throw new BadRequestException(`there is no post with id ${postId}`);
+    }
+
+    return post[0];
   }
 
   private async getUserTimeLine(
@@ -208,6 +263,29 @@ export class PostService {
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async discover(
+    userId: Types.ObjectId,
+    page: number | undefined,
+    limit: number | undefined,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterOfMySRs(),
+      ...fetcher.filterHidden(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.SRInfo(),
+      {
+        $unwind: {
+          path: '$images',
+        },
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.getDiscoverProject(),
     ]);
   }
 }

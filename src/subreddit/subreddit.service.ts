@@ -91,7 +91,6 @@ export class SubredditService {
       { $match: { name: subredditName } },
       srGetUsersRelated,
       srProjectionNumOfUsersAndIfModerator(userId, username),
-      { $unset: 'moderators' },
     ]);
 
     if (sr.length === 0) {
@@ -114,7 +113,7 @@ export class SubredditService {
 
   async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
     const sr: SubredditDocument | null | undefined = await this.subredditModel
-      .findByIdAndUpdate(subreddit, updateSubredditDto)
+      .findOneAndUpdate({ name: subreddit }, updateSubredditDto)
       .select('_id');
 
     if (!sr) {
@@ -437,12 +436,14 @@ export class SubredditService {
     subredditId: Types.ObjectId,
     modUsername: string,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
       subredditId,
       pagination,
+      type,
     );
   }
 
@@ -450,12 +451,14 @@ export class SubredditService {
     subredditId: Types.ObjectId,
     modUsername: string,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getSpammedThingsForSubreddit(
       subredditId,
       pagination,
+      type,
     );
   }
 
@@ -463,12 +466,14 @@ export class SubredditService {
     subredditId: Types.ObjectId,
     modUsername: string,
     pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
     await this.checkIfModerator(subredditId, modUsername);
 
     return this.postCommentService.getEditedThingsForSubreddit(
       subredditId,
       pagination,
+      type,
     );
   }
 

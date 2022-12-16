@@ -15,6 +15,9 @@ export class User {
   @Prop({ select: false })
   hashPassword: string;
 
+  @Prop({ default: Date.now() })
+  createdAt: Date;
+
   // moderator access is given to specific users
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
   authType: string;

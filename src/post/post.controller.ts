@@ -45,6 +45,7 @@ import {
   UploadMediaDto,
   VotePostDto,
 } from './dto';
+import { DiscoverReturnDto } from './dto/discover-return-dto';
 import { PostService } from './post.service';
 
 @ApiTags('Post')
@@ -67,6 +68,20 @@ export class PostController {
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postService.getHiddenPosts(userId, pagination);
+  }
+
+  @ApiOkResponse({
+    description: 'posts returned successfully',
+    type: DiscoverReturnDto,
+  })
+  @Get('discover')
+  @UseGuards(JWTUserGuard)
+  discover(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.discover(userId, page, limit);
   }
 
   @ApiOkResponse({
@@ -132,6 +147,30 @@ export class PostController {
     return this.postService.uploadMedia(files);
   }
 
+  @ApiOperation({ description: 'upload a post media.' })
+  @ApiCreatedResponse({
+    description: 'The resource was uploaded successfully',
+    type: UploadMediaDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      storage: diskStorage({
+        destination: './assets/posts-media',
+        filename: uniqueFileName,
+      }),
+    }),
+  )
+  @Post('/:post_id/upload-media')
+  uploadPostMedia(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Param('post_id') postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.uploadPostMedia(files, postId, userId);
+  }
+
   @ApiOperation({ description: 'Deletes a post.' })
   @ApiOkResponse({ description: 'The resource was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
@@ -163,9 +202,10 @@ export class PostController {
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
+  @UseGuards(IsUserExistGuard)
   @Get(':id')
-  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.postCommentService.get(id, 'Post');
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req) {
+    return this.postService.getPost(id, req._id);
   }
 
   @ApiOperation({

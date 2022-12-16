@@ -27,6 +27,18 @@ export class ThingFetch {
     ];
   }
 
+  onlyOnePost(postId: Types.ObjectId) {
+    return [
+      {
+        $match: {
+          $expr: {
+            $eq: [postId, '$_id'],
+          },
+        },
+      },
+    ];
+  }
+
   getHidden() {
     return [
       this.filterHidden()[0],
@@ -329,6 +341,8 @@ export class ThingFetch {
           subredditInfo: {
             id: { $arrayElemAt: ['$subreddit._id', 0] },
             name: { $arrayElemAt: ['$subreddit.name', 0] },
+            isJoin: { $toBool: false },
+            isModerator: { $toBool: false },
           },
           votesCount: 1,
           commentCount: 1,
@@ -341,7 +355,6 @@ export class ThingFetch {
           removedBy: 1,
           removedAt: 1,
           editCheckedBy: 1,
-          vote: 1,
           nsfw: 1,
           type: 1,
           visited: 1,
@@ -428,6 +441,24 @@ export class ThingFetch {
     return [
       {
         $match: filter,
+      },
+    ];
+  }
+
+  getDiscoverProject() {
+    return [
+      {
+        $project: {
+          image: { $concat: ['/assets/post-media/', '$images'] },
+          subredditInfo: {
+            id: { $arrayElemAt: ['$subreddit._id', 0] },
+            name: { $arrayElemAt: ['$subreddit.name', 0] },
+          },
+          _id: 0,
+          postId: {
+            $toObjectId: '$_id',
+          },
+        },
       },
     ];
   }

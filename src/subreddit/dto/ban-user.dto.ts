@@ -1,5 +1,4 @@
-import { Optional } from '@nestjs/common';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class BanUserDto {
   @IsNotEmpty()
@@ -14,9 +13,9 @@ export class BanUserDto {
   @IsNotEmpty()
   permanent: boolean;
 
-  @Optional()
+  @IsOptional()
   duration?: string;
 
-  @Optional()
+  @IsOptional()
   message?: string;
 }
