@@ -172,7 +172,9 @@ export class PostService {
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.filterOfMySRs(),
+      ...fetcher.getIsFollowed(),
+      ...fetcher.getIsJoined(),
+      ...fetcher.matchAllRelatedPosts(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
       ...fetcher.prepareBeforeStoring(sort),
