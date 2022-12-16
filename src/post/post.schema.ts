@@ -16,7 +16,7 @@ export class Post extends PostComment {
   @Prop({ default: 0 })
   insightsCount: number;
 
-  @Prop({ required: false })
+  @Prop({ required: false, default: null })
   flair: Types.ObjectId;
 
   // for post schedule
@@ -31,5 +31,17 @@ export class Post extends PostComment {
 
   @Prop({ default: false, required: false })
   spoiler: boolean;
+
+  @Prop({ default: false })
+  commentsLocked: boolean;
+
+  @Prop({ default: false })
+  visited: boolean;
+
+  @Prop({ default: null })
+  approvedBy: string;
+
+  @Prop({ default: null })
+  approvedAt: Date;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);

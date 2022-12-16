@@ -12,8 +12,11 @@ export class User {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true, select: false })
+  @Prop({ select: false })
   hashPassword: string;
+
+  @Prop({ default: Date.now() })
+  createdAt: Date;
 
   // moderator access is given to specific users
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
@@ -142,12 +145,18 @@ export class User {
   @Prop({ default: true })
   cakeDay: boolean;
 
+  @Prop({ default: [] })
+  dontNotifyIds: Types.ObjectId[];
+
   //messages
   @Prop({ enum: [`everyone`, `whitelisted`], default: 'everyone' })
   acceptPms: string;
 
   @Prop({ default: [] })
   whitelisted: string[];
+
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
 
   //Miscellaneous
   @Prop({ default: false })
@@ -161,6 +170,14 @@ export class User {
 
   @Prop({ default: false })
   unSubscribe: boolean;
+
+  // google auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGoogleAccount?: string;
+
+  // github auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGithubAccount?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -9,10 +9,12 @@ import { createResponse } from 'node-mocks-http';
 
 import { BlockModule } from '../block/block.module';
 import { FollowModule } from '../follow/follow.module';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { EmailService, EmailServiceMock } from '../utils';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -38,9 +40,10 @@ describe('AuthService', () => {
         }),
         FollowModule,
         BlockModule,
+        PostCommentModule,
         ImagesHandlerModule,
       ],
-      providers: [AuthService, UserService, EmailService],
+      providers: [AuthService, UserService, EmailService, ApiFeaturesService],
     })
       .overrideProvider(EmailService)
       .useValue(EmailServiceMock)
@@ -211,6 +214,70 @@ describe('AuthService', () => {
       );
     });
   });
+
+  describe('continue', () => {
+    it('should create gitub account successfully', async () => {
+      const res = createResponse();
+      const githunToken = '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';
+      await authService.continueAuth(
+        githunToken,
+        res,
+        'continueWithGithubAccount',
+        authService.verfiyUserGithubData,
+      );
+      const userDataReturned = await JSON.parse(res._getData());
+      const userData = await userService.getUserById(userDataReturned._id);
+
+      expect(userData.username).toEqual(userData.username);
+      expect(userData.email).toEqual(userData.email);
+    });
+    it('unautherized', async () => {
+      const res = createResponse();
+      const githunToken = 'not_validTOkenJqFyeAHVq9hwJx3QCDEG2bR1Zw';
+      await expect(async () => {
+        await authService.continueAuth(
+          githunToken,
+          res,
+          'continueWithGithubAccount',
+          authService.verfiyUserGithubData,
+        );
+      }).rejects.toThrowError();
+    });
+    it('create google account successfully', async () => {
+      const googleToken = 'not_validTOkenJqFyeAHVq9hwJx3QCDEG2bR1Zw';
+      const res = createResponse();
+
+      await authService.continueAuth(
+        googleToken,
+        res,
+        'continueWithGithubAccount',
+        // eslint-disable-next-line @typescript-eslint/require-await
+        async (token) => ({
+          email: 'test@gmail.com',
+          token,
+        }),
+      );
+
+      const userDataReturned = await JSON.parse(res._getData());
+      const userData = await userService.getUserById(userDataReturned._id);
+
+      expect(userData.username).toEqual(userData.username);
+      expect(userData.email).toEqual(userData.email);
+    });
+    it('unautherized', async () => {
+      const res = createResponse();
+      const googleToken = 'not_validTOkenJqFyeAHVq9hwJx3QCDEG2bR1Zw38942143043';
+      await expect(async () => {
+        await authService.continueAuth(
+          googleToken,
+          res,
+          'continueWithGithubAccount',
+          authService.verfiyUserGmailData,
+        );
+      }).rejects.toThrowError();
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

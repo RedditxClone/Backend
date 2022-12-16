@@ -3,10 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseFilePipeBuilder,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -16,6 +19,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -23,28 +28,35 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Response } from 'express';
 import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
+import { FollowService } from '../follow/follow.service';
+import { ReturnPostDto } from '../post/dto';
+import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
   GetFriendsDto,
-  GetUserInfoDto,
   PrefsDto,
   UserAccountDto,
   UserCommentsDto,
-  UserOverviewDto,
   UserPostsDto,
+  UserSimpleDto,
 } from './dto';
-import type { UserWithId } from './user.schema';
+import { MeDto } from './dto/me.dto';
 import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly followService: FollowService,
+  ) {}
 
   @ApiOperation({ description: 'Get user friends' })
   @ApiOkResponse({
@@ -112,13 +124,13 @@ export class UserController {
   @ApiOperation({ description: 'Get user data if logged in' })
   @ApiOkResponse({
     description: 'The user is logged in and the data returned successfully',
-    type: UserAccountDto,
+    type: MeDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   @UseGuards(JWTUserGuard)
-  getCurrentUser(@Req() req: Request & { user: UserWithId }): UserAccountDto {
-    return this.userService.getUserInfo(req.user);
+  async getCurrentUser(@User('_id') userId: Types.ObjectId) {
+    return this.userService.getUserById(userId);
   }
 
   @ApiOperation({ description: 'generate list of random usernames' })
@@ -139,8 +151,8 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Get('/me/prefs')
-  async getUserPrefs(@Req() request) {
-    return this.userService.getUserPrefs(request.user._id);
+  async getUserPrefs(@User('_id') userId: Types.ObjectId) {
+    return this.userService.getUserPrefs(userId);
   }
 
   @ApiOperation({ description: 'Update user preferences' })
@@ -148,31 +160,34 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Patch('/me/prefs')
-  async updateUserPrefs(@Req() request, @Body() prefsDto: PrefsDto) {
-    return this.userService.updateUserPrefs(request.user._id, prefsDto);
+  async updateUserPrefs(
+    @User('_id') userId: Types.ObjectId,
+    @Body() prefsDto: PrefsDto,
+  ) {
+    return this.userService.updateUserPrefs(userId, prefsDto);
   }
 
-  @ApiOperation({ description: 'Get information about the user' })
-  @ApiOkResponse({
-    description: 'The user info returned successfully',
-    type: GetUserInfoDto,
-  })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id/about')
-  getUserInfo(@Param('user_id') _userId: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get information about the user' })
+  // @ApiOkResponse({
+  //   description: 'The user info returned successfully',
+  //   type: GetUserInfoDto,
+  // })
+  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  // @Get('/:user_id/about')
+  // getUserInfo(@Param('user_id') _userId: string) {
+  //   // TODO
+  // }
 
-  @ApiOperation({ description: 'Get information about the user' })
-  @ApiOkResponse({
-    description: 'The data returned successfully',
-    type: UserOverviewDto,
-  })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id/overview')
-  getUserOverview(@Param('user_id') _userId: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get information about the user' })
+  // @ApiOkResponse({
+  //   description: 'The data returned successfully',
+  //   type: UserOverviewDto,
+  // })
+  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  // @Get('/:user_id/overview')
+  // getUserOverview(@Param('user_id') _userId: string) {
+  //   // TODO
+  // }
 
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
@@ -226,7 +241,7 @@ export class UserController {
   @Post('/check-available-username')
   async checkAvailableUsername(
     @Body() availableUsernameDto: AvailableUsernameDto,
-    @Res() res: Response,
+    @Res() res,
   ) {
     return this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
@@ -246,9 +261,9 @@ export class UserController {
   @Post('/:user_id/follow')
   async followUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.userService.follow(request.user._id, user_id);
+    return this.userService.follow(userId, user_id);
   }
 
   @ApiOperation({ description: 'unfollow specific user' })
@@ -266,9 +281,33 @@ export class UserController {
   @Post('/:user_id/unfollow')
   async unfollowUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') requestingUserId: Types.ObjectId,
   ) {
-    return this.userService.unfollow(request.user._id, user_id);
+    return this.userService.unfollow(requestingUserId, user_id);
+  }
+
+  @ApiOperation({ description: 'get list of users you are following' })
+  @ApiPaginatedOkResponse(UserSimpleDto, 'Users returned successfully')
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/following')
+  getFollowingUsers(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.followService.getFollowingUsers(userId, paginationParams);
+  }
+
+  @ApiOperation({ description: 'get list of users that are following you' })
+  @ApiPaginatedOkResponse(UserSimpleDto, 'Users returned successfully')
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/followed')
+  getFollowedUsers(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.followService.getFollowedUsers(userId, paginationParams);
   }
 
   @ApiOperation({ description: 'User block another user' })
@@ -281,9 +320,9 @@ export class UserController {
   @Post('/:user_id/block')
   async blockUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') requestingUserId: Types.ObjectId,
   ): Promise<any> {
-    return this.userService.block(request.user._id, user_id);
+    return this.userService.block(requestingUserId, user_id);
   }
 
   @ApiOperation({ description: 'User unblock another user' })
@@ -296,9 +335,9 @@ export class UserController {
   @Post('/:user_id/unblock')
   async unblockUser(
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-    @Req() request,
+    @User('_id') requestingUserId: Types.ObjectId,
   ): Promise<any> {
-    return this.userService.unblock(request.user._id, user_id);
+    return this.userService.unblock(requestingUserId, user_id);
   }
 
   @ApiOperation({ description: 'get list of blocked users' })
@@ -306,8 +345,8 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @UseGuards(JWTUserGuard)
   @Get('block')
-  getBlockedUsers(@Req() { user }): Promise<any> {
-    return this.userService.getBlockedUsers(user._id);
+  getBlockedUsers(@User('_id') userId: Types.ObjectId): Promise<any> {
+    return this.userService.getBlockedUsers(userId);
   }
 
   @ApiOperation({ description: 'give a moderation role to the ordinary user' })
@@ -351,18 +390,20 @@ export class UserController {
   })
   @UseGuards(JWTUserGuard)
   @Delete('/me')
-  async deleteAccount(@Req() request) {
-    return this.userService.deleteAccount(request.user);
+  async deleteAccount(@User() user) {
+    return this.userService.deleteAccount(user);
   }
 
   @ApiOperation({ description: 'get user info by user id' })
-  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiOkResponse({
+    description: 'The user info returned successfully',
+    type: UserAccountDto,
+  })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id')
-  async getUserById(
-    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-  ) {
-    return this.userService.getUserById(user_id);
+  @Get('/:username')
+  @UseGuards(IsUserExistGuard)
+  getUserByUsername(@Req() req, @Param('username') user2Id: string) {
+    return this.userService.getUserInfo(req._id, user2Id);
   }
 
   @UseInterceptors(FileInterceptor('photo'))
@@ -372,11 +413,23 @@ export class UserController {
   @ApiOkResponse({ description: 'Photo uploaded successfully ' })
   @ApiUnauthorizedResponse({
     description: 'you are not allowed to make this action',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        photo: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
   })
   @UseGuards(JWTUserGuard)
   @Post('/me/profile')
   uploadProfilePhoto(
-    @Req() request,
+    @User('_id') userId: Types.ObjectId,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
@@ -386,7 +439,7 @@ export class UserController {
     )
     file,
   ) {
-    return this.userService.uploadPhoto(request.user._id, file, 'profilePhoto');
+    return this.userService.uploadPhoto(userId, file, 'profilePhoto');
   }
 
   @UseInterceptors(FileInterceptor('photo'))
@@ -398,9 +451,21 @@ export class UserController {
     description: 'you are not allowed to make this action',
   })
   @UseGuards(JWTUserGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        photo: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Post('/me/cover')
   uploadCoverPhoto(
-    @Req() request,
+    @User('_id') userId: Types.ObjectId,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
@@ -410,6 +475,56 @@ export class UserController {
     )
     file,
   ) {
-    return this.userService.uploadPhoto(request.user._id, file, 'coverPhoto');
+    return this.userService.uploadPhoto(userId, file, 'coverPhoto');
+  }
+
+  @ApiOperation({
+    description:
+      'Close {option = -1} or reopen {option = 1} all notification for a post or comment',
+  })
+  @ApiCreatedResponse({ description: 'successfully done' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @UseGuards(JWTUserGuard)
+  @Post('thing/:thing/notify/:option')
+  notifyPostComment(
+    @Param('thing', ParseObjectIdPipe) thingId,
+    @Param('option', ParseIntPipe) option,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.userService.notifyPostComment(userId, thingId, option);
+  }
+
+  @ApiOperation({
+    description: 'Save post',
+  })
+  @ApiOkResponse({ description: 'post saved successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @HttpCode(200)
+  @UseGuards(JWTUserGuard)
+  @Post('/post/:post_id/save')
+  savePost(
+    @Param('post_id', ParseObjectIdPipe) post_id: Types.ObjectId,
+    @Req() { user },
+  ) {
+    return this.userService.savePost(user._id, post_id);
+  }
+
+  @ApiOperation({
+    description: 'get saved posts',
+  })
+  @ApiPaginatedOkResponse(ReturnPostDto, 'saved posts returned successfully ')
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/post/save')
+  getSavedPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.userService.getSavedPosts(userId, paginationParams);
   }
 }

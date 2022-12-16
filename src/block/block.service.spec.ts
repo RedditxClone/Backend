@@ -5,8 +5,11 @@ import type { Types } from 'mongoose';
 
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
+import { NotificationModule } from '../notification/notification.module';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -14,7 +17,6 @@ import {
 } from '../utils/mongoose-in-memory';
 import { BlockSchema } from './block.schema';
 import { BlockService } from './block.service';
-
 describe('BlockService', () => {
   let service: BlockService;
   let module: TestingModule;
@@ -23,15 +25,17 @@ describe('BlockService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
+        NotificationModule,
         rootMongooseTestModule(),
         ImagesHandlerModule,
+        PostCommentModule,
         MongooseModule.forFeature([
           { name: 'Block', schema: BlockSchema },
           { name: 'User', schema: UserSchema },
           { name: 'Follow', schema: FollowSchema },
         ]),
       ],
-      providers: [FollowService, BlockService, UserService],
+      providers: [FollowService, BlockService, UserService, ApiFeaturesService],
     }).compile();
     service = module.get<BlockService>(BlockService);
     const userService: UserService = module.get<UserService>(UserService);

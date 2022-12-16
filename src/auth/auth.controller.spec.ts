@@ -1,6 +1,7 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import { Types } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
 
 import type { CreateUserDto } from '../user/dto';
@@ -34,8 +35,10 @@ describe('AuthController', () => {
         username: 'username',
         password: '12345678',
       };
-      const user = await controller.login(dto, res);
-      expect(user).toEqual(stubUser());
+      const user: any = await controller.login(dto, res);
+      const exp = stubUser();
+      exp.createdAt = user.createdAt;
+      expect(user).toEqual(exp);
     });
   });
   describe('signup', () => {
@@ -46,8 +49,10 @@ describe('AuthController', () => {
         password: '12345678',
         username: 'user1',
       };
-      const user = await controller.signup(dto, res);
-      expect(user).toEqual(stubUser());
+      const user: any = await controller.signup(dto, res);
+      const exp = stubUser();
+      exp.createdAt = user.createdAt;
+      expect(user).toEqual(exp);
     });
   });
 
@@ -68,14 +73,13 @@ describe('AuthController', () => {
 
   describe('changePassword', () => {
     it('should send successfully', async () => {
-      const req: Request = createRequest();
       const res: Response = createResponse();
       const dto: ChangePasswordDto = {
         oldPassword: '123456789',
         newPassword: '12345678',
       };
-      req.user = { _id: 213 };
-      const val = await controller.changePassword(dto, res, req);
+      const userId = new Types.ObjectId(213);
+      const val = await controller.changePassword(dto, res, userId);
       expect(val).not.toBeTruthy();
     });
   });

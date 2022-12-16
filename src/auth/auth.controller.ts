@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Patch,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Patch, Post, Res, UseGuards } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -17,9 +9,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Response } from 'express';
+import { Types } from 'mongoose';
 
 import { CreateUserDto, ReturnedUserDto } from '../user/dto';
 import { AuthService } from './auth.service';
+import { User } from './decorators/user.decorator';
 import { ForgetUsernameDto } from './dto';
 import {
   ChangeForgottenPasswordDto,
@@ -87,12 +81,9 @@ export class AuthController {
   @Post('change-forgotten-password')
   async changeForgottenPassword(
     @Body() dto: ChangeForgottenPasswordDto,
-    @Req() req: any,
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.authService.changePasswordUsingToken(
-      req.user._id,
-      dto.password,
-    );
+    return this.authService.changePasswordUsingToken(userId, dto.password);
   }
 
   @ApiOperation({ description: 'Change the password of an account' })
@@ -104,12 +95,42 @@ export class AuthController {
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
     @Res() res: Response,
-    @Req() req,
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.authService.changePassword(
-      req.user._id,
-      changePasswordDto,
+    return this.authService.changePassword(userId, changePasswordDto, res);
+  }
+
+  @ApiOperation({
+    description: 'Create a new user if account is not used or login normally',
+  })
+  @ApiCreatedResponse({
+    description: 'Request processed successfully',
+  })
+  @ApiForbiddenResponse({ description: 'The token is not valid' })
+  @Post('google')
+  async continueWithGoogle(@Body('token') token, @Res() res: Response) {
+    return this.authService.continueAuth(
+      token,
       res,
+      'continueWithGoogleAccount',
+      this.authService.verfiyUserGmailData,
+    );
+  }
+
+  @ApiOperation({
+    description: 'Create a new user if account is not used or login normally',
+  })
+  @ApiCreatedResponse({
+    description: 'Request processed successfully',
+  })
+  @ApiForbiddenResponse({ description: 'The token is not valid' })
+  @Post('github')
+  async continueWithGithub(@Body('token') token, @Res() res) {
+    return this.authService.continueAuth(
+      token,
+      res,
+      'continueWithGithubAccount',
+      this.authService.verfiyUserGithubData,
     );
   }
 }

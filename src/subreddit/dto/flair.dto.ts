@@ -1,11 +1,10 @@
-import { Optional } from '@nestjs/common';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class FlairDto {
   //TODO:
   // what if the user sent _id?
-  @Optional()
+  @IsOptional()
   _id?: mongoose.Types.ObjectId;
 
   @IsNotEmpty()

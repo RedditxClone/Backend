@@ -1,11 +1,27 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
+import { User } from '../auth/decorators/user.decorator';
+import { JWTUserGuard } from '../auth/guards';
+import { MessageIdListDto, ModifiedCountDto } from '../message/dto';
+import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
+import { ParseObjectIdPipe } from '../utils/utils.service';
+import { CountNotificationDto } from './dto/count.dto';
 import { GetNotificationDto } from './dto/notification.dto';
 import { NotificationService } from './notification.service';
 
@@ -14,51 +30,85 @@ import { NotificationService } from './notification.service';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  @ApiOkResponse({
-    description: 'all notifications has been returned successfully',
-    type: [GetNotificationDto],
-  })
-  @ApiOperation({ description: 'get all notifcations for current user' })
+  @ApiPaginatedOkResponse(
+    GetNotificationDto,
+    'all notifications has been returned successfully',
+  )
+  @ApiOperation({ description: 'get all notifications for current user' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
   @Get()
-  findAll() {
-    return this.notificationService.findAll();
+  findAll(
+    @User('_id') userId: Types.ObjectId,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.notificationService.findAll(userId, paginationParams);
   }
 
-  @ApiOperation({ description: 'get all unread notifications' })
   @ApiOkResponse({
-    description: 'all unread notifications has been returned successfully',
-    type: [GetNotificationDto],
+    description: 'return number of new notifications for current user',
+    type: CountNotificationDto,
   })
+  @ApiOperation({ description: 'get all notifications for current user' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Get('/unread')
-  findUnread() {
-    return this.notificationService.findAll();
+  @UseGuards(JWTUserGuard)
+  @Get('/count')
+  findCount(@User('_id') userId: Types.ObjectId) {
+    return this.notificationService.countNew(userId);
   }
 
-  @ApiOperation({ description: 'get all mentions for current user' })
+  @ApiOperation({ description: 'Hides a notification makes it disappear.' })
   @ApiOkResponse({
-    description: 'all mentions has been returned successfully',
-    type: [GetNotificationDto],
+    description: 'successfully hidden the notification',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Get('/mention')
-  findMentions() {
-    return {
-      mentions: [],
-    };
+  @UseGuards(JWTUserGuard)
+  @Post(':notification_id/hide')
+  hide(
+    @Param('notification_id', ParseObjectIdPipe) notificationId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.notificationService.hide(userId, notificationId);
   }
 
-  @ApiOperation({ description: 'get all unread mentions for current user' })
+  @ApiOperation({ description: 'Mark Notification as read notifications' })
   @ApiOkResponse({
-    description: 'all unread mentions has been returned successfully',
-    type: [GetNotificationDto],
+    description: 'Notification is marked successfully',
+    type: [ModifiedCountDto],
   })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Get('/mention/unread')
-  findUnreadMentions() {
-    // return {
-    //   mentions: [],
-    // };
+  @UseGuards(JWTUserGuard)
+  @Post('/mark-as-read')
+  markAsRead(
+    @User('_id') userId: Types.ObjectId,
+    @Body() messageIdList: MessageIdListDto,
+  ) {
+    return this.notificationService.markAsRead(userId, messageIdList);
   }
+
+  // @ApiOperation({ description: 'get all mentions for current user' })
+  // @ApiOkResponse({
+  //   description: 'all mentions has been returned successfully',
+  //   type: [GetNotificationDto],
+  // })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @Get('/mention')
+  // findMentions() {
+  //   return {
+  //     mentions: [],
+  //   };
+  // }
+
+  // @ApiOperation({ description: 'get all unread mentions for current user' })
+  // @ApiOkResponse({
+  //   description: 'all unread mentions has been returned successfully',
+  //   type: [GetNotificationDto],
+  // })
+  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  // @Get('/mention/unread')
+  // findUnreadMentions() {
+  //   return {
+  //     mentions: [],
+  //   };
+  // }
 }
