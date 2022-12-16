@@ -324,8 +324,8 @@ export class ThingFetch {
     const sortOptions = {
       hot: { hotValue: -1, _id: 1 },
       top: { votesCount: -1, _id: 1 },
-      new: { publishedAt: -1, _id: 1 },
-      old: { publishedAt: 1, _id: -1 },
+      new: { publishedDate: -1, _id: 1 },
+      old: { publishedDate: 1, _id: -1 },
       best: { bestValue: -1, _id: 1 },
       comments: { commentCount: -1, _id: 1 },
     };
@@ -572,6 +572,42 @@ export class ThingFetch {
           $expr: {
             $eq: ['$vote.isUpvote', false],
           },
+        },
+      },
+    ];
+  }
+
+  filterDate(time: number) {
+    const date = new Date();
+    let dayPast = 0;
+
+    if (time === 3) {
+      dayPast = 7;
+    } else if (time === 4) {
+      dayPast = 1;
+    }
+
+    const d1 = [
+      time === 1 ? date.getFullYear() - 1 : date.getFullYear(),
+      time === 2 ? date.getMonth() - 1 : date.getMonth(),
+      date.getDate() - dayPast,
+      time === 5 ? date.getHours() - 1 : date.getHours(),
+    ];
+
+    const d2 = [
+      time === 1 ? d1[0] + 1 : d1[0],
+      time === 2 ? d1[1] + 1 : date.getMonth(),
+      time === 3 || time === 4 ? d1[2] + dayPast : d1[2],
+      time === 5 ? d1[3] + 1 : d1[3],
+    ];
+    const min = date.getMinutes();
+    const sec = date.getSeconds();
+
+    return [
+      {
+        publishedDate: {
+          $gte: new Date(d1[0], d1[1], d1[2], d1[3], min, sec),
+          $lt: new Date(d2[0], d2[1], d2[2], d2[3], min, sec),
         },
       },
     ];

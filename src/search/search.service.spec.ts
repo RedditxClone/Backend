@@ -162,7 +162,14 @@ describe('SearchService', () => {
 
   describe('search for posts', () => {
     it('should find the post successfully', async () => {
-      const data = await searchService.searchPosts('ref', 1, 3, id2);
+      const data = await searchService.searchPosts(
+        'ref',
+        {
+          page: 1,
+          limit: 3,
+        },
+        id2,
+      );
       expect(data.length).toBe(1);
       expect(data[0]._id).toEqual(postId);
       expect(data[0].user._id).toEqual(id2);
@@ -170,12 +177,19 @@ describe('SearchService', () => {
     });
 
     it('should find nothing', async () => {
-      const data = await searchService.searchPosts('ref', 2, 1, id2);
+      const data = await searchService.searchPosts(
+        'ref',
+        {
+          page: 2,
+          limit: 1,
+        },
+        id2,
+      );
       expect(data.length).toBe(0);
     });
 
     it('should find nothing', async () => {
-      const data = await searchService.searchPosts('arref', 1, 3, id1);
+      const data = await searchService.searchPosts('arref', {}, id1);
       expect(data.length).toBe(0);
     });
   });
@@ -195,7 +209,7 @@ describe('SearchService', () => {
       expect(data.length).toBe(0);
     });
     it('should find nothing', async () => {
-      const data = await searchService.searchPosts('arref', 1, 3, id1);
+      const data = await searchService.searchComments('arref', 1, 3, id1);
       expect(data.length).toBe(0);
     });
   });
