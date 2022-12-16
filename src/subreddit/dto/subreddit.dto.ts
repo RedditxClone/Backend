@@ -33,10 +33,6 @@ export class SubredditDto {
 
   acceptingRequestsToJoin: boolean;
 
-  subTopics: string[];
-
-  activeTopic: string;
-
   requirePostFlair: boolean;
 
   postTextBodyRule: number;
