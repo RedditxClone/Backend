@@ -15,6 +15,9 @@ export class User {
   @Prop({ select: false })
   hashPassword: string;
 
+  @Prop({ default: Date.now() })
+  createdAt: Date;
+
   // moderator access is given to specific users
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
   authType: string;
@@ -141,6 +144,9 @@ export class User {
 
   @Prop({ default: true })
   cakeDay: boolean;
+
+  @Prop({ default: [] })
+  dontNotifyIds: Types.ObjectId[];
 
   //messages
   @Prop({ enum: [`everyone`, `whitelisted`], default: 'everyone' })

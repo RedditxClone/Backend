@@ -32,6 +32,7 @@ import { Types } from 'mongoose';
 import { User } from '../auth/decorators/user.decorator';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { BanUserDto } from './dto/ban-user.dto';
@@ -39,6 +40,7 @@ import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
+import { ThingTypeDto } from './dto/thing-type.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
@@ -199,42 +201,12 @@ export class SubredditController {
     return this.subredditService.deleteFlairById(subreddit, flair_id);
   }
 
-  // @ApiOperation({ description: 'Get the flairs of the user in a subreddit' })
-  // @ApiOkResponse({ description: 'The flairs returned successfully' })
-  // @ApiBadRequestResponse({ description: 'User is not part of that community' })
-  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  // @Get('/:subreddit/user/me/flair')
-  // getMyFlairsInSubreddit(@Param('subreddit') _subreddit: string) {
-  //   // TODO
-  // }
-
   @ApiOperation({ description: 'Get the hottest subreddits' })
   @ApiOkResponse({ description: 'The hottest subreddits returned' })
   @Get('/:subreddit/hot')
   getHotSubreddits(@Param('subreddit') subreddit: string) {
     return this.subredditService.getHotSubreddits(subreddit);
   }
-
-  // @ApiOperation({ description: 'Get the newest subreddits' })
-  // @ApiOkResponse({ description: 'The newest subreddits returned successfully' })
-  // @Get('/:subreddit/new')
-  // getNewSubreddits(@Param('subreddit') _subreddit: string) {
-  //   // TODO
-  // }
-
-  // @ApiOperation({ description: 'Get the top subreddits' })
-  // @ApiOkResponse({ description: 'The top subreddits returned successfully' })
-  // @Get('/:subreddit/top')
-  // getTopSubreddits(@Param('subreddit') _subreddit: string) {
-  //   // TODO
-  // }
-
-  // @ApiOperation({ description: 'Get subreddits randomally' })
-  // @ApiOkResponse({ description: 'The random subreddits returned successfully' })
-  // @Get('/:subreddit/random')
-  // getRandomSubreddits(@Param('subreddit') _subreddit: string) {
-  //   // TODO
-  // }
 
   @ApiOperation({ description: 'Add new categories to a subreddit' })
   @ApiOkResponse({ description: 'The categories were added successfully' })
@@ -433,17 +405,15 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   unmoderated(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
+    @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getUnModeratedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
+      thingType.type,
     );
   }
 
@@ -451,17 +421,15 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   spammed(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
+    @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getSpammedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
+      thingType.type,
     );
   }
 
@@ -469,17 +437,15 @@ export class SubredditController {
   @UseGuards(JWTUserGuard)
   edited(
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
-    @Query('limit') limit: number | undefined,
-    @Query('page') page: number | undefined,
-    @Query('sort') sort: string | undefined,
+    @Query() pagination: PaginationParamsDto,
+    @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getEditedThings(
       subredditId,
       username,
-      limit,
-      page,
-      sort,
+      pagination,
+      thingType.type,
     );
   }
 

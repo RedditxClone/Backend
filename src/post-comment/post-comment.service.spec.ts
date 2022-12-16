@@ -15,6 +15,7 @@ import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
+import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import type { Post } from '../post/post.schema';
 import { PostSchema } from '../post/post.schema';
@@ -26,6 +27,7 @@ import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -51,6 +53,7 @@ describe('PostCommentService', () => {
     module = await Test.createTestingModule({
       imports: [
         ImagesHandlerModule,
+        NotificationModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           {
@@ -294,11 +297,11 @@ describe('PostCommentService', () => {
       });
     });
     it('should upvote successfully', async () => {
-      const res = await service.upvote(comment._id, userId);
+      const res = await service.upvote(comment._id, userId, []);
       expect(res).toEqual({ votesCount: 1 });
     });
     it('should upvote successfully', async () => {
-      const res = await service.upvote(comment._id, user2Id);
+      const res = await service.upvote(comment._id, user2Id, []);
       expect(res).toEqual({ votesCount: 2 });
     });
 
@@ -307,7 +310,7 @@ describe('PostCommentService', () => {
       expect(res).toEqual({ votesCount: 0 });
     });
     it('should upvote with no effect', async () => {
-      const res = await service.upvote(comment._id, user2Id);
+      const res = await service.upvote(comment._id, user2Id, []);
       expect(res).toEqual({ votesCount: 0 });
     });
 
@@ -318,7 +321,7 @@ describe('PostCommentService', () => {
 
     it('should throw an error', async () => {
       const wrongId = new Types.ObjectId(1);
-      await expect(service.upvote(wrongId, userId)).rejects.toThrow(
+      await expect(service.upvote(wrongId, userId, [])).rejects.toThrow(
         `there is no post or comment with id ${wrongId}`,
       );
     });
@@ -395,9 +398,8 @@ describe('PostCommentService', () => {
   describe('get un-moderated/spammed/edited/upvoted/downvoted', () => {
     let post: Post & { _id: Types.ObjectId };
     let comment: Comment & { _id: Types.ObjectId };
-    const limit = undefined;
-    const page = undefined;
-    const sort = undefined;
+    const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
+    const type = undefined;
     beforeAll(async () => {
       // userId = new Types.ObjectId(1);
       post = await postService.create(userSR, {
@@ -418,9 +420,8 @@ describe('PostCommentService', () => {
     it('must return both post and comment', async () => {
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
-        limit,
-        page,
-        sort,
+        pagination,
+        type,
       );
       expect(res.length).toEqual(2);
     });
@@ -428,9 +429,8 @@ describe('PostCommentService', () => {
       await service.spam('usrname', comment._id);
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
-        limit,
-        page,
-        sort,
+        pagination,
+        type,
       );
       expect(res.length).toEqual(1);
       expect(res[0].type).toEqual('Post');
@@ -438,9 +438,8 @@ describe('PostCommentService', () => {
     it('must get the comment only', async () => {
       const res = await service.getSpammedThingsForSubreddit(
         subreddit._id,
-        limit,
-        page,
-        sort,
+        pagination,
+        type,
       );
       expect(res.length).toEqual(1);
       expect(res[0].type).toEqual('Comment');
@@ -455,9 +454,8 @@ describe('PostCommentService', () => {
       );
       const res = await service.getEditedThingsForSubreddit(
         subreddit._id,
-        limit,
-        page,
-        sort,
+        pagination,
+        type,
       );
       expect(res.length).toEqual(1);
       expect(res[0].type).toEqual('Post');
@@ -466,35 +464,35 @@ describe('PostCommentService', () => {
       await service.spam('usrname', post._id);
       const res = await service.getUnModeratedThingsForSubreddit(
         subreddit._id,
-        limit,
-        page,
-        sort,
+        pagination,
+        type,
       );
       expect(res.length).toEqual(0);
     });
     it('must return empty array', async () => {
-      const res = await service.getUpvoted(userSR);
+      const res = await service.getUpvoted(userSR, pagination);
       expect(res).toEqual([]);
     });
     it('must return element after upvoting it', async () => {
-      await service.upvote(post._id, userSR);
-      const res = await service.getUpvoted(userSR);
+      await service.upvote(post._id, userSR, []);
+      const res = await service.getUpvoted(userSR, pagination);
       expect(res.length).toEqual(1);
       expect(res[0]._id).toEqual(post._id);
     });
     it("must't return the element after downvoting it", async () => {
       await service.downvote(post._id, userSR);
-      const res = await service.getUpvoted(userSR);
+      const res = await service.getUpvoted(userSR, pagination);
       expect(res.length).toEqual(0);
     });
     it('must return post', async () => {
-      const res = await service.getDownvoted(userSR);
+      const res = await service.getDownvoted(userSR, pagination);
       expect(res.length).toEqual(1);
       expect(res[0]._id).toEqual(post._id);
     });
   });
   describe('get user things', () => {
     let user1, user2;
+    const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
     beforeAll(async () => {
       user1 = await userService.createUser({
         email: 'wkljwk@emkdms.com',
@@ -518,16 +516,28 @@ describe('PostCommentService', () => {
       });
     });
     it('must get user post', async () => {
-      const res = await service.getThingsOfUser(user1.username, user2._id);
+      const res = await service.getThingsOfUser(
+        user1.username,
+        user2._id,
+        pagination,
+      );
       expect(res.length).toEqual(2);
     });
     it('must get nothing', async () => {
-      const res = await service.getThingsOfUser(user2.username, user1._id);
+      const res = await service.getThingsOfUser(
+        user2.username,
+        user1._id,
+        pagination,
+      );
       expect(res.length).toEqual(0);
     });
     it('must get nothing', async () => {
       await userService.block(user1._id, user2._id);
-      const res = await service.getThingsOfUser(user1.username, user2._id);
+      const res = await service.getThingsOfUser(
+        user1.username,
+        user2._id,
+        pagination,
+      );
       expect(res.length).toEqual(0);
     });
   });
