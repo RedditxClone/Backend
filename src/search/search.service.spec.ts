@@ -106,10 +106,12 @@ describe('SearchService', () => {
     const subredditDocument1 = await subredditService.create(
       subreddit1,
       user1.username,
+      user1._id,
     );
     const subredditDocument2 = await subredditService.create(
       subreddit2,
       user2.username,
+      user2._id,
     );
     subredditId1 = subredditDocument1._id;
     subredditId2 = subredditDocument2._id;

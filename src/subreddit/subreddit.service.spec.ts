@@ -156,6 +156,7 @@ describe('SubredditService', () => {
     subredditDocument = await subredditService.create(
       subredditDefault,
       username,
+      userId,
     );
     id = subredditDocument._id.toString();
   });
@@ -165,7 +166,11 @@ describe('SubredditService', () => {
   });
   describe('create', () => {
     it('should create subreddit successfully', async () => {
-      const subreddit = await subredditService.create(subreddit1, username);
+      const subreddit = await subredditService.create(
+        subreddit1,
+        username,
+        userId,
+      );
       expect(subreddit).toEqual(
         expect.objectContaining({
           name: subreddit1.name,
@@ -177,7 +182,7 @@ describe('SubredditService', () => {
     });
     it('should throw an error', async () => {
       await expect(async () => {
-        await subredditService.create(subredditDefault, userId);
+        await subredditService.create(subredditDefault, username, userId);
       }).rejects.toThrowError();
     });
   });
@@ -390,7 +395,7 @@ describe('SubredditService', () => {
 
     it('should join successfully', async () => {
       const res = await subredditService.joinSubreddit(
-        userId,
+        new Types.ObjectId(151),
         new Types.ObjectId(id),
       );
       expect(res).toEqual({ status: 'success' });
@@ -496,7 +501,7 @@ describe('SubredditService', () => {
   describe('get subreddits I joined', () => {
     it('should get subreddits successfully', async () => {
       const res = await subredditService.subredditsIJoined(userId);
-      expect(res.length).toEqual(1);
+      expect(res.length).toEqual(2);
       expect(res[0]._id).toEqual(subredditDocument._id);
     });
     it('should return empty array', async () => {
@@ -853,6 +858,7 @@ describe('SubredditService', () => {
           over18: true,
           type: 'ty',
         },
+        username,
         userId,
       );
     });

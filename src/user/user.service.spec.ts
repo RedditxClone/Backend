@@ -406,6 +406,7 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       const sr2 = await subredditService.create(
@@ -414,6 +415,7 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       subreddits.push(sr1, sr2);
