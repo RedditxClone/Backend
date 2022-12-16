@@ -49,6 +49,7 @@ describe('PostCommentService', () => {
   let userSR: Types.ObjectId;
   let userService: UserService;
   let user;
+  let normalId;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -108,6 +109,12 @@ describe('PostCommentService', () => {
       password: 'password@rfksl',
       username: 'usrname',
     });
+    const userNormal = await userService.createUser({
+      email: 'eadsj@exmaple.com',
+      password: 'password@rfksl',
+      username: 'usrnames',
+    });
+    normalId = userNormal._id;
     userSR = user._id;
     subreddit = await subredditService.create(
       {
@@ -281,7 +288,7 @@ describe('PostCommentService', () => {
     let user2Id: Types.ObjectId;
     beforeAll(async () => {
       // post = await postService.create();
-      userId = new Types.ObjectId(1);
+      userId = normalId;
       user2Id = new Types.ObjectId(2);
       post = await postService.create(userId, {
         subredditId: subreddit._id,
