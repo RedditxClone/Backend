@@ -77,14 +77,6 @@ export class ThingFetch {
     ];
   }
 
-  unionWithFollowedUsers() {
-    return [
-      {
-        $unionWith: {},
-      },
-    ];
-  }
-
   filterForSavedOnly() {
     return [
       ...this.getMe(),
@@ -408,7 +400,6 @@ export class ThingFetch {
                 false,
               ],
             },
-            // subreddit: 1,
             isModerator: {
               $cond: [
                 {
