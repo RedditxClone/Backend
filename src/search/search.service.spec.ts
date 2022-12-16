@@ -124,8 +124,6 @@ describe('SearchService', () => {
     postData.subredditId = subredditId1;
     const p = await postService.create(id2, postData);
 
-    await subredditService.joinSubreddit(id1, subredditId1);
-    await subredditService.joinSubreddit(id2, subredditId1);
     await subredditService.joinSubreddit(id1, subredditId2);
 
     commentData.postId = p._id;
@@ -209,17 +207,18 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 2,
+          users: 1,
           joined: true,
         }),
         expect.objectContaining({
           _id: subredditId2,
           name: subreddit2.name,
-          users: 1,
+          users: 2,
           joined: true,
         }),
       ]);
     });
+
     it('should find only 1 (Testing Joining and pagination)', async () => {
       const data = await searchService.searchCommunities('11', id2, 2, 1);
 
@@ -227,8 +226,8 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId2,
           name: subreddit2.name,
-          users: 1,
-          joined: false,
+          users: 2,
+          joined: true,
         }),
       ]);
     });
@@ -238,7 +237,7 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 2,
+          users: 1,
           joined: true,
         }),
       ]);
@@ -262,7 +261,8 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 2,
+          users: 1,
+          joined: true,
         }),
       );
     });
