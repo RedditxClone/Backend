@@ -281,13 +281,14 @@ describe('PostService', () => {
             subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
-              isModerator: false,
-              isJoin: false,
+              isModerator: true,
+              isJoin: true,
             },
             user: {
               id: user2._id,
               photo: '',
               username: user2.username,
+              isFollowed: false,
             },
           }),
         );
@@ -311,13 +312,14 @@ describe('PostService', () => {
             subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
-              isModerator: false,
-              isJoin: false,
+              isModerator: true,
+              isJoin: true,
             },
             user: {
               id: user2._id,
               photo: '',
               username: user2.username,
+              isFollowed: false,
             },
           }),
         );
@@ -351,6 +353,7 @@ describe('PostService', () => {
           id: user2._id,
           username: user2.username,
           photo: user2.profilePhoto,
+          isFollowed: false,
         });
       });
       it('must get no posts', async () => {

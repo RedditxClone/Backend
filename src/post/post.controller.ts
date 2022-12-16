@@ -30,6 +30,7 @@ import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import { uniqueFileName } from '../utils';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -90,8 +91,11 @@ export class PostController {
   })
   @Get('timeline')
   @UseGuards(IsUserExistGuard)
-  getTimeLine(@Req() req, @Query() pagination: PaginationParamsDto) {
-    return this.postService.getTimeLine(req._id, pagination);
+  getTimeLine(
+    @User() userInfo: UserUniqueKeys,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getTimeLine(userInfo, pagination);
   }
 
   @ApiOkResponse({

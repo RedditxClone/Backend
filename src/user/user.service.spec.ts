@@ -460,13 +460,14 @@ describe('UserService', () => {
           subredditInfo: {
             id: subreddits[0]._id,
             name: subreddits[0].name,
-            isModerator: false,
-            isJoin: false,
+            isModerator: true,
+            isJoin: true,
           },
           user: {
             id: user2._id,
             photo: '',
             username: user2.username,
+            isFollowed: false,
           },
         }),
       );

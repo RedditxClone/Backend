@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 export class ThingFetch {
-  constructor(private userId: Types.ObjectId | undefined) {}
+  constructor(private readonly userId: Types.ObjectId | undefined) {}
 
   prepare() {
     return [
@@ -24,6 +24,8 @@ export class ThingFetch {
           },
         },
       },
+      ...this.getIsFollowed(),
+      ...this.getIsJoined(),
     ];
   }
 
@@ -88,7 +90,7 @@ export class ThingFetch {
     ];
   }
 
-  filterOfMySRs() {
+  getIsJoined() {
     return [
       {
         $lookup: {
@@ -111,8 +113,30 @@ export class ThingFetch {
           ],
         },
       },
+    ];
+  }
+
+  filterOfMySRs() {
+    return [
+      ...this.getIsJoined(),
       {
         $unwind: '$PostUserSubreddit',
+      },
+    ];
+  }
+
+  matchAllRelatedPosts() {
+    return [
+      {
+        $match: {
+          $expr: {
+            $or: [
+              { $ne: ['$PostUserSubreddit', []] },
+              { $ne: ['$follow', []] },
+              { $eq: ['$userId', this.userId] },
+            ],
+          },
+        },
       },
     ];
   }
@@ -188,6 +212,42 @@ export class ThingFetch {
           $expr: {
             $eq: ['$block', []],
           },
+        },
+      },
+    ];
+  }
+
+  getIsFollowed() {
+    return [
+      {
+        $lookup: {
+          from: 'follows',
+          as: 'follow',
+          let: {
+            userId: '$userId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ['$followed', this.userId] },
+                        { $eq: ['$follower', '$$userId'] },
+                      ],
+                    },
+                    {
+                      $and: [
+                        { $eq: ['$follower', this.userId] },
+                        { $eq: ['$followed', '$$userId'] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
         },
       },
     ];
@@ -331,8 +391,32 @@ export class ThingFetch {
           subredditInfo: {
             id: { $arrayElemAt: ['$subreddit._id', 0] },
             name: { $arrayElemAt: ['$subreddit.name', 0] },
-            isJoin: { $toBool: false },
-            isModerator: { $toBool: false },
+            isJoin: {
+              $cond: [
+                {
+                  $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
+                },
+                true,
+                false,
+              ],
+            },
+            isModerator: {
+              $cond: [
+                {
+                  $in: [
+                    '$me.username',
+                    {
+                      $arrayElemAt: [
+                        { $ifNull: ['$subreddit.moderators', [[]]] },
+                        0,
+                      ],
+                    },
+                  ],
+                },
+                true,
+                false,
+              ],
+            },
           },
           votesCount: 1,
           commentCount: 1,
@@ -372,6 +456,13 @@ export class ThingFetch {
             id: '$user._id',
             photo: '$user.profilePhoto',
             username: '$user.username',
+            isFollowed: {
+              $cond: [
+                { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
+                true,
+                false,
+              ],
+            },
           },
         },
       },
