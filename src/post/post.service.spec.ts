@@ -153,7 +153,6 @@ describe('PostService', () => {
         user.username,
         user._id,
       );
-      // await subredditService.joinSubreddit(user._id, sr._id);
       post = await service.create(user._id, {
         title: 'title',
         subredditId: sr._id,
@@ -253,7 +252,6 @@ describe('PostService', () => {
       );
       subreddits.push(sr1, sr2);
 
-      // await subredditService.joinSubreddit(user1._id, sr1._id);
       await subredditService.joinSubreddit(user1._id, sr2._id);
 
       const post1 = await service.create(user2._id, {
