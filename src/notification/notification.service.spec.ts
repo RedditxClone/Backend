@@ -151,6 +151,46 @@ describe('NotificationService', () => {
       expect(res1.status).toEqual('success');
     });
   });
+  describe('marks as read', () => {
+    let res: PaginatedResponseDto;
+    beforeAll(async () => {
+      res = await service.findAll(id2, new PaginationParamsDto());
+    });
+
+    it('should modify one message', async () => {
+      const a = res.data[0]._id;
+
+      const messages = [a];
+      const { modifiedCount } = await service.markAsRead(id2, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(1);
+    });
+
+    it('should modify two message', async () => {
+      const a = res.data[0]._id;
+      const b = res.data[1]._id;
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsRead(id2, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(1);
+    });
+    it('should not modify any', async () => {
+      const a = res.data[0]._id;
+      const b = res.data[1]._id;
+
+      const messages = [a, b];
+      const { modifiedCount } = await service.markAsRead(id2, {
+        messages,
+      });
+
+      expect(modifiedCount).toBe(0);
+    });
+  });
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
