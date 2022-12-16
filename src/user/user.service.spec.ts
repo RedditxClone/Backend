@@ -417,6 +417,7 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       const sr2 = await subredditService.create(
@@ -425,13 +426,10 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       subreddits.push(sr1, sr2);
-
-      await subredditService.joinSubreddit(user1._id, sr1._id);
-      await subredditService.joinSubreddit(user1._id, sr2._id);
-
       const post1 = await postService.create(user2._id, {
         title: 'post1 title',
         text: 'post1 text',

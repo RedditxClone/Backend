@@ -159,6 +159,7 @@ describe('SubredditService', () => {
     subredditDocument = await subredditService.create(
       subredditDefault,
       username,
+      userId,
     );
     id = subredditDocument._id.toString();
   });
@@ -168,7 +169,11 @@ describe('SubredditService', () => {
   });
   describe('create', () => {
     it('should create subreddit successfully', async () => {
-      const subreddit = await subredditService.create(subreddit1, username);
+      const subreddit = await subredditService.create(
+        subreddit1,
+        username,
+        userId,
+      );
       expect(subreddit).toEqual(
         expect.objectContaining({
           name: subreddit1.name,
@@ -180,7 +185,7 @@ describe('SubredditService', () => {
     });
     it('should throw an error', async () => {
       await expect(async () => {
-        await subredditService.create(subredditDefault, userId);
+        await subredditService.create(subredditDefault, username, userId);
       }).rejects.toThrowError();
     });
   });
@@ -393,7 +398,7 @@ describe('SubredditService', () => {
 
     it('should join successfully', async () => {
       const res = await subredditService.joinSubreddit(
-        userId,
+        new Types.ObjectId(151),
         new Types.ObjectId(id),
       );
       expect(res).toEqual({ status: 'success' });
@@ -499,7 +504,7 @@ describe('SubredditService', () => {
   describe('get subreddits I joined', () => {
     it('should get subreddits successfully', async () => {
       const res = await subredditService.subredditsIJoined(userId);
-      expect(res.length).toEqual(1);
+      expect(res.length).toEqual(2);
       expect(res[0]._id).toEqual(subredditDocument._id);
     });
     it('should return empty array', async () => {
@@ -854,13 +859,14 @@ describe('SubredditService', () => {
           over18: true,
           type: 'ty',
         },
+        username,
         userId,
       );
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getUnModeratedThings(
         sr._id,
-        userId,
+        username,
         pagination,
         type,
       );
@@ -868,18 +874,28 @@ describe('SubredditService', () => {
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getUnModeratedThings(sr._id, sr._id, pagination, type),
+        subredditService.getUnModeratedThings(
+          sr._id,
+          'wrong_username',
+          pagination,
+          type,
+        ),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getUnModeratedThings(userId, userId, pagination, type),
+        subredditService.getUnModeratedThings(
+          userId,
+          username,
+          pagination,
+          type,
+        ),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getSpammedThings(
         sr._id,
-        userId,
+        username,
         pagination,
         type,
       );
@@ -887,18 +903,23 @@ describe('SubredditService', () => {
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getSpammedThings(sr._id, sr._id, pagination, type),
+        subredditService.getSpammedThings(
+          sr._id,
+          'wrong_username',
+          pagination,
+          type,
+        ),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getSpammedThings(userId, userId, pagination, type),
+        subredditService.getSpammedThings(userId, username, pagination, type),
       ).rejects.toThrow('wrong');
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getEditedThings(
         sr._id,
-        userId,
+        username,
         pagination,
         type,
       );
@@ -906,12 +927,17 @@ describe('SubredditService', () => {
     });
     it('must throw an error because not a moderator', async () => {
       await expect(
-        subredditService.getEditedThings(sr._id, sr._id, pagination, type),
+        subredditService.getEditedThings(
+          sr._id,
+          'wrong_username',
+          pagination,
+          type,
+        ),
       ).rejects.toThrow('moderator');
     });
     it('must throw an error because wrong subredditId', async () => {
       await expect(
-        subredditService.getEditedThings(userId, userId, pagination, type),
+        subredditService.getEditedThings(userId, username, pagination, type),
       ).rejects.toThrow('wrong');
     });
   });
