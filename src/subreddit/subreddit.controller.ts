@@ -228,16 +228,19 @@ export class SubredditController {
 
   @ApiOperation({ description: 'Get subreddits belong to a specific category' })
   @ApiOkResponse({ description: 'The subreddits returned successfully' })
+  @UseGuards(IsUserExistGuard)
   @Get('/category/:category')
   getSubredditsWithCategory(
     @Param('category') category: string,
     @Query() query,
+    @Req() { _id },
   ) {
     // eslint-disable-next-line no-console
     return this.subredditService.getSubredditsWithCategory(
       category,
       query.page,
       query.limit,
+      _id,
     );
   }
 

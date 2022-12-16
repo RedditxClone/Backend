@@ -373,14 +373,18 @@ export class SubredditService {
     };
   }
 
-  getSubredditsWithCategory(category: string, page?: number, limit?: number) {
-    return this.apiFeatureService.processQuery(
-      this.subredditModel.find({
-        categories: category,
-      }),
-      { page, limit },
-      { pagination: true },
-    );
+  async getSubredditsWithCategory(
+    category: string,
+    page = 1,
+    limit = 50,
+    userId?,
+  ) {
+    const res = await this.subredditModel.aggregate([
+      { $match: { categories: category } },
+      ...this.getSrCommonStages(userId, page, limit),
+    ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
   }
 
   private modifiedCountResponse(modifiedCount, message?) {
