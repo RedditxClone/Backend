@@ -151,8 +151,9 @@ describe('PostService', () => {
           type: 'sr1',
         },
         user.username,
+        user._id,
       );
-      await subredditService.joinSubreddit(user._id, sr._id);
+      // await subredditService.joinSubreddit(user._id, sr._id);
       post = await service.create(user._id, {
         title: 'title',
         subredditId: sr._id,
@@ -206,7 +207,12 @@ describe('PostService', () => {
     return [user1, user2];
   };
 
-  const generateSRs = async (user1: string, user2: string) => {
+  const generateSRs = async (
+    user1: string,
+    user1Id: Types.ObjectId,
+    user2: string,
+    user2Id: Types.ObjectId,
+  ) => {
     const sr1 = await subredditService.create(
       {
         name: 'sr1',
@@ -214,6 +220,7 @@ describe('PostService', () => {
         type: 'type',
       },
       user1,
+      user1Id,
     );
     const sr2 = await subredditService.create(
       {
@@ -222,6 +229,7 @@ describe('PostService', () => {
         type: 'type',
       },
       user2,
+      user2Id,
     );
 
     return [sr1, sr2];
@@ -237,10 +245,15 @@ describe('PostService', () => {
       const users = await generateUsers();
       user1 = users[0];
       user2 = users[1];
-      const [sr1, sr2] = await generateSRs(user1.username, user2.username);
+      const [sr1, sr2] = await generateSRs(
+        user1.username,
+        user1._id,
+        user2.username,
+        user2._id,
+      );
       subreddits.push(sr1, sr2);
 
-      await subredditService.joinSubreddit(user1._id, sr1._id);
+      // await subredditService.joinSubreddit(user1._id, sr1._id);
       await subredditService.joinSubreddit(user1._id, sr2._id);
 
       const post1 = await service.create(user2._id, {
@@ -325,7 +338,10 @@ describe('PostService', () => {
         expect(timeline.length).toEqual(1);
       });
       it("shouldn't get any post due to not joining any subreddit", async () => {
-        const timeline = await service.getTimeLine(user2._id, pagination);
+        const timeline = await service.getTimeLine(
+          new Types.ObjectId(100),
+          pagination,
+        );
         expect(timeline).toEqual([]);
       });
     });
@@ -371,6 +387,7 @@ describe('PostService', () => {
           type: 'sr',
         },
         username,
+        userId,
       );
       post = await service.create(userId, {
         subredditId: sr._id,
