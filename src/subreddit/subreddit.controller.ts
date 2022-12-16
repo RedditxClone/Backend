@@ -34,12 +34,14 @@ import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
+import { ActiveTopicsDto } from './dto/activeTopic.dto';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
+import { SubTopicsDto } from './dto/subTopic.dto';
 import { ThingTypeDto } from './dto/thing-type.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -619,9 +621,13 @@ export class SubredditController {
   addSubTopics(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
     @User('username') username: string,
-    @Body() subTopics: string[],
+    @Body() subTopics: SubTopicsDto,
   ) {
-    return this.subredditService.addSubTobics(subreddit, subTopics, username);
+    return this.subredditService.addSubTobics(
+      subreddit,
+      subTopics.subTopics,
+      username,
+    );
   }
 
   @ApiOperation({ description: 'Add activeTopic' })
@@ -636,11 +642,11 @@ export class SubredditController {
   addActiveTopic(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
     @User('username') username: string,
-    @Body() activeTopic: string,
+    @Body() activeTopic: ActiveTopicsDto,
   ) {
     return this.subredditService.addActiveTobic(
       subreddit,
-      activeTopic,
+      activeTopic.activeTopic,
       username,
     );
   }
