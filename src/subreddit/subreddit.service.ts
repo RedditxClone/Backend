@@ -46,6 +46,7 @@ export class SubredditService {
   async create(
     createSubredditDto: CreateSubredditDto,
     username: string,
+    userId: Types.ObjectId,
   ): Promise<SubredditDocument> {
     let subreddit: SubredditDocument | undefined;
 
@@ -53,6 +54,11 @@ export class SubredditService {
       subreddit = await this.subredditModel.create({
         ...createSubredditDto,
         moderators: [username],
+      });
+
+      await this.userSubredditModel.create({
+        subredditId: subreddit,
+        userId,
       });
     } catch (error) {
       if (error?.message?.startsWith('E11000')) {

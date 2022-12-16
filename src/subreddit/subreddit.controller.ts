@@ -60,9 +60,9 @@ export class SubredditController {
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
-    @User('username') username: string,
+    @User() { _id, username },
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto, username);
+    return this.subredditService.create(createSubredditDto, username, _id);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
