@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import type { MessageIdListDto } from 'message/dto';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
@@ -214,6 +215,39 @@ export class NotificationService {
       );
     }
 
-    return { status: 'success', timestamp: new Date() };
+    return {
+      modifiedCount: info.modifiedCount,
+      status: 'success',
+      timestamp: new Date(),
+    };
+  };
+
+  /**
+   * Mark as read will show again but not highlighted for the user
+   * @param userId the user's id
+   * @param messageIdList  the notifications ids
+   */
+  markAsRead = async (
+    userId: Types.ObjectId,
+    messageIdList: MessageIdListDto,
+  ) => {
+    const { messages } = messageIdList;
+
+    const info = await this.notificationModel.updateMany(
+      { userId, _id: { $in: messages } },
+      { read: true },
+    );
+
+    if (info.matchedCount === 0) {
+      throw new BadRequestException(
+        `Your notification Id is either invalid or you are trying to read someone else's notifications`,
+      );
+    }
+
+    return {
+      modifiedCount: info.modifiedCount,
+      status: 'success',
+      timestamp: new Date(),
+    };
   };
 }

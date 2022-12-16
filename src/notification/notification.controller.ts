@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -9,6 +17,7 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { MessageIdListDto, ModifiedCountDto } from '../message/dto';
 import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
@@ -61,16 +70,21 @@ export class NotificationController {
   ) {
     return this.notificationService.hide(userId, notificationId);
   }
-  // @ApiOperation({ description: 'Mark Notification as read notifications' })
-  // @ApiOkResponse({
-  //   description: 'Notification is marked successfully',
-  //   type: [GetNotificationDto],
-  // })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @Get('/mark-unread')
-  // findUnread() {
-  //   return this.notificationService.findAll();
-  // }
+
+  @ApiOperation({ description: 'Mark Notification as read notifications' })
+  @ApiOkResponse({
+    description: 'Notification is marked successfully',
+    type: [ModifiedCountDto],
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @Post('/mark-as-read')
+  markAsRead(
+    @User('_id') userId: Types.ObjectId,
+    @Body() messageIdList: MessageIdListDto,
+  ) {
+    return this.notificationService.markAsRead(userId, messageIdList);
+  }
 
   // @ApiOperation({ description: 'get all mentions for current user' })
   // @ApiOkResponse({

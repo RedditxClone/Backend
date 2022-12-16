@@ -479,7 +479,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -487,14 +487,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/63637aabc0db59b45607eb96/follow",
+							"raw": "{{host}}/api/user/6364f9ea42c89ac27f472046/follow",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"63637aabc0db59b45607eb96",
+								"6364f9ea42c89ac27f472046",
 								"follow"
 							]
 						}
@@ -795,6 +795,69 @@
 						"header": [],
 						"url": {
 							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notification",
+			"item": [
+				{
+					"name": "get all notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/notification/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"notification",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get notifications count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/notification/count",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"notification",
+								"count"
+							]
 						}
 					},
 					"response": []
