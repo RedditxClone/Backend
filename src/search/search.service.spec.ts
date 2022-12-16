@@ -6,6 +6,7 @@ import { Types } from 'mongoose';
 import { BlockModule } from '../block/block.module';
 import { CommentService } from '../comment/comment.service';
 import type { CreateCommentDto } from '../comment/dto';
+import { NotificationModule } from '../notification/notification.module';
 import type { CreatePostDto } from '../post/dto';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
@@ -88,6 +89,7 @@ describe('SearchService', () => {
         UserModule,
         PostCommentModule,
         SubredditModule,
+        NotificationModule,
       ],
       controllers: [SearchController],
       providers: [SearchService, ApiFeaturesService],
@@ -106,10 +108,12 @@ describe('SearchService', () => {
     const subredditDocument1 = await subredditService.create(
       subreddit1,
       user1.username,
+      user1._id,
     );
     const subredditDocument2 = await subredditService.create(
       subreddit2,
       user2.username,
+      user2._id,
     );
     subredditId1 = subredditDocument1._id;
     subredditId2 = subredditDocument2._id;
@@ -120,8 +124,6 @@ describe('SearchService', () => {
     postData.subredditId = subredditId1;
     const p = await postService.create(id2, postData);
 
-    await subredditService.joinSubreddit(id1, subredditId1);
-    await subredditService.joinSubreddit(id2, subredditId1);
     await subredditService.joinSubreddit(id1, subredditId2);
 
     commentData.postId = p._id;
@@ -205,17 +207,18 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 2,
+          users: 1,
           joined: true,
         }),
         expect.objectContaining({
           _id: subredditId2,
           name: subreddit2.name,
-          users: 1,
+          users: 2,
           joined: true,
         }),
       ]);
     });
+
     it('should find only 1 (Testing Joining and pagination)', async () => {
       const data = await searchService.searchCommunities('11', id2, 2, 1);
 
@@ -223,8 +226,8 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId2,
           name: subreddit2.name,
-          users: 1,
-          joined: false,
+          users: 2,
+          joined: true,
         }),
       ]);
     });
@@ -234,7 +237,7 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 2,
+          users: 1,
           joined: true,
         }),
       ]);
@@ -258,7 +261,8 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 2,
+          users: 1,
+          joined: true,
         }),
       );
     });

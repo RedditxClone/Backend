@@ -15,13 +15,21 @@ services:
       - SU_USERNAME
       - EMAIL_USER
       - EMAIL_PASS
+      - GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_android
+      - GOOGLE_CREDIENTIALS_CLIENT_ID_flutter_web
+      - GOOGLE_CREDIENTIALS_CLIENT_ID_web
     networks:
       - db-network
       - proxy-network
     restart: always
+    volumes:
+    - backend_assets:/app/assets/
 
 networks:
   db-network:
     external: true
   proxy-network:
+    external: true
+volumes:
+  backend_assets:
     external: true

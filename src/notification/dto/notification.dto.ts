@@ -1,12 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export class GetNotificationDto {
-  @ApiProperty({ description: 'text of the notification' })
-  text: string;
+  @ApiProperty({ description: 'the user who replied/followed' })
+  notifierId: Types.ObjectId;
 
-  @ApiProperty({ description: 'link that notification refers to' })
-  href: string;
+  @ApiProperty({
+    description: 'The notification type',
+    enum: [
+      'comment_reply',
+      'post_reply',
+      'post_vote', // upvote on post
+      'comment_vote', // upvote on comment
+      'follow', // user follow
+    ],
+  })
+  type: string;
 
-  @ApiProperty({ description: 'time of the notification' })
-  time: Date;
+  //can ba a message or post/comment
+  @ApiProperty({
+    description:
+      'If the notification is Message or PostComment this will have the Message or PostComment id',
+  })
+  refId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Notification text' })
+  body: string;
+
+  @ApiProperty({ description: 'The date of creation' })
+  createdAt: Date;
+
+  @ApiProperty({ description: 'Notification is not read' })
+  read: boolean;
 }

@@ -8,6 +8,7 @@ import { BlockService } from '../block/block.service';
 import { CommentSchema } from '../comment/comment.schema';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
+import { NotificationModule } from '../notification/notification.module';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
@@ -18,6 +19,7 @@ import type { UserDocument } from '../user/user.schema';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import {
   closeInMongodConnection,
@@ -30,6 +32,7 @@ import type { Post } from './post.schema';
 import { PostSchema } from './post.schema';
 import { PostService } from './post.service';
 import { stubPost } from './test/stubs/post.stub';
+
 describe('PostService', () => {
   let service: PostService;
   let module: TestingModule;
@@ -48,6 +51,7 @@ describe('PostService', () => {
       imports: [
         rootMongooseTestModule(),
         ImagesHandlerModule,
+        NotificationModule,
         MongooseModule.forFeature([
           {
             name: 'PostComment',
@@ -118,6 +122,60 @@ describe('PostService', () => {
       expect(res.status).toEqual('success');
     });
   });
+  // describe('upload media for post spec', () => {
+  //   it('must upload them successfully', async () => {
+  //     const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
+  //     const post = await service.create(userId, postDto);
+  //     const files: any = [{ filename: 'file1' }];
+  //     const res = await service.uploadPostMedia(files, post._id, userId);
+  //     expect(res.images).toEqual(['assets/post-media/file1']);
+  //   });
+  // });
+  describe('get discover page', () => {
+    let sr, post, user, user2;
+    beforeAll(async () => {
+      user = await userService.createUser({
+        email: 'email@example.com',
+        username: 'usernameewe',
+        password: '123456778',
+      });
+      user2 = await userService.createUser({
+        email: 'email@example.com',
+        username: 'usernamee',
+        password: '123456778',
+      });
+      sr = await subredditService.create(
+        {
+          name: 'sr100',
+          over18: true,
+          type: 'sr1',
+        },
+        user.username,
+        user._id,
+      );
+      post = await service.create(user._id, {
+        title: 'title',
+        subredditId: sr._id,
+        text: 'text',
+      });
+      const files: any = [
+        { filename: 'file1' },
+        { filename: 'file2' },
+        { filename: 'file3' },
+      ];
+      await service.uploadPostMedia(files, post._id, user._id);
+      await userService.block(user._id, user2._id);
+    });
+    it('must get 3 photos successfully', async () => {
+      const res = await service.discover(user._id, 1, 10);
+      expect(res.length).toEqual(3);
+    });
+    it('must return 0 images', async () => {
+      const res = await service.discover(user2._id, 1, 10);
+      expect(res).toEqual([]);
+    });
+  });
+
   describe('hide', () => {
     const userId = new Types.ObjectId(1);
     it('should hide successfully', async () => {
@@ -148,7 +206,12 @@ describe('PostService', () => {
     return [user1, user2];
   };
 
-  const generateSRs = async (user1: string, user2: string) => {
+  const generateSRs = async (
+    user1: string,
+    user1Id: Types.ObjectId,
+    user2: string,
+    user2Id: Types.ObjectId,
+  ) => {
     const sr1 = await subredditService.create(
       {
         name: 'sr1',
@@ -156,6 +219,7 @@ describe('PostService', () => {
         type: 'type',
       },
       user1,
+      user1Id,
     );
     const sr2 = await subredditService.create(
       {
@@ -164,14 +228,14 @@ describe('PostService', () => {
         type: 'type',
       },
       user2,
+      user2Id,
     );
 
     return [sr1, sr2];
   };
 
   describe('retrieve posts', () => {
-    const page = undefined;
-    const limit = undefined;
+    const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
     let user1: UserDocument;
     let user2: UserDocument;
     const subreddits: SubredditDocument[] = [];
@@ -180,10 +244,14 @@ describe('PostService', () => {
       const users = await generateUsers();
       user1 = users[0];
       user2 = users[1];
-      const [sr1, sr2] = await generateSRs(user1.username, user2.username);
+      const [sr1, sr2] = await generateSRs(
+        user1.username,
+        user1._id,
+        user2.username,
+        user2._id,
+      );
       subreddits.push(sr1, sr2);
 
-      await subredditService.joinSubreddit(user1._id, sr1._id);
       await subredditService.joinSubreddit(user1._id, sr2._id);
 
       const post1 = await service.create(user2._id, {
@@ -202,7 +270,7 @@ describe('PostService', () => {
 
     describe('timeline', () => {
       it('should return 2 posts successfully', async () => {
-        const timeline = await service.getTimeLine(user1._id, page, limit);
+        const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline.length).toEqual(2);
         expect(timeline[0]).toEqual(
           expect.objectContaining({
@@ -213,6 +281,8 @@ describe('PostService', () => {
             subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
+              isModerator: false,
+              isJoin: false,
             },
             user: {
               id: user2._id,
@@ -224,13 +294,13 @@ describe('PostService', () => {
       });
       it("shouldn't get any post after blocking user", async () => {
         await userService.block(user1._id, user2._id);
-        const timeline = await service.getTimeLine(user1._id, page, limit);
+        const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline).toEqual([]);
         await userService.unblock(user1._id, user2._id);
       });
       it("it shouldn't get second post before of hiding it", async () => {
         await service.hide(posts[1]._id, user1._id);
-        const timeline = await service.getTimeLine(user1._id, page, limit);
+        const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline.length).toEqual(1);
         expect(timeline[0]).toEqual(
           expect.objectContaining({
@@ -241,6 +311,8 @@ describe('PostService', () => {
             subredditInfo: {
               id: subreddits[0]._id,
               name: subreddits[0].name,
+              isModerator: false,
+              isJoin: false,
             },
             user: {
               id: user2._id,
@@ -252,21 +324,28 @@ describe('PostService', () => {
       });
       it('must get all posts randomly', async () => {
         const userId = undefined;
-        const timeline = await service.getTimeLine(userId, page, limit);
-        expect(timeline.length).toEqual(2);
+        const timeline = await service.getTimeLine(userId, pagination);
+        expect(timeline.length).toEqual(3);
       });
       it('must limit return to only one post', async () => {
-        const timeline = await service.getTimeLine(user1._id, page, 1);
+        const timeline = await service.getTimeLine(user1._id, {
+          page: 1,
+          limit: 1,
+          sort: 'new',
+        });
         expect(timeline.length).toEqual(1);
       });
       it("shouldn't get any post due to not joining any subreddit", async () => {
-        const timeline = await service.getTimeLine(user2._id, page, limit);
+        const timeline = await service.getTimeLine(
+          new Types.ObjectId(100),
+          pagination,
+        );
         expect(timeline).toEqual([]);
       });
     });
     describe('get my posts', () => {
       it('must get all of my posts', async () => {
-        const res = await service.getPostsOfUser(user2._id, page, limit);
+        const res = await service.getPostsOfUser(user2._id, pagination);
         expect(res.length).toEqual(2);
         expect(res[0].user).toEqual({
           id: user2._id,
@@ -275,19 +354,19 @@ describe('PostService', () => {
         });
       });
       it('must get no posts', async () => {
-        const res = await service.getPostsOfUser(user1._id, page, limit);
+        const res = await service.getPostsOfUser(user1._id, pagination);
         expect(res.length).toEqual(0);
       });
     });
     describe('get hidden posts', () => {
       it('must return on post', async () => {
         // hidden from the last test
-        const res = await service.getHiddenPosts(user1._id, page, limit);
+        const res = await service.getHiddenPosts(user1._id, pagination);
         expect(res.length).toEqual(1);
         await service.unhide(res[0]._id, user1._id);
       });
       it('must return empty set', async () => {
-        const res = await service.getHiddenPosts(user1._id, page, limit);
+        const res = await service.getHiddenPosts(user1._id, pagination);
         expect(res.length).toEqual(0);
       });
     });
@@ -306,6 +385,7 @@ describe('PostService', () => {
           type: 'sr',
         },
         username,
+        userId,
       );
       post = await service.create(userId, {
         subredditId: sr._id,

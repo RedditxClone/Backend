@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseFilePipeBuilder,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -31,6 +32,7 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTAdminGuard, JWTUserGuard } from '../auth/guards';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { FollowService } from '../follow/follow.service';
 import { ReturnPostDto } from '../post/dto';
 import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
@@ -39,15 +41,13 @@ import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
   GetFriendsDto,
-  GetUserInfoDto,
   PrefsDto,
   UserAccountDto,
   UserCommentsDto,
-  UserOverviewDto,
   UserPostsDto,
   UserSimpleDto,
 } from './dto';
-import { UserWithId } from './user.schema';
+import { MeDto } from './dto/me.dto';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -124,13 +124,13 @@ export class UserController {
   @ApiOperation({ description: 'Get user data if logged in' })
   @ApiOkResponse({
     description: 'The user is logged in and the data returned successfully',
-    type: UserAccountDto,
+    type: MeDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unautherized' })
   @Get('/me')
   @UseGuards(JWTUserGuard)
-  getCurrentUser(@User() user: UserWithId): UserAccountDto {
-    return this.userService.getUserInfo(user);
+  async getCurrentUser(@User('_id') userId: Types.ObjectId) {
+    return this.userService.getUserById(userId);
   }
 
   @ApiOperation({ description: 'generate list of random usernames' })
@@ -167,27 +167,27 @@ export class UserController {
     return this.userService.updateUserPrefs(userId, prefsDto);
   }
 
-  @ApiOperation({ description: 'Get information about the user' })
-  @ApiOkResponse({
-    description: 'The user info returned successfully',
-    type: GetUserInfoDto,
-  })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id/about')
-  getUserInfo(@Param('user_id') _userId: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get information about the user' })
+  // @ApiOkResponse({
+  //   description: 'The user info returned successfully',
+  //   type: GetUserInfoDto,
+  // })
+  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  // @Get('/:user_id/about')
+  // getUserInfo(@Param('user_id') _userId: string) {
+  //   // TODO
+  // }
 
-  @ApiOperation({ description: 'Get information about the user' })
-  @ApiOkResponse({
-    description: 'The data returned successfully',
-    type: UserOverviewDto,
-  })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id/overview')
-  getUserOverview(@Param('user_id') _userId: string) {
-    // TODO
-  }
+  // @ApiOperation({ description: 'Get information about the user' })
+  // @ApiOkResponse({
+  //   description: 'The data returned successfully',
+  //   type: UserOverviewDto,
+  // })
+  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  // @Get('/:user_id/overview')
+  // getUserOverview(@Param('user_id') _userId: string) {
+  //   // TODO
+  // }
 
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
@@ -395,13 +395,15 @@ export class UserController {
   }
 
   @ApiOperation({ description: 'get user info by user id' })
-  @ApiOkResponse({ description: 'The user info returned successfully' })
+  @ApiOkResponse({
+    description: 'The user info returned successfully',
+    type: UserAccountDto,
+  })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id')
-  async getUserById(
-    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
-  ) {
-    return this.userService.getUserById(user_id);
+  @Get('/:username')
+  @UseGuards(IsUserExistGuard)
+  getUserByUsername(@Req() req, @Param('username') user2Id: string) {
+    return this.userService.getUserInfo(req._id, user2Id);
   }
 
   @UseInterceptors(FileInterceptor('photo'))
@@ -474,6 +476,23 @@ export class UserController {
     file,
   ) {
     return this.userService.uploadPhoto(userId, file, 'coverPhoto');
+  }
+
+  @ApiOperation({
+    description:
+      'Close {option = -1} or reopen {option = 1} all notification for a post or comment',
+  })
+  @ApiCreatedResponse({ description: 'successfully done' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized Request' })
+  @ApiBadRequestResponse({ description: 'invalid mongo id' })
+  @UseGuards(JWTUserGuard)
+  @Post('thing/:thing/notify/:option')
+  notifyPostComment(
+    @Param('thing', ParseObjectIdPipe) thingId,
+    @Param('option', ParseIntPipe) option,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.userService.notifyPostComment(userId, thingId, option);
   }
 
   @ApiOperation({

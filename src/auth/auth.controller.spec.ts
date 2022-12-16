@@ -35,8 +35,10 @@ describe('AuthController', () => {
         username: 'username',
         password: '12345678',
       };
-      const user = await controller.login(dto, res);
-      expect(user).toEqual(stubUser());
+      const user: any = await controller.login(dto, res);
+      const exp = stubUser();
+      exp.createdAt = user.createdAt;
+      expect(user).toEqual(exp);
     });
   });
   describe('signup', () => {
@@ -47,8 +49,10 @@ describe('AuthController', () => {
         password: '12345678',
         username: 'user1',
       };
-      const user = await controller.signup(dto, res);
-      expect(user).toEqual(stubUser());
+      const user: any = await controller.signup(dto, res);
+      const exp = stubUser();
+      exp.createdAt = user.createdAt;
+      expect(user).toEqual(exp);
     });
   });
 

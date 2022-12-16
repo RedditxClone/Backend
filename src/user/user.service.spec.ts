@@ -153,14 +153,25 @@ describe('UserService', () => {
     });
   });
   describe('getUserInfo', () => {
+    it('should throw user successfully', async () => {
+      const user: any = await service.getUserById(id);
+      expect(user).toBeTruthy();
+      await expect(async () => {
+        await service.getUserInfo(user._id, 'hi');
+      }).rejects.toThrowError();
+    });
     it('should return user successfully', async () => {
       const user: any = await service.getUserById(id);
       expect(user).toBeTruthy();
-      const userAccount = service.getUserInfo(user);
+      const userAccount = await service.getUserInfo(user._id, user.username);
       expect(userAccount).toEqual({
         username: userDto.username,
         profilePhoto: '',
+        coverPhoto: '',
         _id: id,
+        createdAt: userAccount.createdAt,
+        isFollowed: false,
+        isBlocked: false,
       });
     });
   });
@@ -406,6 +417,7 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       const sr2 = await subredditService.create(
@@ -414,13 +426,10 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       subreddits.push(sr1, sr2);
-
-      await subredditService.joinSubreddit(user1._id, sr1._id);
-      await subredditService.joinSubreddit(user1._id, sr2._id);
-
       const post1 = await postService.create(user2._id, {
         title: 'post1 title',
         text: 'post1 text',
@@ -451,6 +460,8 @@ describe('UserService', () => {
           subredditInfo: {
             id: subreddits[0]._id,
             name: subreddits[0].name,
+            isModerator: false,
+            isJoin: false,
           },
           user: {
             id: user2._id,
@@ -467,6 +478,39 @@ describe('UserService', () => {
       expect(
         await service.uploadPhoto(id, { buffer: null }, 'profilePhoto'),
       ).toEqual(stubImagesHandler());
+    });
+  });
+
+  describe('canRecieveMessages', () => {
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someRandomUsername'));
+    });
+
+    it('updates prefs', async () => {
+      await service.updateUserPrefs(id, {
+        acceptPms: 'whitelisted',
+        whitelisted: ['someSpecificUsername1', 'someSpecificUsername2'],
+      });
+    });
+
+    it('should return false', async () => {
+      expect(!(await service.canRecieveMessages(id)));
+    });
+
+    it('should return false', async () => {
+      expect(!(await service.canRecieveMessages(id, 'someRandomUsername')));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someSpecificUsername1'));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someSpecificUsername2'));
     });
   });
 

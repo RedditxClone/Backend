@@ -5,6 +5,7 @@ import type { Types } from 'mongoose';
 
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
+import { NotificationModule } from '../notification/notification.module';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
@@ -16,7 +17,6 @@ import {
 } from '../utils/mongoose-in-memory';
 import { BlockSchema } from './block.schema';
 import { BlockService } from './block.service';
-
 describe('BlockService', () => {
   let service: BlockService;
   let module: TestingModule;
@@ -25,6 +25,7 @@ describe('BlockService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
+        NotificationModule,
         rootMongooseTestModule(),
         ImagesHandlerModule,
         PostCommentModule,

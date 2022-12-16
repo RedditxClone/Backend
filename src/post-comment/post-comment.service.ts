@@ -7,10 +7,11 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import type { PaginationParamsDto } from 'utils/apiFeatures/dto';
 
+import { NotificationService } from '../notification/notification.service';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import {
   postSelectedFileds,
   subredditSelectedFields,
@@ -27,6 +28,7 @@ export class PostCommentService {
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
+    private readonly notificationService: NotificationService,
     private readonly featureService: ApiFeaturesService,
   ) {}
 
@@ -170,12 +172,16 @@ export class PostCommentService {
 
   getSavedPosts(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
-    const { limit, page } = pagination;
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.filterForSavedOnly(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
@@ -214,12 +220,41 @@ export class PostCommentService {
     return isUpvote ? 1 : -1;
   }
 
-  async upvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
+  async upvote(
+    thingId: Types.ObjectId,
+    userId: Types.ObjectId,
+    dontNotifyIds: Types.ObjectId[],
+  ) {
     const res = await this.voteModel.findOneAndUpdate(
       { thingId, userId },
       { isUpvote: true },
-      { upsert: true, new: false },
+      { upsert: true },
     );
+
+    if (res === null && !dontNotifyIds.includes(thingId)) {
+      //get thing info
+      const [info] = await this.postCommentModel.aggregate([
+        { $match: { _id: thingId } },
+        {
+          $lookup: {
+            from: 'subreddits',
+            localField: 'subredditId',
+            foreignField: '_id',
+            as: 'subreddit',
+          },
+        },
+      ]);
+
+      if (info !== undefined && !info.userId.equals(userId)) {
+        await this.notificationService.notifyOnVotes(
+          userId,
+          thingId,
+          info.type,
+          info.subreddit[0].name,
+          info.subreddit[0]._id,
+        );
+      }
+    }
 
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1).then();
   }
@@ -243,24 +278,36 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
 
-  async getUpvoted(userId: Types.ObjectId) {
+  async getUpvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
-  async getDownvoted(userId: Types.ObjectId) {
+  async getDownvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetDownvoteOnly(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
@@ -490,8 +537,13 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
-  async getThingsOfUser(username: string, userId: Types.ObjectId | undefined) {
+  async getThingsOfUser(
+    username: string,
+    userId: Types.ObjectId | undefined,
+    pagination: PaginationParamsDto,
+  ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
@@ -503,6 +555,11 @@ export class PostCommentService {
           },
         },
       },
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.filterBlocked(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
@@ -512,15 +569,19 @@ export class PostCommentService {
   private async getCommonThingsForSubreddit(
     subredditId: Types.ObjectId,
     filter: any,
-    paginationParameters: any,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(undefined);
-    const { limit, page } = paginationParameters;
+    const { limit, page, sort } = pagination;
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificFilter({ ...filter, subredditId }),
-      ...fetcher.getPaginated(limit, page),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -528,49 +589,52 @@ export class PostCommentService {
 
   async getUnModeratedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
-    return this.getCommonThingsForSubreddit(
-      subredditId,
-      { approvedBy: null, removedBy: null, spammedBy: null },
-      { limit, page, sort },
-    );
+    const filter: any = { approvedBy: null, removedBy: null, spammedBy: null };
+
+    if (type) {
+      filter.type = type;
+    }
+
+    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
   }
 
   async getSpammedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
-    return this.getCommonThingsForSubreddit(
-      subredditId,
-      {
-        spammedBy: { $ne: null },
-        isDeleted: false,
-        removedBy: null,
-      },
-      { limit, page, sort },
-    );
+    const filter: any = {
+      spammedBy: { $ne: null },
+      isDeleted: false,
+      removedBy: null,
+    };
+
+    if (type) {
+      filter.type = type;
+    }
+
+    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
   }
 
   async getEditedThingsForSubreddit(
     subredditId: Types.ObjectId,
-    limit: number | undefined,
-    page: number | undefined,
-    sort: string | undefined,
+    pagination: PaginationParamsDto,
+    type: string | undefined,
   ) {
-    return this.getCommonThingsForSubreddit(
-      subredditId,
-      {
-        editedAt: { $ne: null },
-        editCheckedBy: null,
-        isDeleted: false,
-        removedBy: null,
-      },
-      { limit, page, sort },
-    );
+    const filter: any = {
+      editedAt: { $ne: null },
+      editCheckedBy: null,
+      isDeleted: false,
+      removedBy: null,
+    };
+
+    if (type) {
+      filter.type = type;
+    }
+
+    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
   }
 }

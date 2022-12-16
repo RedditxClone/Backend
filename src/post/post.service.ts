@@ -8,6 +8,7 @@ import { Model, Types } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
 import type { Hide } from './hide.schema';
@@ -77,6 +78,40 @@ export class PostService {
     return res;
   };
 
+  /**
+   * Uploads users media on a post
+   * @param files the files the user uploaded
+   * @returns a list of uploaded images Ids for referencing.
+   */
+  async uploadPostMedia(
+    files: Express.Multer.File[],
+    postId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    if (files.length === 0) {
+      throw new BadRequestException('no media uploaded');
+    }
+
+    const media = files.map((file: Express.Multer.File) => file.filename);
+    const data = await this.postModel.updateOne(
+      { _id: postId, userId },
+      {
+        $push: { images: { $each: media } },
+      },
+    );
+
+    if (data.modifiedCount === 0) {
+      throw new NotFoundException(
+        `you are not an owner of the post with id ${postId}`,
+      );
+    }
+
+    return {
+      status: 'success',
+      images: media.map((name) => `/assets/post-media/${name}`),
+    };
+  }
+
   findAll() {
     return `This action returns all post`;
   }
@@ -93,11 +128,9 @@ export class PostService {
     return `This action removes a #${id} post`;
   }
 
-  private getRandomTimeLine(
-    page: number | undefined,
-    limit: number | undefined,
-  ) {
+  private getRandomTimeLine(pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(undefined);
+    const { limit } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
@@ -109,18 +142,43 @@ export class PostService {
     ]);
   }
 
+  async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
+    const fetcher = new ThingFetch(userId);
+
+    const post = await this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.onlyOnePost(postId),
+      ...fetcher.filterBlocked(),
+      ...fetcher.filterHidden(),
+      ...fetcher.userInfo(),
+      ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+
+    if (post.length === 0) {
+      throw new BadRequestException(`there is no post with id ${postId}`);
+    }
+
+    return post[0];
+  }
+
   private async getUserTimeLine(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.filterOfMySRs(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
@@ -131,26 +189,29 @@ export class PostService {
 
   async getTimeLine(
     userId: Types.ObjectId | undefined,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     if (!userId) {
-      return this.getRandomTimeLine(page, limit);
+      return this.getRandomTimeLine(pagination);
     }
 
-    return this.getUserTimeLine(userId, page, limit);
+    return this.getUserTimeLine(userId, pagination);
   }
 
   async getPostsOfUser(
     userId: Types.ObjectId,
-    page: number | undefined,
-    limit: number | undefined,
+    pagination: PaginationParamsDto,
   ) {
     const fetcher = new ThingFetch(userId);
+    const { limit, sort, page } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
@@ -185,6 +246,28 @@ export class PostService {
 
   async getHiddenPosts(
     userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { page, limit, sort } = pagination;
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.getHidden(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async discover(
+    userId: Types.ObjectId,
     page: number | undefined,
     limit: number | undefined,
   ) {
@@ -192,12 +275,17 @@ export class PostService {
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.getHidden(),
-      ...fetcher.getPaginated(page, limit),
+      ...fetcher.filterOfMySRs(),
+      ...fetcher.filterHidden(),
+      ...fetcher.filterBlocked(),
       ...fetcher.SRInfo(),
-      ...fetcher.userInfo(),
-      ...fetcher.voteInfo(),
-      ...fetcher.getPostProject(),
+      {
+        $unwind: {
+          path: '$images',
+        },
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.getDiscoverProject(),
     ]);
   }
 }
