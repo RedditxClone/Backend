@@ -5,10 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import type { UserUniqueKeys } from 'user/dto/user-unique-keys.dto';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
@@ -173,8 +173,6 @@ export class PostService {
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.getIsFollowed(),
-      ...fetcher.getIsJoined(),
       ...fetcher.matchAllRelatedPosts(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),

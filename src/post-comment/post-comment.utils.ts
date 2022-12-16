@@ -24,6 +24,8 @@ export class ThingFetch {
           },
         },
       },
+      ...this.getIsFollowed(),
+      ...this.getIsJoined(),
     ];
   }
 
@@ -406,12 +408,18 @@ export class ThingFetch {
                 false,
               ],
             },
+            // subreddit: 1,
             isModerator: {
               $cond: [
                 {
                   $in: [
                     '$me.username',
-                    { $arrayElemAt: ['$subreddit.moderators', 0] },
+                    {
+                      $arrayElemAt: [
+                        { $ifNull: ['$subreddit.moderators', [[]]] },
+                        0,
+                      ],
+                    },
                   ],
                 },
                 true,
@@ -419,13 +427,6 @@ export class ThingFetch {
               ],
             },
           },
-          me: {
-            $toString: '$me.username',
-          },
-          mod: {
-            moderators: '$subreddit.moderators',
-          },
-          subreddit: 1,
           votesCount: 1,
           commentCount: 1,
           publishedDate: 1,
