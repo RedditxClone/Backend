@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { UserUniqueKeys } from 'user/dto/user-unique-keys.dto';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
@@ -164,10 +165,10 @@ export class PostService {
   }
 
   private async getUserTimeLine(
-    userId: Types.ObjectId,
+    userInfo: UserUniqueKeys,
     pagination: PaginationParamsDto,
   ) {
-    const fetcher = new ThingFetch(userId);
+    const fetcher = new ThingFetch(userInfo._id);
     const { limit, page, sort } = pagination;
 
     return this.postModel.aggregate([
@@ -182,6 +183,7 @@ export class PostService {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
+      ...fetcher.getMe(),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
@@ -190,14 +192,14 @@ export class PostService {
   }
 
   async getTimeLine(
-    userId: Types.ObjectId | undefined,
+    userInfo: UserUniqueKeys | undefined,
     pagination: PaginationParamsDto,
   ) {
-    if (!userId) {
+    if (!userInfo) {
       return this.getRandomTimeLine(pagination);
     }
 
-    return this.getUserTimeLine(userId, pagination);
+    return this.getUserTimeLine(userInfo, pagination);
   }
 
   async getPostsOfUser(

@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 export class ThingFetch {
-  constructor(private userId: Types.ObjectId | undefined) {}
+  constructor(private readonly userId: Types.ObjectId | undefined) {}
 
   prepare() {
     return [
@@ -398,14 +398,34 @@ export class ThingFetch {
             id: { $arrayElemAt: ['$subreddit._id', 0] },
             name: { $arrayElemAt: ['$subreddit.name', 0] },
             isJoin: {
-              $cond: [{ $ne: ['$PostUserSubreddit', []] }, true, false],
+              $cond: [
+                {
+                  $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
+                },
+                true,
+                false,
+              ],
             },
             isModerator: {
               $cond: [
-                // {$in: []}
+                {
+                  $in: [
+                    '$me.username',
+                    { $arrayElemAt: ['$subreddit.moderators', 0] },
+                  ],
+                },
+                true,
+                false,
               ],
             },
           },
+          me: {
+            $toString: '$me.username',
+          },
+          mod: {
+            moderators: '$subreddit.moderators',
+          },
+          subreddit: 1,
           votesCount: 1,
           commentCount: 1,
           publishedDate: 1,
@@ -444,6 +464,13 @@ export class ThingFetch {
             id: '$user._id',
             photo: '$user.profilePhoto',
             username: '$user.username',
+            isFollowed: {
+              $cond: [
+                { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
+                true,
+                false,
+              ],
+            },
           },
         },
       },

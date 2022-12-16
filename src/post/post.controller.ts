@@ -25,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { diskStorage } from 'multer';
+import { UserUniqueKeys } from 'user/dto/user-unique-keys.dto';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
@@ -90,8 +91,11 @@ export class PostController {
   })
   @Get('timeline')
   @UseGuards(IsUserExistGuard)
-  getTimeLine(@Req() req, @Query() pagination: PaginationParamsDto) {
-    return this.postService.getTimeLine(req._id, pagination);
+  getTimeLine(
+    @User() userInfo: UserUniqueKeys,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getTimeLine(userInfo, pagination);
   }
 
   @ApiOkResponse({
