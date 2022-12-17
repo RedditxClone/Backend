@@ -24,6 +24,7 @@ import { AuthService } from './auth.service';
 import { User } from './decorators/user.decorator';
 import { ForgetUsernameDto } from './dto';
 import { ChangeEmailDto } from './dto/change-email.dto';
+import { ChangeEmailTypeDto } from './dto/change-email-type.dto';
 import {
   ChangeForgottenPasswordDto,
   ChangePasswordDto,
@@ -148,8 +149,8 @@ export class AuthController {
   })
   @UseGuards(JWTUserGuard)
   @Post('change-email')
-  changeEmail(@User() user, @Body() changeEmailDto: ChangeEmailDto) {
-    return this.authService.changeEmail(user, changeEmailDto);
+  changeEmail(@User('_id') _id, @Body() changeEmailDto: ChangeEmailDto) {
+    return this.authService.changeEmail(_id, changeEmailDto);
   }
 
   @ApiOperation({
@@ -157,17 +158,19 @@ export class AuthController {
       'Get the first step of change email process weither create password or change the email directly',
   })
   @UseGuards(JWTUserGuard)
+  @ApiOkResponse({
+    type: ChangeEmailTypeDto,
+  })
   @Get('change-email/type')
   getChangeEmailOperation(@User() user) {
     return this.authService.changeMailRequestType(user);
   }
 
   @ApiOperation({
-    description:
-      'Get the first step of change email process weither create password or change the email directly',
+    description: 'Create a request to create password',
   })
   @UseGuards(JWTUserGuard)
-  @Post('create-password')
+  @Post('create-password-request')
   createPassword(@User() user) {
     return this.authService.createPasswordRequest(user);
   }

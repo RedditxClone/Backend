@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
@@ -293,12 +298,12 @@ export class AuthService {
     if (!userWithHashPassword?.hashPassword) {
       return {
         // To be clear to the clients
-        operationType: 'changePassword',
+        operationType: 'createPassword',
       };
     }
 
     return {
-      operationType: 'normal',
+      operationType: 'changeEmail',
     };
   };
 
@@ -314,9 +319,12 @@ export class AuthService {
     return { status: 'success' };
   };
 
-  changeEmail = async (user: any, changeEmailDto: ChangeEmailDto) => {
+  changeEmail = async (
+    userId: Types.ObjectId,
+    changeEmailDto: ChangeEmailDto,
+  ) => {
     const userWithHashPassword = await this.userModel
-      .findById(user._id)
+      .findById(userId)
       .select('hashPassword');
 
     const isValidUser = await this.isValidUser(
@@ -328,9 +336,16 @@ export class AuthService {
       throw new UnauthorizedException('Wrong password');
     }
 
-    await this.userModel.findByIdAndUpdate(user._id, {
-      email: changeEmailDto.email,
-    });
+    const res = await this.userModel.updateOne(
+      { _id: userId },
+      {
+        email: changeEmailDto.email,
+      },
+    );
+
+    if (!res.modifiedCount) {
+      throw new BadRequestException();
+    }
 
     return {
       status: 'success',
