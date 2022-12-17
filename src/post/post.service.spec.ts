@@ -379,6 +379,12 @@ describe('PostService', () => {
         expect(res.length).toEqual(0);
       });
     });
+    describe('get popular posts', () => {
+      it('must return on post', async () => {
+        const res = await service.getPopularPosts(user1._id, pagination);
+        expect(res.length).toBeLessThanOrEqual(10);
+      });
+    });
   });
 
   describe('approve', () => {
