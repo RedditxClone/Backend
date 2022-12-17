@@ -30,6 +30,7 @@ export const postSelectedFileds = {
   votesCount: 1,
   commentCount: 1,
   publishedDate: 1,
+  createdDate: 1,
   flair: 1,
   spoiler: 1,
   approvedBy: 1,

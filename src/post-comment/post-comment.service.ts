@@ -418,10 +418,15 @@ export class PostCommentService {
   searchPostAggregate(
     searchPhrase: string,
     userId: Types.ObjectId,
-    page,
-    limit,
+    page = 1,
+    limit = 50,
+    sort = 0,
+    time = 0,
   ) {
+    time = Number(time);
     const fetcher = new ThingFetch(userId);
+    const sortTypes = ['best', 'hot', 'top', 'new', 'comments'];
+    const filterByDate = time ? fetcher.filterDate(time) : [];
 
     return this.postCommentModel.aggregate([
       {
@@ -435,6 +440,7 @@ export class PostCommentService {
             },
             { type: 'Post' },
             { isDeleted: false },
+            ...filterByDate,
           ],
         },
       },
@@ -446,8 +452,10 @@ export class PostCommentService {
           },
         },
       },
-      ...fetcher.userInfo(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sortTypes[sort]),
+      { $sort: fetcher.getSortObject(sortTypes[sort]) },
+      ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       {
         $project: {
