@@ -84,7 +84,7 @@ export class CommentService {
 
       await this.messageService.messageOnReplies(
         username,
-        info.user.username,
+        info.user[0].username,
         info.title,
         comment.text,
         comment._id,
