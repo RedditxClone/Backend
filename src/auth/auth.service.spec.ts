@@ -28,6 +28,7 @@ describe('AuthService', () => {
   let userService: UserService;
   let module: TestingModule;
   let id: Types.ObjectId;
+  let githubUserId: Types.ObjectId;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -226,6 +227,7 @@ describe('AuthService', () => {
         authService.verfiyUserGithubData,
       );
       const userDataReturned = await JSON.parse(res._getData());
+      githubUserId = userDataReturned._id;
       const userData = await userService.getUserById(userDataReturned._id);
 
       expect(userData.username).toEqual(userData.username);
@@ -275,6 +277,52 @@ describe('AuthService', () => {
           authService.verfiyUserGmailData,
         );
       }).rejects.toThrowError();
+    });
+  });
+
+  describe('get change email type', () => {
+    it('should return normal', async () => {
+      const res = await authService.changeMailRequestType(id);
+      expect(res).toEqual({ operationType: 'changeEmail' });
+    });
+    it('should return normal', async () => {
+      const res = await authService.changeMailRequestType(githubUserId);
+      expect(res).toEqual({ operationType: 'createPassword' });
+    });
+  });
+
+  describe('change email', () => {
+    let newUser;
+    it('should create and send token successfully', async () => {
+      newUser = await userService.createUser({
+        email: 'firstemail@gmail.com',
+        password: '12345678',
+        username: 'userTestEmail',
+      });
+
+      const res = await authService.changeEmail(newUser._id, {
+        email: 'mynewemail@gmail.com',
+        password: '12345678',
+      });
+      expect(res).toEqual({ status: 'success' });
+    });
+
+    it('should throw error (same email)', async () => {
+      await expect(
+        authService.changeEmail(newUser._id, {
+          email: 'mynewemail@gmail.com',
+          password: '12345678',
+        }),
+      ).rejects.toThrowError();
+    });
+
+    it('should throw error', async () => {
+      await expect(
+        authService.changeEmail(newUser._id, {
+          email: 'mynewemail2@gmail.com',
+          password: '12335611',
+        }),
+      ).rejects.toThrowError();
     });
   });
 

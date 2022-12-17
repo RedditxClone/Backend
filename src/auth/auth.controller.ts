@@ -1,4 +1,12 @@
-import { Body, Controller, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -15,6 +23,8 @@ import { CreateUserDto, ReturnedUserDto } from '../user/dto';
 import { AuthService } from './auth.service';
 import { User } from './decorators/user.decorator';
 import { ForgetUsernameDto } from './dto';
+import { ChangeEmailDto } from './dto/change-email.dto';
+import { ChangeEmailTypeDto } from './dto/change-email-type.dto';
 import {
   ChangeForgottenPasswordDto,
   ChangePasswordDto,
@@ -132,5 +142,36 @@ export class AuthController {
       'continueWithGithubAccount',
       this.authService.verfiyUserGithubData,
     );
+  }
+
+  @ApiOperation({
+    description: 'change the email of the password',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('change-email')
+  changeEmail(@User('_id') _id, @Body() changeEmailDto: ChangeEmailDto) {
+    return this.authService.changeEmail(_id, changeEmailDto);
+  }
+
+  @ApiOperation({
+    description:
+      'Get the first step of change email process weither create password or change the email directly',
+  })
+  @UseGuards(JWTUserGuard)
+  @ApiOkResponse({
+    type: ChangeEmailTypeDto,
+  })
+  @Get('change-email/type')
+  getChangeEmailOperation(@User() user) {
+    return this.authService.changeMailRequestType(user);
+  }
+
+  @ApiOperation({
+    description: 'Create a request to create password',
+  })
+  @UseGuards(JWTUserGuard)
+  @Post('create-password-request')
+  createPassword(@User() user) {
+    return this.authService.createPasswordRequest(user);
   }
 }
