@@ -268,6 +268,29 @@ export class PostService {
     ]);
   }
 
+  async getPopularPosts(
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { page, limit, sort } = pagination;
+
+    return this.postModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.filterHidden(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
   async discover(
     userId: Types.ObjectId,
     page: number | undefined,

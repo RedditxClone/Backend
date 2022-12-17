@@ -7,9 +7,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import type { UserDocument } from 'user/user.schema';
 
 import { BlockService } from '../block/block.service';
+import type { UserDocument } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import type { MessageReplyDto, ModifiedCountDto } from './dto';
 import { MessageReturnDto } from './dto';

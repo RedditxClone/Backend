@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
@@ -43,8 +44,9 @@ describe('NotificationService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
-        NotificationModule,
+        ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        NotificationModule,
         FollowModule,
         BlockModule,
         PostCommentModule,
