@@ -115,7 +115,7 @@ export class AuthService {
     await this.emailService.sendEmail(
       user.email,
       'FORGET PASSWORD',
-      `this is a url to a token ${token}`,
+      `this is a url to a token ${process.env.FORGET_PASSWORD_URL}?token=${token}`,
     );
 
     return { status: 'success' };
@@ -307,7 +307,7 @@ export class AuthService {
     await this.emailService.sendEmail(
       user.email,
       'create PASSWORD',
-      `this is a url to a token ${token}`,
+      `this is a url to a token ${process.env.FORGET_PASSWORD_URL}?token=${token}`,
     );
 
     return { status: 'success' };

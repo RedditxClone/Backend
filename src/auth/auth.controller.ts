@@ -147,7 +147,7 @@ export class AuthController {
     description: 'change the email of the password',
   })
   @UseGuards(JWTUserGuard)
-  @Get('change-email/type')
+  @Post('change-email')
   changeEmail(@User() user, @Body() changeEmailDto: ChangeEmailDto) {
     return this.authService.changeEmail(user, changeEmailDto);
   }
@@ -167,7 +167,7 @@ export class AuthController {
       'Get the first step of change email process weither create password or change the email directly',
   })
   @UseGuards(JWTUserGuard)
-  @Get('change-password')
+  @Post('create-password')
   createPassword(@User() user) {
     return this.authService.createPasswordRequest(user);
   }
