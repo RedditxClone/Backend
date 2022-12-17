@@ -60,6 +60,14 @@ export class CommentService {
           as: 'user',
         },
       },
+      {
+        $lookup: {
+          from: 'postcomments',
+          localField: 'postId',
+          foreignField: '_id',
+          as: 'post',
+        },
+      },
     ]);
     let replyType = 'comment';
 
@@ -85,7 +93,7 @@ export class CommentService {
       await this.messageService.messageOnReplies(
         username,
         info.user[0].username,
-        info.title,
+        info.title || info.post[0].title,
         comment.text,
         comment._id,
         replyType,
