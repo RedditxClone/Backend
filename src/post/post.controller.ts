@@ -72,6 +72,20 @@ export class PostController {
   }
 
   @ApiOkResponse({
+    description: 'your hidden posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('popular')
+  @UseGuards(IsUserExistGuard)
+  getPopularPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getPopularPosts(userId, pagination);
+  }
+
+  @ApiOkResponse({
     description: 'posts returned successfully',
     type: DiscoverReturnDto,
   })

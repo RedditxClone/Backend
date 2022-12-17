@@ -81,7 +81,7 @@ export class ThingFetch {
       {
         $match: {
           $expr: {
-            $in: ['$_id', '$me.savedPosts'],
+            $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
           },
         },
       },
@@ -526,16 +526,14 @@ export class ThingFetch {
             false,
           ],
         },
+        // test: { $ifNull: ['$subreddit.moderators', [[]]] },
         isModerator: {
           $cond: [
             {
               $in: [
                 '$me.username',
                 {
-                  $arrayElemAt: [
-                    { $ifNull: ['$subreddit.moderators', [[]]] },
-                    0,
-                  ],
+                  $ifNull: [{ $arrayElemAt: ['$subreddit.moderators', 0] }, []],
                 },
               ],
             },

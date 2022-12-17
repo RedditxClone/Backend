@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { MessageIdListDto } from 'message/dto';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
-import type { User } from 'user/user.schema';
 
+import type { MessageIdListDto } from '../message/dto';
+import type { User } from '../user/user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 
