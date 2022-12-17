@@ -7,6 +7,7 @@ export enum SortTypes {
   best,
   new,
   old,
+  comments,
 }
 
 export class PaginationParamsDto {
@@ -37,7 +38,7 @@ export class PaginationParamsDto {
   })
   @IsEnum(SortTypes, {
     message: ({ value }) =>
-      `${value} must one of the types(top, hot, new, best, old)`,
+      `${value} must one of the types(top, hot, new, best, old, comments)`,
   })
   readonly sort: string = 'new';
 }

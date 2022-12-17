@@ -8,6 +8,7 @@ import { Model, Types } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
 import { UploadMediaDto } from './dto';
@@ -164,15 +165,15 @@ export class PostService {
   }
 
   private async getUserTimeLine(
-    userId: Types.ObjectId,
+    userInfo: UserUniqueKeys,
     pagination: PaginationParamsDto,
   ) {
-    const fetcher = new ThingFetch(userId);
+    const fetcher = new ThingFetch(userInfo._id);
     const { limit, page, sort } = pagination;
 
     return this.postModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.filterOfMySRs(),
+      ...fetcher.matchAllRelatedPosts(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
       ...fetcher.prepareBeforeStoring(sort),
@@ -180,6 +181,7 @@ export class PostService {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
+      ...fetcher.getMe(),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
@@ -188,14 +190,14 @@ export class PostService {
   }
 
   async getTimeLine(
-    userId: Types.ObjectId | undefined,
+    userInfo: UserUniqueKeys | undefined,
     pagination: PaginationParamsDto,
   ) {
-    if (!userId) {
+    if (!userInfo) {
       return this.getRandomTimeLine(pagination);
     }
 
-    return this.getUserTimeLine(userId, pagination);
+    return this.getUserTimeLine(userInfo, pagination);
   }
 
   async getPostsOfUser(

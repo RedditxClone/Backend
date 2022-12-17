@@ -9,7 +9,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Types } from 'mongoose';
 import mongoose, { Model } from 'mongoose';
 
-// import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -46,6 +45,7 @@ export class SubredditService {
   async create(
     createSubredditDto: CreateSubredditDto,
     username: string,
+    userId: Types.ObjectId,
   ): Promise<SubredditDocument> {
     let subreddit: SubredditDocument | undefined;
 
@@ -53,6 +53,11 @@ export class SubredditService {
       subreddit = await this.subredditModel.create({
         ...createSubredditDto,
         moderators: [username],
+      });
+
+      await this.userSubredditModel.create({
+        subredditId: subreddit,
+        userId,
       });
     } catch (error) {
       if (error?.message?.startsWith('E11000')) {
@@ -857,5 +862,60 @@ export class SubredditService {
     );
 
     return this.modifiedCountResponse(res.modifiedCount);
+  }
+
+  async addSubTobics(
+    subredditId: Types.ObjectId,
+    subTopics: string[],
+    username: string,
+  ) {
+    const res = await this.subredditModel.findOneAndUpdate(
+      {
+        _id: subredditId,
+        moderators: username,
+        $or: [{ activeTopic: { $in: subTopics } }, { activeTopic: null }],
+      },
+      { subTopics },
+      { new: false },
+    );
+
+    if (res?.activeTopic) {
+      await this.subredditModel.updateOne(
+        { _id: subredditId },
+        { $pull: { subTopics: res.activeTopic } },
+      );
+    }
+
+    return this.modifiedCountResponse(res ?? 0);
+  }
+
+  async addActiveTobic(
+    subredditId: Types.ObjectId,
+    activeTopic: string,
+    username: string,
+  ) {
+    const res = await this.subredditModel
+      .findOneAndUpdate(
+        {
+          _id: subredditId,
+          subTopics: activeTopic,
+          moderators: username,
+        },
+        {
+          activeTopic,
+          $pull: { subTopics: activeTopic },
+        },
+        { new: false },
+      )
+      .select('activeTopic subTopics');
+
+    if (res?.activeTopic) {
+      await this.subredditModel.updateOne(
+        { _id: subredditId },
+        { $push: { subTopics: res.activeTopic } },
+      );
+    }
+
+    return this.modifiedCountResponse(res ?? 0);
   }
 }

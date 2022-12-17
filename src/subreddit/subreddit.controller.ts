@@ -34,12 +34,14 @@ import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
+import { ActiveTopicsDto } from './dto/activeTopic.dto';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { CreateSubredditDto } from './dto/create-subreddit.dto';
 import { FlairDto } from './dto/flair.dto';
 import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
+import { SubTopicsDto } from './dto/subTopic.dto';
 import { ThingTypeDto } from './dto/thing-type.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
@@ -60,9 +62,9 @@ export class SubredditController {
   @Post()
   createSubreddit(
     @Body() createSubredditDto: CreateSubredditDto,
-    @User('username') username: string,
+    @User() { _id, username },
   ): Promise<SubredditDocument> {
-    return this.subredditService.create(createSubredditDto, username);
+    return this.subredditService.create(createSubredditDto, username, _id);
   }
 
   @ApiOperation({ description: 'Get subreddit by name' })
@@ -473,7 +475,7 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
   @Delete('/:subreddit/user/:username/mute')
-  async unMuteUser(
+  unMuteUser(
     @User('username') moderatorUsername: string,
     @Param('username') username: string,
     @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
@@ -604,6 +606,48 @@ export class SubredditController {
       subredditId,
       moderatorUsername,
       'approvedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'Add subtopics list' })
+  @ApiCreatedResponse({ description: 'The list was added successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/subtopics')
+  addSubTopics(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('username') username: string,
+    @Body() subTopics: SubTopicsDto,
+  ) {
+    return this.subredditService.addSubTobics(
+      subreddit,
+      subTopics.subTopics,
+      username,
+    );
+  }
+
+  @ApiOperation({ description: 'Add activeTopic' })
+  @ApiCreatedResponse({ description: 'The activeTopic was added successfully' })
+  @ApiForbiddenResponse({
+    description: 'Only moderators can perform this action',
+  })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:subreddit/activetopic')
+  addActiveTopic(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+    @User('username') username: string,
+    @Body() activeTopic: ActiveTopicsDto,
+  ) {
+    return this.subredditService.addActiveTobic(
+      subreddit,
+      activeTopic.activeTopic,
+      username,
     );
   }
 }

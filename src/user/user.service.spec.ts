@@ -417,6 +417,7 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       const sr2 = await subredditService.create(
@@ -425,13 +426,10 @@ describe('UserService', () => {
           over18: true,
           type: 'type',
         },
+        user1.username,
         user1._id,
       );
       subreddits.push(sr1, sr2);
-
-      await subredditService.joinSubreddit(user1._id, sr1._id);
-      await subredditService.joinSubreddit(user1._id, sr2._id);
-
       const post1 = await postService.create(user2._id, {
         title: 'post1 title',
         text: 'post1 text',
@@ -462,13 +460,16 @@ describe('UserService', () => {
           subredditInfo: {
             id: subreddits[0]._id,
             name: subreddits[0].name,
-            isModerator: false,
-            isJoin: false,
+            isModerator: true,
+            isJoin: true,
           },
           user: {
             id: user2._id,
             photo: '',
             username: user2.username,
+            isFollowed: false,
+            cakeDay: true,
+            createdAt: res[0].user.createdAt,
           },
         }),
       );

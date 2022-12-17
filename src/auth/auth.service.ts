@@ -48,9 +48,9 @@ export class AuthService {
     return this.userService.validPassword(password, user.hashPassword);
   }
 
-  private async createAuthToken(id: string): Promise<string> {
+  private async createAuthToken(id: string, username: string): Promise<string> {
     return this.jwtService.signAsync(
-      { id },
+      { id, username },
       { secret: process.env.JWT_SECRET, expiresIn: '10d' },
     );
   }
@@ -71,7 +71,7 @@ export class AuthService {
     user: UserDocument,
     res: Response,
   ): Promise<void> {
-    const token: string = await this.createAuthToken(user._id);
+    const token: string = await this.createAuthToken(user._id, user.username);
     res.cookie('authorization', `Bearer ${token}`);
     const trimmedUser = user.toObject();
     delete trimmedUser.hashPassword;

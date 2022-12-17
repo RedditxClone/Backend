@@ -123,6 +123,7 @@ describe('PostCommentService', () => {
         type: 'type',
       },
       'usrname',
+      user._id,
     );
     const { flairList } = await subredditService.createFlair(
       subreddit._id.toString(),

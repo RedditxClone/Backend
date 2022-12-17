@@ -17,10 +17,15 @@ export class IsUserExistGuard implements CanActivate {
 
     const token = req.headers.authorization.split(' ')[1];
 
-    const { id } = JWT.verify(token, process.env.JWT_SECRET ?? '') as {
+    const { id, username } = JWT.verify(
+      token,
+      process.env.JWT_SECRET ?? '',
+    ) as {
       id: string;
+      username: string;
     };
     req._id = new Types.ObjectId(id);
+    req.user = { _id: new Types.ObjectId(id), username };
 
     return true;
   }

@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 export class ThingFetch {
-  constructor(private userId: Types.ObjectId | undefined) {}
+  constructor(private readonly userId: Types.ObjectId | undefined) {}
 
   prepare() {
     return [
@@ -13,17 +13,17 @@ export class ThingFetch {
       {
         $set: {
           thingId: { $toObjectId: '$_id' },
-          // for post
           subredditId: {
             $toObjectId: '$subredditId',
           },
-          // for comment
           commentPostId: { $toObjectId: '$postId' },
           userId: {
             $toObjectId: '$userId',
           },
         },
       },
+      ...this.getIsFollowed(),
+      ...this.getIsJoined(),
     ];
   }
 
@@ -88,7 +88,7 @@ export class ThingFetch {
     ];
   }
 
-  filterOfMySRs() {
+  getIsJoined() {
     return [
       {
         $lookup: {
@@ -111,8 +111,30 @@ export class ThingFetch {
           ],
         },
       },
+    ];
+  }
+
+  filterOfMySRs() {
+    return [
+      ...this.getIsJoined(),
       {
         $unwind: '$PostUserSubreddit',
+      },
+    ];
+  }
+
+  matchAllRelatedPosts() {
+    return [
+      {
+        $match: {
+          $expr: {
+            $or: [
+              { $ne: ['$PostUserSubreddit', []] },
+              { $ne: ['$follow', []] },
+              { $eq: ['$userId', this.userId] },
+            ],
+          },
+        },
       },
     ];
   }
@@ -193,6 +215,42 @@ export class ThingFetch {
     ];
   }
 
+  getIsFollowed() {
+    return [
+      {
+        $lookup: {
+          from: 'follows',
+          as: 'follow',
+          let: {
+            userId: '$userId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ['$followed', this.userId] },
+                        { $eq: ['$follower', '$$userId'] },
+                      ],
+                    },
+                    {
+                      $and: [
+                        { $eq: ['$follower', this.userId] },
+                        { $eq: ['$followed', '$$userId'] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ];
+  }
+
   SRInfo() {
     return [
       {
@@ -267,6 +325,7 @@ export class ThingFetch {
       new: { publishedAt: -1, _id: 1 },
       old: { publishedAt: 1, _id: -1 },
       best: { bestValue: -1, _id: 1 },
+      comments: { commentCount: -1, _id: 1 },
     };
 
     if (!sortType || !Object.keys(sortOptions).includes(sortType)) {
@@ -320,100 +379,118 @@ export class ThingFetch {
     return [];
   }
 
+  getPostInfo() {
+    return {
+      text: 1,
+      title: 1,
+      replyNotifications: {
+        $ifNull: ['$replyNotifications', false],
+      },
+      userId: 1,
+      postId: 1,
+      votesCount: 1,
+      commentCount: 1,
+      publishedDate: 1,
+      flair: 1,
+      spoiler: 1,
+      approvedBy: 1,
+      approvedAt: 1,
+      isEdited: 1,
+      removedBy: 1,
+      removedAt: 1,
+      editCheckedBy: 1,
+      commentsLocked: 1,
+      spammedBy: 1,
+      spammedAt: 1,
+      nsfw: 1,
+      type: 1,
+      visited: 1,
+      images: 1,
+    };
+  }
+
   getPostProject() {
     return [
       {
         $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          subredditInfo: {
-            id: { $arrayElemAt: ['$subreddit._id', 0] },
-            name: { $arrayElemAt: ['$subreddit.name', 0] },
-            isJoin: { $toBool: false },
-            isModerator: { $toBool: false },
-          },
-          votesCount: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          flair: 1,
-          spoiler: 1,
-          approvedBy: 1,
-          approvedAt: 1,
-          isEdited: 1,
-          removedBy: 1,
-          removedAt: 1,
-          editCheckedBy: 1,
-          nsfw: 1,
-          type: 1,
-          visited: 1,
-          voteType: {
+          ...this.getPostInfo(),
+          ...this.voteType(),
+          ...this.getIsSavedInfo(),
+          ...this.getSubredditInfo(),
+          ...this.getUserInfo(),
+        },
+      },
+    ];
+  }
+
+  getUserInfo() {
+    return {
+      user: {
+        id: '$user._id',
+        photo: '$user.profilePhoto',
+        username: '$user.username',
+        isFollowed: {
+          $cond: [
+            { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
+            true,
+            false,
+          ],
+        },
+        cakeDay: '$user.cakeDay',
+        createdAt: '$user.createdAt',
+      },
+    };
+  }
+
+  commentInfo() {
+    return {
+      text: 1,
+      replyNotification: 1,
+      title: 1,
+      postId: 1,
+      parentId: 1,
+      votesCount: 1,
+      publishedDate: 1,
+      spoiler: 1,
+      nsfw: 1,
+      spammedBy: 1,
+      spammedAt: 1,
+      approvedBy: 1,
+      approvedAt: 1,
+    };
+  }
+
+  voteType() {
+    return {
+      voteType: {
+        $cond: [
+          { $eq: ['$vote', []] },
+          undefined,
+          {
             $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
+              { $eq: ['$vote.isUpvote', [true]] },
+              'upvote',
               {
                 $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
+                  { $eq: ['$vote.isUpvote', [false]] },
+                  'downvote',
+                  undefined,
                 ],
               },
             ],
           },
-          images: 1,
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
-        },
+        ],
       },
-    ];
+    };
   }
 
   getCommentProject() {
     return [
       {
         $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          votesCount: 1,
-          publishedDate: 1,
-          spoiler: 1,
-          nsfw: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
+          ...this.commentInfo(),
+          ...this.voteType(),
+          ...this.getUserInfo(),
         },
       },
     ];
@@ -435,6 +512,41 @@ export class ThingFetch {
     ];
   }
 
+  getSubredditInfo() {
+    return {
+      subredditInfo: {
+        id: { $arrayElemAt: ['$subreddit._id', 0] },
+        name: { $arrayElemAt: ['$subreddit.name', 0] },
+        isJoin: {
+          $cond: [
+            {
+              $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
+            },
+            true,
+            false,
+          ],
+        },
+        isModerator: {
+          $cond: [
+            {
+              $in: [
+                '$me.username',
+                {
+                  $arrayElemAt: [
+                    { $ifNull: ['$subreddit.moderators', [[]]] },
+                    0,
+                  ],
+                },
+              ],
+            },
+            true,
+            false,
+          ],
+        },
+      },
+    };
+  }
+
   getDiscoverProject() {
     return [
       {
@@ -451,6 +563,14 @@ export class ThingFetch {
         },
       },
     ];
+  }
+
+  getIsSavedInfo() {
+    return {
+      isSaved: {
+        $toBool: false,
+      },
+    };
   }
 
   matchToGetUpvoteOnly() {
