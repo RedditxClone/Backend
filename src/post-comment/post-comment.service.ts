@@ -142,9 +142,17 @@ export class PostCommentService {
         $lookup: {
           from: 'postcomments',
           as: 'children',
-          localField: '_id',
-          foreignField: 'parentId',
+          let: {
+            childrenId: '$_id',
+          },
           pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$parentId', '$$childrenId'],
+                },
+              },
+            },
             ...fetcher.prepare(),
             ...fetcher.userInfo(),
             ...fetcher.filterBlocked(),
