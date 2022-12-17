@@ -48,10 +48,11 @@ export class CommentController {
   @UseGuards(JWTUserGuard)
   @Post('submit')
   async create(
+    @User('username') username: string,
     @User('_id') userId: Types.ObjectId,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    return this.commentService.create(userId, createCommentDto);
+    return this.commentService.create(username, userId, createCommentDto);
   }
 
   @ApiOperation({ description: 'Deletes a comment.' })

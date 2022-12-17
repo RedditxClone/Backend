@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { MessageService } from '../message/message.service';
 import { NotificationService } from '../notification/notification.service';
 import type { Comment } from './comment.schema';
 import type { CreateCommentDto, UpdateCommentDto } from './dto';
@@ -13,6 +14,7 @@ export class CommentService {
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<Comment>,
     private readonly notificationService: NotificationService,
+    private readonly messageService: MessageService,
   ) {}
 
   /**
@@ -23,6 +25,7 @@ export class CommentService {
    * @throws BadRequestException when falling to create a Comment
    */
   create = async (
+    username: string,
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
   ): Promise<Comment & { _id: Types.ObjectId }> => {
@@ -67,8 +70,8 @@ export class CommentService {
     if (
       info !== undefined &&
       !info.userId.equals(userId) &&
-      !info.dontNotifyIds.includes(parentId) &&
-      !info.dontNotifyIds.includes(postId)
+      !info.user.dontNotifyIds.includes(parentId) &&
+      !info.user.dontNotifyIds.includes(postId)
     ) {
       await this.notificationService.notifyOnReplies(
         info.userId,
@@ -77,6 +80,15 @@ export class CommentService {
         info.subreddit[0].name,
         info.user[0].username,
         info.user[0]._id,
+      );
+
+      await this.messageService.messageOnReplies(
+        username,
+        info.user.username,
+        info.title,
+        comment.text,
+        comment._id,
+        replyType,
       );
     }
 
