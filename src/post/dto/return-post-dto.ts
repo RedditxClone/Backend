@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { Types } from 'mongoose';
-import { GetUserInfoDto } from 'user/dto';
+
+import { GetUserInfoDto } from '../../user/dto';
 export class SubredditInfoDto {
   @ApiProperty({ description: 'subreddit name' })
   name: string;

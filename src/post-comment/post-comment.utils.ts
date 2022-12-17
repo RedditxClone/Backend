@@ -13,11 +13,9 @@ export class ThingFetch {
       {
         $set: {
           thingId: { $toObjectId: '$_id' },
-          // for post
           subredditId: {
             $toObjectId: '$subredditId',
           },
-          // for comment
           commentPostId: { $toObjectId: '$postId' },
           userId: {
             $toObjectId: '$userId',
@@ -26,7 +24,6 @@ export class ThingFetch {
       },
       ...this.getIsFollowed(),
       ...this.getIsJoined(),
-      // ...this.getMe(),
     ];
   }
 
