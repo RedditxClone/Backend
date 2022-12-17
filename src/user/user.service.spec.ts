@@ -451,7 +451,7 @@ describe('UserService', () => {
         new PaginationParamsDto(),
       );
       expect(res.length).toEqual(2);
-      expect(res[0]).toEqual(
+      expect(res[1]).toEqual(
         expect.objectContaining({
           _id: posts[0]._id,
           text: posts[0].text,

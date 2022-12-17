@@ -272,7 +272,7 @@ describe('PostService', () => {
       it('should return 2 posts successfully', async () => {
         const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline.length).toEqual(2);
-        expect(timeline[0]).toEqual(
+        expect(timeline[1]).toEqual(
           expect.objectContaining({
             _id: posts[0]._id,
             text: posts[0].text,
@@ -299,7 +299,7 @@ describe('PostService', () => {
         expect(timeline).toEqual([]);
         await userService.unblock(user1._id, user2._id);
       });
-      it("it shouldn't get second post before of hiding it", async () => {
+      it("it shouldn't get first post before of hiding it", async () => {
         await service.hide(posts[1]._id, user1._id);
         const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline.length).toEqual(1);
