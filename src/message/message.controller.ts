@@ -71,9 +71,11 @@ export class MessageController {
     type: MessageReturnDto,
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiForbiddenResponse({
+    description: 'Unauthorized Request. Cannot send message to this user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
-  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiNotFoundResponse({ description: 'User not Found' })
   @ApiOperation({ description: 'Send a private message to a user' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_name')
@@ -96,9 +98,11 @@ export class MessageController {
     type: MessageReturnDto,
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiForbiddenResponse({
+    description: 'Unauthorized Request. Cannot send message to this user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
-  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiNotFoundResponse({ description: 'Parent Message Or User Not Found' })
   @ApiOperation({ description: 'Reply to a private message' })
   @UseGuards(JWTUserGuard)
   @Post('/:message_id/reply')
@@ -117,11 +121,9 @@ export class MessageController {
   }
 
   @ApiOkResponse({ description: 'The message has been deleted successfully' })
-  @ApiUnauthorizedResponse({
-    description: 'Unauthenticaed',
-  })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiOperation({ description: 'delete specific message with message_id' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticaed' })
+  @ApiNotFoundResponse({ description: 'Message not found' })
+  @ApiOperation({ description: 'Delete specific message with message_id' })
   @UseGuards(JWTUserGuard)
   @Delete('/:message_id')
   remove(
