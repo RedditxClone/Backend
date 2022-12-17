@@ -13,11 +13,9 @@ export class ThingFetch {
       {
         $set: {
           thingId: { $toObjectId: '$_id' },
-          // for post
           subredditId: {
             $toObjectId: '$subredditId',
           },
-          // for comment
           commentPostId: { $toObjectId: '$postId' },
           userId: {
             $toObjectId: '$userId',
@@ -83,7 +81,7 @@ export class ThingFetch {
       {
         $match: {
           $expr: {
-            $in: ['$_id', '$me.savedPosts'],
+            $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
           },
         },
       },
@@ -324,8 +322,8 @@ export class ThingFetch {
     const sortOptions = {
       hot: { hotValue: -1, _id: 1 },
       top: { votesCount: -1, _id: 1 },
-      new: { publishedAt: -1, _id: 1 },
-      old: { publishedAt: 1, _id: -1 },
+      new: { publishedDate: -1, _id: 1 },
+      old: { publishedDate: 1, _id: -1 },
       best: { bestValue: -1, _id: 1 },
       comments: { commentCount: -1, _id: 1 },
     };
@@ -381,131 +379,118 @@ export class ThingFetch {
     return [];
   }
 
+  getPostInfo() {
+    return {
+      text: 1,
+      title: 1,
+      replyNotifications: {
+        $ifNull: ['$replyNotifications', false],
+      },
+      userId: 1,
+      postId: 1,
+      votesCount: 1,
+      commentCount: 1,
+      publishedDate: 1,
+      flair: 1,
+      spoiler: 1,
+      approvedBy: 1,
+      approvedAt: 1,
+      isEdited: 1,
+      removedBy: 1,
+      removedAt: 1,
+      editCheckedBy: 1,
+      commentsLocked: 1,
+      spammedBy: 1,
+      spammedAt: 1,
+      nsfw: 1,
+      type: 1,
+      visited: 1,
+      images: 1,
+    };
+  }
+
   getPostProject() {
     return [
       {
         $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          subredditInfo: {
-            id: { $arrayElemAt: ['$subreddit._id', 0] },
-            name: { $arrayElemAt: ['$subreddit.name', 0] },
-            isJoin: {
-              $cond: [
-                {
-                  $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
-                },
-                true,
-                false,
-              ],
-            },
-            isModerator: {
-              $cond: [
-                {
-                  $in: [
-                    '$me.username',
-                    {
-                      $arrayElemAt: [
-                        { $ifNull: ['$subreddit.moderators', [[]]] },
-                        0,
-                      ],
-                    },
-                  ],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-          votesCount: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          flair: 1,
-          spoiler: 1,
-          approvedBy: 1,
-          approvedAt: 1,
-          isEdited: 1,
-          removedBy: 1,
-          removedAt: 1,
-          editCheckedBy: 1,
-          nsfw: 1,
-          type: 1,
-          visited: 1,
-          voteType: {
+          ...this.getPostInfo(),
+          ...this.voteType(),
+          ...this.getIsSavedInfo(),
+          ...this.getSubredditInfo(),
+          ...this.getUserInfo(),
+        },
+      },
+    ];
+  }
+
+  getUserInfo() {
+    return {
+      user: {
+        id: '$user._id',
+        photo: '$user.profilePhoto',
+        username: '$user.username',
+        isFollowed: {
+          $cond: [
+            { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
+            true,
+            false,
+          ],
+        },
+        cakeDay: '$user.cakeDay',
+        createdAt: '$user.createdAt',
+      },
+    };
+  }
+
+  commentInfo() {
+    return {
+      text: 1,
+      replyNotification: 1,
+      title: 1,
+      postId: 1,
+      parentId: 1,
+      votesCount: 1,
+      publishedDate: 1,
+      spoiler: 1,
+      nsfw: 1,
+      spammedBy: 1,
+      spammedAt: 1,
+      approvedBy: 1,
+      approvedAt: 1,
+    };
+  }
+
+  voteType() {
+    return {
+      voteType: {
+        $cond: [
+          { $eq: ['$vote', []] },
+          undefined,
+          {
             $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
+              { $eq: ['$vote.isUpvote', [true]] },
+              'upvote',
               {
                 $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
+                  { $eq: ['$vote.isUpvote', [false]] },
+                  'downvote',
+                  undefined,
                 ],
               },
             ],
           },
-          images: 1,
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-            isFollowed: {
-              $cond: [
-                { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
-                true,
-                false,
-              ],
-            },
-          },
-        },
+        ],
       },
-    ];
+    };
   }
 
   getCommentProject() {
     return [
       {
         $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          votesCount: 1,
-          publishedDate: 1,
-          spoiler: 1,
-          nsfw: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
+          ...this.commentInfo(),
+          ...this.voteType(),
+          ...this.getUserInfo(),
         },
       },
     ];
@@ -527,6 +512,39 @@ export class ThingFetch {
     ];
   }
 
+  getSubredditInfo() {
+    return {
+      subredditInfo: {
+        id: { $arrayElemAt: ['$subreddit._id', 0] },
+        name: { $arrayElemAt: ['$subreddit.name', 0] },
+        isJoin: {
+          $cond: [
+            {
+              $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
+            },
+            true,
+            false,
+          ],
+        },
+        // test: { $ifNull: ['$subreddit.moderators', [[]]] },
+        isModerator: {
+          $cond: [
+            {
+              $in: [
+                '$me.username',
+                {
+                  $ifNull: [{ $arrayElemAt: ['$subreddit.moderators', 0] }, []],
+                },
+              ],
+            },
+            true,
+            false,
+          ],
+        },
+      },
+    };
+  }
+
   getDiscoverProject() {
     return [
       {
@@ -543,6 +561,14 @@ export class ThingFetch {
         },
       },
     ];
+  }
+
+  getIsSavedInfo() {
+    return {
+      isSaved: {
+        $toBool: false,
+      },
+    };
   }
 
   matchToGetUpvoteOnly() {
@@ -572,6 +598,42 @@ export class ThingFetch {
           $expr: {
             $eq: ['$vote.isUpvote', false],
           },
+        },
+      },
+    ];
+  }
+
+  filterDate(time: number) {
+    const date = new Date();
+    let dayPast = 0;
+
+    if (time === 3) {
+      dayPast = 7;
+    } else if (time === 4) {
+      dayPast = 1;
+    }
+
+    const d1 = [
+      time === 1 ? date.getFullYear() - 1 : date.getFullYear(),
+      time === 2 ? date.getMonth() - 1 : date.getMonth(),
+      date.getDate() - dayPast,
+      time === 5 ? date.getHours() - 1 : date.getHours(),
+    ];
+
+    const d2 = [
+      time === 1 ? d1[0] + 1 : d1[0],
+      time === 2 ? d1[1] + 1 : date.getMonth(),
+      time === 3 || time === 4 ? d1[2] + dayPast : d1[2],
+      time === 5 ? d1[3] + 1 : d1[3],
+    ];
+    const min = date.getMinutes();
+    const sec = date.getSeconds();
+
+    return [
+      {
+        publishedDate: {
+          $gte: new Date(d1[0], d1[1], d1[2], d1[3], min, sec),
+          $lt: new Date(d2[0], d2[1], d2[2], d2[3], min, sec),
         },
       },
     ];

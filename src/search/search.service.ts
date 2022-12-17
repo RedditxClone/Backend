@@ -56,17 +56,14 @@ export class SearchService {
     );
   };
 
-  searchPosts = (
-    data: string,
-    page = 1,
-    numberOfData = 50,
-    blocker: Types.ObjectId,
-  ) =>
+  searchPosts = (data: string, query, blocker: Types.ObjectId) =>
     this.postCommentService.searchPostAggregate(
       data,
       blocker,
-      page,
-      numberOfData,
+      query.page,
+      query.limit,
+      query.sort,
+      query.time,
     );
 
   searchComments = async (

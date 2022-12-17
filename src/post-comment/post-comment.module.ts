@@ -54,7 +54,6 @@ import { PostCommentService } from './post-comment.service';
     CommentService,
     ApiFeaturesService,
     JWTUserIfExistGuard,
-    // SubredditService,
     ImagesHandlerService,
   ],
   exports: [PostCommentService],

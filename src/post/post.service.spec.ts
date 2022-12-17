@@ -272,7 +272,7 @@ describe('PostService', () => {
       it('should return 2 posts successfully', async () => {
         const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline.length).toEqual(2);
-        expect(timeline[0]).toEqual(
+        expect(timeline[1]).toEqual(
           expect.objectContaining({
             _id: posts[0]._id,
             text: posts[0].text,
@@ -289,6 +289,8 @@ describe('PostService', () => {
               photo: '',
               username: user2.username,
               isFollowed: false,
+              cakeDay: true,
+              createdAt: timeline[0].user.createdAt,
             },
           }),
         );
@@ -299,7 +301,7 @@ describe('PostService', () => {
         expect(timeline).toEqual([]);
         await userService.unblock(user1._id, user2._id);
       });
-      it("it shouldn't get second post before of hiding it", async () => {
+      it("it shouldn't get first post before of hiding it", async () => {
         await service.hide(posts[1]._id, user1._id);
         const timeline = await service.getTimeLine(user1._id, pagination);
         expect(timeline.length).toEqual(1);
@@ -320,6 +322,8 @@ describe('PostService', () => {
               photo: '',
               username: user2.username,
               isFollowed: false,
+              cakeDay: true,
+              createdAt: timeline[0].user.createdAt,
             },
           }),
         );
@@ -354,6 +358,8 @@ describe('PostService', () => {
           username: user2.username,
           photo: user2.profilePhoto,
           isFollowed: false,
+          cakeDay: true,
+          createdAt: res[0].user.createdAt,
         });
       });
       it('must get no posts', async () => {
@@ -371,6 +377,12 @@ describe('PostService', () => {
       it('must return empty set', async () => {
         const res = await service.getHiddenPosts(user1._id, pagination);
         expect(res.length).toEqual(0);
+      });
+    });
+    describe('get popular posts', () => {
+      it('must return on post', async () => {
+        const res = await service.getPopularPosts(user1._id, pagination);
+        expect(res.length).toBeLessThanOrEqual(10);
       });
     });
   });

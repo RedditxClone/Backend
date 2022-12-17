@@ -19,6 +19,7 @@ import {
 } from '../utils/project-selected-fields';
 import type { Vote } from '../vote/vote.schema';
 import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
+import type { FilterPostCommentDto } from './dto/filter-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
 import { ThingFetch } from './post-comment.utils';
@@ -91,6 +92,114 @@ export class PostCommentService {
       throw new BadRequestException(
         `Requested a ${type} but the id belongs to ${thing.type}`,
       );
+    }
+
+    return thing;
+  };
+
+  /**
+   * Gets a graph of comments/posts
+   * @param filter the filter of the parent
+   * @returns and array of things with an array of comments
+   */
+  getThings = async (
+    filter: FilterPostCommentDto,
+    pagination: PaginationParamsDto,
+  ) => {
+    const fetcher = new ThingFetch(undefined);
+    const { sort, limit, page } = pagination;
+    const thing: any[] = await this.postCommentModel.aggregate([
+      { $match: filter },
+      {
+        $lookup: {
+          from: 'postcomments',
+          as: 'children',
+          localField: '_id',
+          foreignField: 'parentId',
+        },
+      },
+      {
+        $unwind: {
+          path: '$children',
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$children',
+        },
+      },
+      ...fetcher.prepare(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.userInfo(),
+      ...fetcher.getIsFollowed(),
+      ...fetcher.getCommentProject(),
+      {
+        $lookup: {
+          from: 'postcomments',
+          as: 'children',
+          let: {
+            childrenId: '$_id',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$parentId', '$$childrenId'],
+                },
+              },
+            },
+            ...fetcher.prepare(),
+            ...fetcher.userInfo(),
+            ...fetcher.filterBlocked(),
+            ...fetcher.getIsFollowed(),
+            ...fetcher.getCommentProject(),
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'postcomments',
+          as: 'secondLevel',
+          let: {
+            parentList: '$children._id',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ['$parentId', '$$parentList'],
+                },
+              },
+            },
+            ...fetcher.prepare(),
+            ...fetcher.userInfo(),
+            ...fetcher.filterBlocked(),
+            ...fetcher.getIsFollowed(),
+            ...fetcher.getCommentProject(),
+          ],
+        },
+      },
+    ]);
+
+    for (const element of thing) {
+      const { children, secondLevel } = element;
+      const obj = {};
+
+      for (const child of children) {
+        obj[child._id] = child;
+        child.children = [];
+      }
+
+      for (const child of secondLevel) {
+        obj[child.parentId].children.push(child);
+      }
+
+      delete element.secondLevel;
     }
 
     return thing;
@@ -247,7 +356,7 @@ export class PostCommentService {
 
       if (info !== undefined && !info.userId.equals(userId)) {
         await this.notificationService.notifyOnVotes(
-          userId,
+          info.userId,
           thingId,
           info.type,
           info.subreddit[0].name,
@@ -317,10 +426,15 @@ export class PostCommentService {
   searchPostAggregate(
     searchPhrase: string,
     userId: Types.ObjectId,
-    page,
-    limit,
+    page = 1,
+    limit = 50,
+    sort = 0,
+    time = 0,
   ) {
+    time = Number(time);
     const fetcher = new ThingFetch(userId);
+    const sortTypes = ['best', 'hot', 'top', 'new', 'comments'];
+    const filterByDate = time ? fetcher.filterDate(time) : [];
 
     return this.postCommentModel.aggregate([
       {
@@ -334,6 +448,7 @@ export class PostCommentService {
             },
             { type: 'Post' },
             { isDeleted: false },
+            ...filterByDate,
           ],
         },
       },
@@ -345,8 +460,10 @@ export class PostCommentService {
           },
         },
       },
-      ...fetcher.userInfo(),
       ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sortTypes[sort]),
+      { $sort: fetcher.getSortObject(sortTypes[sort]) },
+      ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       {
         $project: {

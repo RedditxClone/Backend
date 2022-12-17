@@ -56,13 +56,8 @@ export class SearchController {
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for posts' })
   @Get('/posts')
-  searchPosts(
-    @Query('word') word,
-    @Query('page') page,
-    @Query('limit') limit,
-    @Req() req,
-  ) {
-    return this.searchService.searchPosts(word, page, limit, req._id);
+  searchPosts(@Query('word') word, @Query() query, @Req() req) {
+    return this.searchService.searchPosts(word, query, req._id);
   }
 
   @UseGuards(IsUserExistGuard)

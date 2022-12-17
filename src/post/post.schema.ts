@@ -45,3 +45,9 @@ export class Post extends PostComment {
   approvedAt: Date;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);
+
+// reply notification
+// isSpammed
+// user cake date
+// isSaved
+// lock comments

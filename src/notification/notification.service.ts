@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { MessageIdListDto } from 'message/dto';
 import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
+import type { MessageIdListDto } from '../message/dto';
+import type { User } from '../user/user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 
@@ -14,8 +15,39 @@ export class NotificationService {
   constructor(
     @InjectModel('Notification')
     private readonly notificationModel: Model<Notification>,
+    @InjectModel('User')
+    private readonly userModel: Model<User>,
     private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
+
+  /**
+   * don't notify based on user's prefs
+   * @param userId the request user id
+   * @returns booleans of the prefs
+   */
+  skipNotify = async (userId: Types.ObjectId) => {
+    const userNotifications = await this.userModel.findById(userId);
+
+    if (!userNotifications) {
+      throw new BadRequestException('User not found');
+    }
+
+    const {
+      commentsOnPost,
+      upvotePosts,
+      upvoteComments,
+      repliesComments,
+      newFollowers,
+    } = userNotifications;
+
+    return {
+      commentsOnPost,
+      upvotePosts,
+      upvoteComments,
+      repliesComments,
+      newFollowers,
+    };
+  };
 
   /**
    * counts number of new notifications
@@ -110,6 +142,13 @@ export class NotificationService {
     notifierId: Types.ObjectId,
     followerName: string,
   ) => {
+    const { newFollowers } = await this.skipNotify(userId);
+
+    //if user turned off notifications on new followers
+    if (!newFollowers) {
+      return {};
+    }
+
     let body = '';
 
     body = `u/${followerName} started following you.`;
@@ -148,6 +187,15 @@ export class NotificationService {
     let body = '';
 
     const refType = type.toLowerCase();
+    const { upvotePosts, upvoteComments } = await this.skipNotify(userId);
+
+    //if user turned off notifications on posts or comments votes
+    if (
+      (refType === 'post' && !upvotePosts) ||
+      (refType === 'comment' && !upvoteComments)
+    ) {
+      return {};
+    }
 
     body = `You got an upvote on your ${refType} in r/${subredditName}`;
 
@@ -155,6 +203,7 @@ export class NotificationService {
       {
         userId,
         body,
+        refId,
       },
       {
         userId,
@@ -186,6 +235,16 @@ export class NotificationService {
     let body = '';
 
     const refType = type.toLowerCase();
+    const { repliesComments, commentsOnPost } = await this.skipNotify(userId);
+
+    //if user turned off notifications on posts or comments replies
+
+    if (
+      (refType === 'post' && !commentsOnPost) ||
+      (refType === 'comment' && !repliesComments)
+    ) {
+      return {};
+    }
 
     body = `u/${replierName} replied to your ${refType} in r/${subredditName}`;
 

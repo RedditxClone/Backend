@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
@@ -20,6 +25,7 @@ import type {
   ForgetUsernameDto,
   LoginDto,
 } from './dto';
+import type { ChangeEmailDto } from './dto/change-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -114,7 +120,7 @@ export class AuthService {
     await this.emailService.sendEmail(
       user.email,
       'FORGET PASSWORD',
-      `this is a url to a token ${token}`,
+      `this is a url to a token ${process.env.FORGET_PASSWORD_URL}?token=${token}`,
     );
 
     return { status: 'success' };
@@ -282,5 +288,67 @@ export class AuthService {
     }
 
     await this.sendAuthToken(user, res);
+  };
+
+  changeMailRequestType = async (user: any) => {
+    const userWithHashPassword = await this.userModel
+      .findById(user._id)
+      .select('hashPassword');
+
+    if (!userWithHashPassword?.hashPassword) {
+      return {
+        // To be clear to the clients
+        operationType: 'createPassword',
+      };
+    }
+
+    return {
+      operationType: 'changeEmail',
+    };
+  };
+
+  createPasswordRequest = async (user: any) => {
+    const token: string = await this.createChangePasswordToken(user.username);
+
+    await this.emailService.sendEmail(
+      user.email,
+      'create PASSWORD',
+      `this is a url to a token ${process.env.FORGET_PASSWORD_URL}?token=${token}`,
+    );
+
+    return { status: 'success' };
+  };
+
+  changeEmail = async (
+    userId: Types.ObjectId,
+    changeEmailDto: ChangeEmailDto,
+  ) => {
+    const userWithHashPassword = await this.userModel
+      .findById(userId)
+      .select('hashPassword');
+
+    const isValidUser = await this.isValidUser(
+      userWithHashPassword,
+      changeEmailDto.password,
+    );
+
+    if (!isValidUser) {
+      throw new UnauthorizedException('Wrong password');
+    }
+
+    const res = await this.userModel.updateOne(
+      { _id: userId },
+      {
+        email: changeEmailDto.email,
+      },
+    );
+
+    if (!res.modifiedCount) {
+      throw new BadRequestException();
+    }
+
+    return {
+      status: 'success',
+    };
   };
 }
