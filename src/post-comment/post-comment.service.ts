@@ -348,7 +348,7 @@ export class PostCommentService {
 
       if (info !== undefined && !info.userId.equals(userId)) {
         await this.notificationService.notifyOnVotes(
-          userId,
+          info.userId,
           thingId,
           info.type,
           info.subreddit[0].name,
