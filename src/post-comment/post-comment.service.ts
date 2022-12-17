@@ -102,63 +102,96 @@ export class PostCommentService {
    * @param filter the filter of the parent
    * @returns and array of things with an array of comments
    */
-  getThings = async (filter: FilterPostCommentDto) => {
-    if (!filter.subredditId || !filter.userId) {
-      filter.type = 'Post';
-    }
-
-    const thing: PostComment[] | null = await this.postCommentModel.aggregate([
-      { $match: filter }, // filter
+  getThings = async (
+    filter: FilterPostCommentDto,
+    pagination: PaginationParamsDto,
+  ) => {
+    const fetcher = new ThingFetch(undefined);
+    const { sort, limit, page } = pagination;
+    const thing: any[] = await this.postCommentModel.aggregate([
+      { $match: filter },
       {
-        $graphLookup: {
+        $lookup: {
           from: 'postcomments',
-          startWith: '$_id',
-          connectFromField: '_id',
-          connectToField: 'parentId',
-          depthField: 'depth',
-          as: 'comments',
-          restrictSearchWithMatch: {
-            isDeleted: false,
-          },
+          as: 'children',
+          localField: '_id',
+          foreignField: 'parentId',
         },
       },
       {
         $unwind: {
-          path: '$comments',
+          path: '$children',
         },
       },
       {
-        //todo need to add sort filter ex. hot, rising, ...
-        $sort: {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          'comments.depth': 1,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          'comments.createdDate': 1,
+        $replaceRoot: {
+          newRoot: '$children',
+        },
+      },
+      ...fetcher.prepare(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page , limit),
+      ...fetcher.userInfo(),
+      ...fetcher.getIsFollowed(),
+      ...fetcher.getCommentProject(),
+      {
+        $lookup: {
+          from: 'postcomments',
+          as: 'children',
+          localField: '_id',
+          foreignField: 'parentId',
+          pipeline: [
+            ...fetcher.prepare(),
+            ...fetcher.userInfo(),
+            ...fetcher.filterBlocked(),
+            ...fetcher.getIsFollowed(),
+            ...fetcher.getCommentProject(),
+          ],
         },
       },
       {
-        $group: {
-          _id: {
-            body: '$body',
-            _id: '$_id',
+        $lookup: {
+          from: 'postcomments',
+          as: 'secondLevel',
+          let: {
+            parentList: '$children._id',
           },
-          comments: {
-            $push: '$comments',
-          },
-        },
-      },
-      {
-        $project: {
-          body: '$_id.body',
-          _id: '$_id._id',
-          comments: '$comments',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ['$parentId', '$$parentList'],
+                },
+              },
+            },
+            ...fetcher.prepare(),
+            ...fetcher.userInfo(),
+            ...fetcher.filterBlocked(),
+            ...fetcher.getIsFollowed(),
+            ...fetcher.getCommentProject(),
+          ],
         },
       },
     ]);
 
-    //! may need to be removed
-    if (!Array.isArray(thing) || thing.length === 0) {
-      throw new NotFoundException(`The filter sent resulted in no outputs`);
+    for (const element of thing) {
+      const { children, secondLevel } = element;
+      const obj = {};
+
+      for (const child of children) {
+        obj[child._id] = child;
+        child.children = [];
+      }
+
+      for (const child of secondLevel) {
+        obj[child.parentId].children.push(child);
+      }
+
+      delete element.secondLevel;
     }
 
     return thing;

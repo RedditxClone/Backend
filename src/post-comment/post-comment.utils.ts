@@ -388,36 +388,7 @@ export class ThingFetch {
           title: 1,
           userId: 1,
           postId: 1,
-          subredditInfo: {
-            id: { $arrayElemAt: ['$subreddit._id', 0] },
-            name: { $arrayElemAt: ['$subreddit.name', 0] },
-            isJoin: {
-              $cond: [
-                {
-                  $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
-                },
-                true,
-                false,
-              ],
-            },
-            isModerator: {
-              $cond: [
-                {
-                  $in: [
-                    '$me.username',
-                    {
-                      $arrayElemAt: [
-                        { $ifNull: ['$subreddit.moderators', [[]]] },
-                        0,
-                      ],
-                    },
-                  ],
-                },
-                true,
-                false,
-              ],
-            },
-          },
+
           votesCount: 1,
           commentCount: 1,
           publishedDate: 1,
@@ -429,6 +400,7 @@ export class ThingFetch {
           removedBy: 1,
           removedAt: 1,
           editCheckedBy: 1,
+          // commentsLocked: 1,
           nsfw: 1,
           type: 1,
           visited: 1,
@@ -452,59 +424,76 @@ export class ThingFetch {
             ],
           },
           images: 1,
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-            isFollowed: {
-              $cond: [
-                { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
-                true,
-                false,
-              ],
-            },
-          },
         },
       },
     ];
+  }
+
+  getUserInfo() {
+    return {
+      user: {
+        id: '$user._id',
+        photo: '$user.profilePhoto',
+        username: '$user.username',
+        isFollowed: {
+          $cond: [
+            { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
+            true,
+            false,
+          ],
+        },
+      },
+    };
+  }
+
+  commentInfo() {
+    return {
+      text: 1,
+      title: 1,
+      postId: 1,
+      parentId: 1,
+      votesCount: 1,
+      publishedDate: 1,
+      spoiler: 1,
+      nsfw: 1,
+      spammedBy: 1,
+      spammedAt: 1,
+      approvedBy: 1,
+      approvedAt: 1,
+    };
+  }
+
+  voteType() {
+    return {
+      voteType: {
+        $cond: [
+          { $eq: ['$vote', []] },
+          undefined,
+          {
+            $cond: [
+              { $eq: ['$vote.isUpvote', [true]] },
+              'upvote',
+              {
+                $cond: [
+                  { $eq: ['$vote.isUpvote', [false]] },
+                  'downvote',
+                  undefined,
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    };
   }
 
   getCommentProject() {
     return [
       {
         $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-          votesCount: 1,
-          publishedDate: 1,
-          spoiler: 1,
-          nsfw: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          user: {
-            id: '$user._id',
-            photo: '$user.profilePhoto',
-            username: '$user.username',
-          },
+          ...this.commentInfo(),
+          ...this.voteType(),
+          ...this.getUserInfo(),
         },
       },
     ];
@@ -524,6 +513,41 @@ export class ThingFetch {
         $match: filter,
       },
     ];
+  }
+
+  getSubredditInfo() {
+    return {
+      subredditInfo: {
+        id: { $arrayElemAt: ['$subreddit._id', 0] },
+        name: { $arrayElemAt: ['$subreddit.name', 0] },
+        isJoin: {
+          $cond: [
+            {
+              $gt: [{ $size: { $ifNull: ['$PostUserSubreddit', []] } }, 0],
+            },
+            true,
+            false,
+          ],
+        },
+        isModerator: {
+          $cond: [
+            {
+              $in: [
+                '$me.username',
+                {
+                  $arrayElemAt: [
+                    { $ifNull: ['$subreddit.moderators', [[]]] },
+                    0,
+                  ],
+                },
+              ],
+            },
+            true,
+            false,
+          ],
+        },
+      },
+    };
   }
 
   getDiscoverProject() {
