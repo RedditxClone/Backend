@@ -1,12 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Types } from 'mongoose';
 
+import { GetUserInfoDto } from '../../user/dto';
+export class SubredditInfoDto {
+  @ApiProperty({ description: 'subreddit name' })
+  name: string;
+
+  @ApiProperty({ description: 'subreddit id' })
+  id: string;
+
+  @ApiProperty({ description: 'is user join subreddit' })
+  isJoin: boolean;
+
+  @ApiProperty({ description: 'is user a moderator' })
+  isModerator: boolean;
+}
 export class ReturnPostDto {
   @ApiProperty({ description: 'text of the post' })
   text: string;
 
   @ApiProperty({ description: 'id of the post' })
-  _id: Types.ObjectId;
+  _id: string;
 
   @ApiProperty({ description: 'post images' })
   images: string[];
@@ -26,24 +39,52 @@ export class ReturnPostDto {
   @ApiProperty({
     description: 'some info about subreddit that the post contains to',
   })
-  subreddit: {
-    id: Types.ObjectId;
-    name: string;
-    type: string;
-  };
+  subredditInfo: SubredditInfoDto;
 
   @ApiProperty({
     description: 'some information about the user creating the post',
   })
-  user: {
-    id: Types.ObjectId;
-    photo: string;
-    username: string;
-  };
+  user: GetUserInfoDto;
+
+  @ApiProperty({
+    description: 'moderator spammed the post',
+  })
+  spammedBy: string;
+
+  @ApiProperty({
+    description: 'date spammed at',
+  })
+  spammedAt: Date;
+
+  @ApiProperty({
+    description: 'moderator approved the post',
+  })
+  approvedBy: string;
+
+  @ApiProperty({
+    description: 'date approved at',
+  })
+  approvedAt: Date;
+
+  @ApiProperty({
+    description: 'moderator removed the post',
+  })
+  removedBy: string;
+
+  @ApiProperty({
+    description: 'date removed at',
+  })
+  removedAt: Date;
 
   @ApiProperty({
     description:
       "type of vote that i created, null means that i haven't voted it",
   })
-  voteType: string | null;
+  voteType: string;
+
+  @ApiProperty({ description: 'if the post visited by the current user' })
+  isVisited: boolean;
+
+  @ApiProperty({ description: 'if the post saved by the current user' })
+  isSaved: boolean;
 }

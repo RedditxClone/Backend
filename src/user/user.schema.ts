@@ -15,6 +15,9 @@ export class User {
   @Prop({ select: false })
   hashPassword: string;
 
+  @Prop({ default: Date.now() })
+  createdAt: Date;
+
   // moderator access is given to specific users
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
   authType: string;
@@ -142,12 +145,18 @@ export class User {
   @Prop({ default: true })
   cakeDay: boolean;
 
+  @Prop({ default: [] })
+  dontNotifyIds: Types.ObjectId[];
+
   //messages
   @Prop({ enum: [`everyone`, `whitelisted`], default: 'everyone' })
   acceptPms: string;
 
   @Prop({ default: [] })
   whitelisted: string[];
+
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
 
   //Miscellaneous
   @Prop({ default: false })
@@ -163,11 +172,11 @@ export class User {
   unSubscribe: boolean;
 
   // google auth
-  @Prop({ sparse: true })
+  @Prop({ unique: true, sparse: true })
   continueWithGoogleAccount?: string;
 
   // github auth
-  @Prop({ sparse: true })
+  @Prop({ unique: true, sparse: true })
   continueWithGithubAccount?: string;
 }
 

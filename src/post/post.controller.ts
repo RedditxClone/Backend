@@ -6,6 +6,8 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -18,6 +20,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
@@ -25,9 +28,11 @@ import { diskStorage } from 'multer';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
-import { JWTUserIfExistGuard } from '../auth/guards/user-if-exist.guard';
+import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import { uniqueFileName } from '../utils';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreatePostDto,
@@ -41,6 +46,7 @@ import {
   UploadMediaDto,
   VotePostDto,
 } from './dto';
+import { DiscoverReturnDto } from './dto/discover-return-dto';
 import { PostService } from './post.service';
 
 @ApiTags('Post')
@@ -52,13 +58,58 @@ export class PostController {
   ) {}
 
   @ApiOkResponse({
+    description: 'your hidden posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('hidden')
+  @UseGuards(JWTUserGuard)
+  getHiddenPosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getHiddenPosts(userId, pagination);
+  }
+
+  @ApiOkResponse({
+    description: 'posts returned successfully',
+    type: DiscoverReturnDto,
+  })
+  @Get('discover')
+  @UseGuards(JWTUserGuard)
+  discover(
+    @User('_id') userId: Types.ObjectId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
+  ) {
+    return this.postService.discover(userId, page, limit);
+  }
+
+  @ApiOkResponse({
     description: 'posts returned successfully',
     type: ReturnPostDto,
   })
   @Get('timeline')
-  @UseGuards(JWTUserIfExistGuard)
-  getTimeLine(@User('_id') userId: Types.ObjectId) {
-    return this.postService.getTimeLine(userId);
+  @UseGuards(IsUserExistGuard)
+  getTimeLine(
+    @User() userInfo: UserUniqueKeys,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getTimeLine(userInfo, pagination);
+  }
+
+  @ApiOkResponse({
+    description: 'your posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'you must login' })
+  @Get('me')
+  @UseGuards(JWTUserGuard)
+  getMePosts(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postService.getPostsOfUser(userId, pagination);
   }
 
   @ApiOperation({ description: 'Submit a post to a subreddit.' })
@@ -90,7 +141,7 @@ export class PostController {
   @UseInterceptors(
     AnyFilesInterceptor({
       storage: diskStorage({
-        destination: './statics/posts-media',
+        destination: './assets/posts-media',
         filename: uniqueFileName,
       }),
     }),
@@ -98,6 +149,30 @@ export class PostController {
   @Post('/upload-media')
   uploadMedia(@UploadedFiles() files: Express.Multer.File[]) {
     return this.postService.uploadMedia(files);
+  }
+
+  @ApiOperation({ description: 'upload a post media.' })
+  @ApiCreatedResponse({
+    description: 'The resource was uploaded successfully',
+    type: UploadMediaDto,
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      storage: diskStorage({
+        destination: './assets/posts-media',
+        filename: uniqueFileName,
+      }),
+    }),
+  )
+  @Post('/:post_id/upload-media')
+  uploadPostMedia(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Param('post_id') postId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.postService.uploadPostMedia(files, postId, userId);
   }
 
   @ApiOperation({ description: 'Deletes a post.' })
@@ -131,9 +206,10 @@ export class PostController {
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
+  @UseGuards(IsUserExistGuard)
   @Get(':id')
-  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.postCommentService.get(id, 'Post');
+  get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req) {
+    return this.postService.getPost(id, req._id);
   }
 
   @ApiOperation({
@@ -340,5 +416,14 @@ export class PostController {
     insightsPostDto.insightsCount = 0;
 
     return insightsPostDto;
+  }
+
+  @UseGuards(JWTUserGuard)
+  @Post('/:post/approve')
+  approve(
+    @Param('post', ParseObjectIdPipe) postId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.postService.approve(username, postId);
   }
 }

@@ -10,9 +10,18 @@ import { createResponse } from 'node-mocks-http';
 
 import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
+import { BlockService } from '../block/block.service';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
+import type { Post } from '../post/post.schema';
+import { PostService } from '../post/post.service';
+import { PostCommentModule } from '../post-comment/post-comment.module';
+import type { SubredditDocument } from '../subreddit/subreddit.schema';
+import { SubredditSchema } from '../subreddit/subreddit.schema';
+import { SubredditService } from '../subreddit/subreddit.service';
+import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { stubImagesHandler } from '../utils/imagesHandler/test/stubs/image-handler.stub';
 import {
@@ -31,6 +40,8 @@ jest.mock('../block/block.service.ts');
 jest.mock('../utils/imagesHandler/images-handler.service');
 describe('UserService', () => {
   let service: UserService;
+  let postService: PostService;
+  let subredditService: SubredditService;
   let module: TestingModule;
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -38,17 +49,32 @@ describe('UserService', () => {
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
-        MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+        MongooseModule.forFeature([
+          { name: 'Subreddit', schema: SubredditSchema },
+          { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'User', schema: UserSchema },
+        ]),
       ],
-      providers: [UserService, UserStrategy, ApiFeaturesService],
+      providers: [
+        UserService,
+        UserStrategy,
+        ApiFeaturesService,
+        SubredditService,
+        BlockService,
+      ],
     }).compile();
     service = module.get<UserService>(UserService);
+    postService = module.get<PostService>(PostService);
+    subredditService = module.get<SubredditService>(SubredditService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(postService).toBeDefined();
+    expect(subredditService).toBeDefined();
   });
 
   let id: Types.ObjectId;
@@ -127,14 +153,25 @@ describe('UserService', () => {
     });
   });
   describe('getUserInfo', () => {
+    it('should throw user successfully', async () => {
+      const user: any = await service.getUserById(id);
+      expect(user).toBeTruthy();
+      await expect(async () => {
+        await service.getUserInfo(user._id, 'hi');
+      }).rejects.toThrowError();
+    });
     it('should return user successfully', async () => {
       const user: any = await service.getUserById(id);
       expect(user).toBeTruthy();
-      const userAccount = service.getUserInfo(user);
+      const userAccount = await service.getUserInfo(user._id, user.username);
       expect(userAccount).toEqual({
         username: userDto.username,
         profilePhoto: '',
+        coverPhoto: '',
         _id: id,
+        createdAt: userAccount.createdAt,
+        isFollowed: false,
+        isBlocked: false,
       });
     });
   });
@@ -343,11 +380,140 @@ describe('UserService', () => {
     });
   });
 
+  describe('Save a post', () => {
+    it('should save the post successfully', async () => {
+      expect(await service.savePost(id, id)).toEqual({
+        status: 'success',
+      });
+    });
+    it('should save the post successfully', async () => {
+      try {
+        await service.savePost(id, id);
+      } catch (error) {
+        expect(error.message).toBe('the post already saved');
+      }
+    });
+  });
+
+  describe('get saved posts', () => {
+    let user1: UserDocument;
+    let user2: UserDocument;
+    const subreddits: SubredditDocument[] = [];
+    const posts: Array<Post & { _id: Types.ObjectId }> = [];
+    beforeAll(async () => {
+      user1 = await service.createUser({
+        email: 'email@gmail.com',
+        username: 'username',
+        password: '12345678',
+      });
+      user2 = await service.createUser({
+        email: 'email@gmail.com',
+        username: 'username2',
+        password: '12345678',
+      });
+      const sr1 = await subredditService.create(
+        {
+          name: 'sr1',
+          over18: true,
+          type: 'type',
+        },
+        user1.username,
+        user1._id,
+      );
+      const sr2 = await subredditService.create(
+        {
+          name: 'sr2',
+          over18: true,
+          type: 'type',
+        },
+        user1.username,
+        user1._id,
+      );
+      subreddits.push(sr1, sr2);
+      const post1 = await postService.create(user2._id, {
+        title: 'post1 title',
+        text: 'post1 text',
+        subredditId: sr1._id,
+      });
+      const post2 = await postService.create(user2._id, {
+        title: 'post2 title',
+        text: 'post2 text',
+        subredditId: sr2._id,
+      });
+
+      posts.push(post1, post2);
+      user1.savedPosts = [post1._id, post2._id];
+      await user1.save();
+    });
+    it('should return 2 posts successfully', async () => {
+      const res = await service.getSavedPosts(
+        user1._id,
+        new PaginationParamsDto(),
+      );
+      expect(res.length).toEqual(2);
+      expect(res[0]).toEqual(
+        expect.objectContaining({
+          _id: posts[0]._id,
+          text: posts[0].text,
+          title: posts[0].title,
+          voteType: null,
+          subredditInfo: {
+            id: subreddits[0]._id,
+            name: subreddits[0].name,
+            isModerator: true,
+            isJoin: true,
+          },
+          user: {
+            id: user2._id,
+            photo: '',
+            username: user2.username,
+            isFollowed: false,
+            cakeDay: true,
+            createdAt: res[0].user.createdAt,
+          },
+        }),
+      );
+    });
+  });
+
   describe('uploadIcon', () => {
     it('should upload the icon successfully', async () => {
       expect(
         await service.uploadPhoto(id, { buffer: null }, 'profilePhoto'),
       ).toEqual(stubImagesHandler());
+    });
+  });
+
+  describe('canRecieveMessages', () => {
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someRandomUsername'));
+    });
+
+    it('updates prefs', async () => {
+      await service.updateUserPrefs(id, {
+        acceptPms: 'whitelisted',
+        whitelisted: ['someSpecificUsername1', 'someSpecificUsername2'],
+      });
+    });
+
+    it('should return false', async () => {
+      expect(!(await service.canRecieveMessages(id)));
+    });
+
+    it('should return false', async () => {
+      expect(!(await service.canRecieveMessages(id, 'someRandomUsername')));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someSpecificUsername1'));
+    });
+
+    it('should return true', async () => {
+      expect(await service.canRecieveMessages(id, 'someSpecificUsername2'));
     });
   });
 

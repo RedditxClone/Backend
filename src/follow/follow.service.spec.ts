@@ -5,6 +5,8 @@ import type { Types } from 'mongoose';
 
 import { BlockSchema } from '../block/block.schema';
 import { BlockService } from '../block/block.service';
+import { NotificationModule } from '../notification/notification.module';
+import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
@@ -28,6 +30,8 @@ describe('FollowService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
+        NotificationModule,
+        PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
@@ -123,6 +127,7 @@ describe('FollowService', () => {
       const findRes1 = await service.getFollowingUsers(id1, {
         page: 1,
         limit: 2,
+        sort: 'new',
       });
       expect(findRes1.data).toEqual([
         { _id: id2, username: user2.username, profilePhoto: '' },
@@ -132,6 +137,7 @@ describe('FollowService', () => {
       const findRes3 = await service.getFollowingUsers(id3, {
         page: 1,
         limit: 2,
+        sort: 'new',
       });
 
       expect(findRes3.data).toHaveLength(0);
@@ -143,6 +149,7 @@ describe('FollowService', () => {
       const findRes1 = await service.getFollowedUsers(id2, {
         page: 1,
         limit: 2,
+        sort: 'new',
       });
       expect(findRes1.data).toEqual([
         { _id: id1, username: user1.username, profilePhoto: '' },
@@ -151,6 +158,7 @@ describe('FollowService', () => {
       const findRes3 = await service.getFollowedUsers(id1, {
         page: 1,
         limit: 2,
+        sort: 'new',
       });
 
       expect(findRes3.data).toHaveLength(0);

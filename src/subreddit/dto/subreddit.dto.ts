@@ -1,5 +1,3 @@
-import type { FlairDto } from './flair.dto';
-
 export class SubredditDto {
   name: string;
 
@@ -35,8 +33,6 @@ export class SubredditDto {
 
   acceptingRequestsToJoin: boolean;
 
-  communityTopics: string[];
-
   requirePostFlair: boolean;
 
   postTextBodyRule: number;
@@ -59,7 +55,13 @@ export class SubredditDto {
 
   welcomeMessageText: string;
 
-  flairList: FlairDto[];
-
   icon: string;
+
+  categories: string[];
+
+  createdDate: Date;
+
+  notificationType: number;
+
+  title: string;
 }

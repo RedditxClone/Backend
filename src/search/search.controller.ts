@@ -1,15 +1,8 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
-import {
-  ApiForbiddenResponse,
-  ApiOkResponse,
-  ApiProperty,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
-import { GeneralSearchDto } from './dto/general-search.dto';
-import { GetSearchDto } from './dto/get-search-dto';
-import { SubredditSearchDto } from './dto/subreddit-search.dto';
+import { ParseObjectIdPipe } from '../utils/utils.service';
 import { SearchService } from './search.service';
 
 @ApiTags('Search')
@@ -17,66 +10,93 @@ import { SearchService } from './search.service';
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
-  @ApiProperty({ description: 'get all search results' })
-  @ApiOkResponse({
-    description: 'search has been returned successfully',
-    type: [GetSearchDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Get('')
-  generalSearch(@Query() _dto: GeneralSearchDto) {
-    return {
-      searchResult: [],
-    };
-  }
-
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for people' })
   @Get('/peoples')
-  searchPeople(@Query('word') word, @Query('page') page, @Req() req) {
-    return this.searchService.searchPeople(word, page, 10, req._id);
+  searchPeople(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() req,
+  ) {
+    return this.searchService.searchPeople(word, page, limit, req._id);
   }
 
   @ApiProperty({ description: 'search for communities' })
+  @UseGuards(IsUserExistGuard)
   @Get('/communities')
-  searchCommunities(@Query('word') word, @Query('page') page) {
-    return this.searchService.searchCommunities(word, page, 10);
+  searchCommunities(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() { _id },
+  ) {
+    return this.searchService.searchCommunities(word, _id, page, limit);
+  }
+
+  @ApiProperty({
+    description: 'search for communities starts with any word or character',
+  })
+  @UseGuards(IsUserExistGuard)
+  @Get('/communities/start')
+  searchCommunitiesStartsWith(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() { _id },
+  ) {
+    return this.searchService.searchCommunitiesStartsWith(
+      word,
+      _id,
+      page,
+      limit,
+    );
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for posts' })
   @Get('/posts')
-  searchPosts(@Query('word') word, @Query('page') page, @Req() req) {
-    return this.searchService.searchPosts(word, page, 10, req._id);
+  searchPosts(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() req,
+  ) {
+    return this.searchService.searchPosts(word, page, limit, req._id);
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'search for comments' })
   @Get('/comments')
-  searchComments(@Query('word') word, @Query('page') page, @Req() req) {
-    return this.searchService.searchComments(word, page, 10, req._id);
+  searchComments(
+    @Query('word') word,
+    @Query('page') page,
+    @Query('limit') limit,
+    @Req() req,
+  ) {
+    page = Number(page);
+
+    return this.searchService.searchComments(word, page, limit, req._id);
   }
 
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'genral search' })
   @Get('/general')
-  searchGeneral(@Query('word') word, @Req() req) {
+  searchGeneral(@Query('word') word, @Req() { _id }) {
     return Promise.all([
-      this.searchService.searchPeople(word, 1, 5, req._id),
-      this.searchService.searchCommunities(word, 1, 5),
+      this.searchService.searchPeople(word, 1, 5, _id),
+      this.searchService.searchCommunities(word, _id, 1, 5),
     ]);
   }
 
-  @ApiProperty({ description: 'get subreddit search results' })
-  @ApiOkResponse({
-    description: 'return all subreddits search result',
-    type: [GetSearchDto],
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Get('/subreddit/:subreddit')
-  subredditSearch(@Query() _dto: SubredditSearchDto) {
-    // return {
-    //   searchResult: [],
-    // };
+  @ApiProperty({ description: 'search for flairs' })
+  @Get('/subreddit/:subreddit/flairs')
+  searchFlairs(
+    @Query('word') word,
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @Query('page') page,
+    @Query('limit') limit,
+  ) {
+    return this.searchService.searchFlairs(word, subreddit, page, limit);
   }
 }
