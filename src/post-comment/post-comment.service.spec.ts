@@ -408,17 +408,27 @@ describe('PostCommentService', () => {
     let comment: Comment & { _id: Types.ObjectId };
     const pagination: PaginationParamsDto = { limit: 10, page: 1, sort: 'new' };
     const type = undefined;
+    let curSR;
     beforeAll(async () => {
       // userId = new Types.ObjectId(1);
+      curSR = await subredditService.create(
+        {
+          name: 'sr322',
+          over18: true,
+          type: 'subreddit',
+        },
+        user.username,
+        user._id,
+      );
       post = await postService.create(userSR, {
-        subredditId: subreddit._id,
+        subredditId: curSR._id,
         text: 'this is a post',
         title: 'post title',
       });
 
       expect(post._id).toBeInstanceOf(Types.ObjectId);
       comment = await commentService.create(userSR, {
-        subredditId: subreddit._id,
+        subredditId: curSR._id,
         parentId: post._id,
         postId: post._id,
         text: 'top level comment',
@@ -427,7 +437,7 @@ describe('PostCommentService', () => {
 
     it('must return both post and comment', async () => {
       const res = await service.getUnModeratedThingsForSubreddit(
-        subreddit._id,
+        curSR._id,
         pagination,
         type,
       );
@@ -436,7 +446,7 @@ describe('PostCommentService', () => {
     it('must return only the post after spamming comment', async () => {
       await service.spam('usrname', comment._id);
       const res = await service.getUnModeratedThingsForSubreddit(
-        subreddit._id,
+        curSR._id,
         pagination,
         type,
       );
@@ -445,7 +455,7 @@ describe('PostCommentService', () => {
     });
     it('must get the comment only', async () => {
       const res = await service.getSpammedThingsForSubreddit(
-        subreddit._id,
+        curSR._id,
         pagination,
         type,
       );
@@ -461,7 +471,7 @@ describe('PostCommentService', () => {
         userSR,
       );
       const res = await service.getEditedThingsForSubreddit(
-        subreddit._id,
+        curSR._id,
         pagination,
         type,
       );
@@ -471,7 +481,7 @@ describe('PostCommentService', () => {
     it('must return empty array', async () => {
       await service.spam('usrname', post._id);
       const res = await service.getUnModeratedThingsForSubreddit(
-        subreddit._id,
+        curSR._id,
         pagination,
         type,
       );
