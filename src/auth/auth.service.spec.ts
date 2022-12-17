@@ -9,6 +9,7 @@ import { createResponse } from 'node-mocks-http';
 
 import { BlockModule } from '../block/block.module';
 import { FollowModule } from '../follow/follow.module';
+import { MessageModule } from '../message/message.module';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import type { CreateUserDto } from '../user/dto';
 import { UserSchema } from '../user/user.schema';
@@ -40,6 +41,7 @@ describe('AuthService', () => {
         }),
         FollowModule,
         BlockModule,
+        MessageModule,
         PostCommentModule,
         ImagesHandlerModule,
       ],

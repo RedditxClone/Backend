@@ -13,6 +13,7 @@ import { BlockModule } from '../block/block.module';
 import { BlockService } from '../block/block.service';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
+import { MessageModule } from '../message/message.module';
 import type { Post } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
@@ -49,6 +50,7 @@ describe('UserService', () => {
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        MessageModule,
         PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),

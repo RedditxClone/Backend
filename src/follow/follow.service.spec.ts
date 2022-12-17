@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
@@ -5,6 +6,7 @@ import type { Types } from 'mongoose';
 
 import { BlockSchema } from '../block/block.schema';
 import { BlockService } from '../block/block.service';
+import { MessageModule } from '../message/message.module';
 import { NotificationModule } from '../notification/notification.module';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import { UserSchema } from '../user/user.schema';
@@ -30,7 +32,9 @@ describe('FollowService', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot(),
         NotificationModule,
+        MessageModule,
         PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
