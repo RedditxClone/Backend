@@ -2,15 +2,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetUserInfoDto {
   @ApiProperty({ description: 'The account user name' })
-  userName: string;
+  username: string;
 
-  @ApiProperty({ description: 'The account icon' })
+  @ApiProperty({ description: 'The account photo' })
   @ApiPropertyOptional()
-  icon?: string;
+  photo: string;
 
-  @ApiProperty({ description: 'The karmas that user have' })
-  karma: number;
+  @ApiProperty({ description: 'the account id' })
+  id: string;
 
-  @ApiProperty({ description: 'The karmas that user have' })
-  cakeDay: Date;
+  @ApiProperty({ description: 'if i follow this user or not' })
+  isFollowed: boolean;
 }

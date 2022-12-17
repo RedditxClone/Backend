@@ -289,6 +289,8 @@ describe('PostService', () => {
               photo: '',
               username: user2.username,
               isFollowed: false,
+              cakeDay: true,
+              createdAt: timeline[0].user.createdAt,
             },
           }),
         );
@@ -320,6 +322,8 @@ describe('PostService', () => {
               photo: '',
               username: user2.username,
               isFollowed: false,
+              cakeDay: true,
+              createdAt: timeline[0].user.createdAt,
             },
           }),
         );
@@ -354,6 +358,8 @@ describe('PostService', () => {
           username: user2.username,
           photo: user2.profilePhoto,
           isFollowed: false,
+          cakeDay: true,
+          createdAt: res[0].user.createdAt,
         });
       });
       it('must get no posts', async () => {

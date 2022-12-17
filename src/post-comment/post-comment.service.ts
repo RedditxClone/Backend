@@ -134,7 +134,7 @@ export class PostCommentService {
       {
         $sort: fetcher.getSortObject(sort),
       },
-      ...fetcher.getPaginated(page , limit),
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.getIsFollowed(),
       ...fetcher.getCommentProject(),

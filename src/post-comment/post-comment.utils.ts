@@ -26,6 +26,7 @@ export class ThingFetch {
       },
       ...this.getIsFollowed(),
       ...this.getIsJoined(),
+      // ...this.getMe(),
     ];
   }
 
@@ -380,50 +381,45 @@ export class ThingFetch {
     return [];
   }
 
+  getPostInfo() {
+    return {
+      text: 1,
+      title: 1,
+      replyNotifications: {
+        $ifNull: ['$replyNotifications', false],
+      },
+      userId: 1,
+      postId: 1,
+      votesCount: 1,
+      commentCount: 1,
+      publishedDate: 1,
+      flair: 1,
+      spoiler: 1,
+      approvedBy: 1,
+      approvedAt: 1,
+      isEdited: 1,
+      removedBy: 1,
+      removedAt: 1,
+      editCheckedBy: 1,
+      commentsLocked: 1,
+      spammedBy: 1,
+      spammedAt: 1,
+      nsfw: 1,
+      type: 1,
+      visited: 1,
+      images: 1,
+    };
+  }
+
   getPostProject() {
     return [
       {
         $project: {
-          text: 1,
-          title: 1,
-          userId: 1,
-          postId: 1,
-
-          votesCount: 1,
-          commentCount: 1,
-          publishedDate: 1,
-          flair: 1,
-          spoiler: 1,
-          approvedBy: 1,
-          approvedAt: 1,
-          isEdited: 1,
-          removedBy: 1,
-          removedAt: 1,
-          editCheckedBy: 1,
-          // commentsLocked: 1,
-          nsfw: 1,
-          type: 1,
-          visited: 1,
-          voteType: {
-            $cond: [
-              { $eq: ['$vote', []] },
-              undefined,
-              {
-                $cond: [
-                  { $eq: ['$vote.isUpvote', [true]] },
-                  'upvote',
-                  {
-                    $cond: [
-                      { $eq: ['$vote.isUpvote', [false]] },
-                      'downvote',
-                      undefined,
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          images: 1,
+          ...this.getPostInfo(),
+          ...this.voteType(),
+          ...this.getIsSavedInfo(),
+          ...this.getSubredditInfo(),
+          ...this.getUserInfo(),
         },
       },
     ];
@@ -442,6 +438,8 @@ export class ThingFetch {
             false,
           ],
         },
+        cakeDay: '$user.cakeDay',
+        createdAt: '$user.createdAt',
       },
     };
   }
@@ -449,6 +447,7 @@ export class ThingFetch {
   commentInfo() {
     return {
       text: 1,
+      replyNotification: 1,
       title: 1,
       postId: 1,
       parentId: 1,
@@ -566,6 +565,14 @@ export class ThingFetch {
         },
       },
     ];
+  }
+
+  getIsSavedInfo() {
+    return {
+      isSaved: {
+        $toBool: false,
+      },
+    };
   }
 
   matchToGetUpvoteOnly() {
