@@ -468,6 +468,8 @@ describe('UserService', () => {
             photo: '',
             username: user2.username,
             isFollowed: false,
+            cakeDay: true,
+            createdAt: res[0].user.createdAt,
           },
         }),
       );

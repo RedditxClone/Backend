@@ -67,6 +67,14 @@ export class PostCommentController {
     return this.postCommentService.findOne(Number(id));
   }
 
+  @Get('/:thing_id/with-children')
+  getThingWithComments(
+    @Param('thing_id', ParseObjectIdPipe) thingId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getThings({ _id: thingId }, pagination);
+  }
+
   @ApiOperation({
     description: 'upvote post or comment',
   })

@@ -43,5 +43,8 @@ export class PostComment {
 
   @Prop({ default: null })
   editCheckedBy: string;
+
+  @Prop({ default: false })
+  replyNotifications: boolean;
 }
 export const PostCommentSchema = SchemaFactory.createForClass(PostComment);
