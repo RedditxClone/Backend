@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,9 +22,12 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreateMessageDto,
+  MessageAggregationDto,
   MessageIdListDto,
   MessageReplyDto,
   ModifiedCountDto,
@@ -64,6 +68,108 @@ export class MessageController {
     @Body() messageIdList: MessageIdListDto,
   ) {
     return this.messageService.markAsUnRead(username, messageIdList);
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me')
+  findAllForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams);
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all post reply messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/post')
+  findAllPostForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'post');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all post reply messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/comment')
+  findAllCommentForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'comment');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all private messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/message')
+  findAllPMForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'msg');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all unread messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/unread')
+  findAllUnreadForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'unread');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all sent private messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/sent')
+  findAllSentForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'sent');
   }
 
   @ApiCreatedResponse({
@@ -196,20 +302,6 @@ export class MessageController {
   //   //   status: 'success',
   //   //   messages: [],
   //   // };
-  // }
-
-  // @ApiOkResponse({
-  //   description: 'all messages have been returned successfully',
-  //   type: [MessageReturnDto],
-  // })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiOperation({
-  //   description: 'get all messages sent|received by current user',
-  // })
-  // @ApiNotFoundResponse({ description: 'user_id not found not found' })
-  // @Get('/me')
-  // findAllForMe(@Query() _dto: GetMessagesDto) {
-  //   return this.messageService.findAll();
   // }
 
   // @ApiOkResponse({

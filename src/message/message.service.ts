@@ -5,12 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
-import type { Types } from 'mongoose';
+import type { PipelineStage, Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import type { UserDocument } from '../user/user.schema';
 import { UserService } from '../user/user.service';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { MessageReplyDto, ModifiedCountDto } from './dto';
 import { MessageReturnDto } from './dto';
 import type { CreateMessageDto } from './dto/create-message.dto';
@@ -23,6 +25,7 @@ export class MessageService {
     @InjectModel('Message') private readonly messageModel: Model<Message>,
     private readonly blockService: BlockService,
     private readonly userService: UserService,
+    private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
   private async canSendMessage(
@@ -172,6 +175,7 @@ export class MessageService {
     body: string,
     postCommentId: Types.ObjectId,
     type: string,
+    subreddit: string,
   ) {
     const subject = type + ' reply: ' + title;
     type += '_reply';
@@ -183,11 +187,159 @@ export class MessageService {
       body,
       postCommentId,
       type,
+      subreddit,
     });
   }
 
-  findAll() {
-    return `This action returns all message`;
+  async findAll(
+    username: string,
+    paginationParams: PaginationParamsDto,
+    type?: 'msg' | 'post' | 'comment' | 'unread' | 'sent',
+  ) {
+    let matchStage: PipelineStage;
+
+    switch (type) {
+      case 'msg': {
+        matchStage = {
+          $match: {
+            type: { $eq: 'private_msg' },
+            $or: [
+              {
+                authorName: username,
+                softDeleted: false,
+              },
+              {
+                destName: username,
+              },
+            ],
+          },
+        };
+        break;
+      }
+
+      case 'unread': {
+        matchStage = {
+          $match: {
+            destName: username,
+            isRead: false,
+          },
+        };
+        break;
+      }
+
+      case 'post': {
+        matchStage = {
+          $match: {
+            destName: username,
+            type: { $eq: 'post_reply' },
+          },
+        };
+        break;
+      }
+
+      case 'comment': {
+        matchStage = {
+          $match: {
+            destName: username,
+            type: { $eq: 'comment_reply' },
+          },
+        };
+        break;
+      }
+
+      case 'sent': {
+        matchStage = {
+          $match: {
+            authorName: username,
+            softDeleted: false,
+            type: { $eq: 'private_msg' },
+          },
+        };
+        break;
+      }
+
+      default: {
+        matchStage = {
+          $match: {
+            $or: [
+              {
+                authorName: username,
+                softDeleted: false,
+                type: { $eq: 'private_msg' },
+              },
+              {
+                destName: username,
+              },
+            ],
+          },
+        };
+      }
+    }
+
+    const findAllAggregate = this.messageModel.aggregate([
+      matchStage,
+      {
+        $addFields: {
+          firstMessageId: {
+            $ifNull: ['$firstMessageId', '$_id'],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'postcomments',
+          localField: 'postCommentId',
+          foreignField: '_id',
+          as: 'post',
+        },
+      },
+      {
+        $lookup: {
+          from: 'postcomments',
+          localField: 'post.postId',
+          foreignField: '_id',
+          as: 'post',
+        },
+      },
+      {
+        $unwind: {
+          path: '$post',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          commentCount: { $ifNull: ['$post.commentCount', 0] },
+        },
+      },
+      {
+        $project: {
+          post: 0,
+          __v: 0,
+          softDeleted: 0,
+          spammed: 0,
+        },
+      },
+      {
+        $group: {
+          _id: '$firstMessageId',
+          messages: {
+            $push: '$$CURRENT',
+          },
+        },
+      },
+      {
+        $sort: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          'messages.createdAt': -1,
+        },
+      },
+    ]);
+
+    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
+      findAllAggregate,
+      paginationParams,
+    );
   }
 
   findOne(id: number) {

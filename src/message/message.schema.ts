@@ -38,6 +38,12 @@ export class Message {
   @Prop({ default: null, ref: 'PostComment' })
   postCommentId: Types.ObjectId;
 
+  @Prop({ default: '' })
+  subreddit: string;
+
+  @Prop({ default: false })
+  spammed: boolean;
+
   @Prop({ default: false })
   softDeleted: boolean;
 }
