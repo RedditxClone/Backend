@@ -192,17 +192,6 @@ export class UserController {
   @ApiOperation({ description: 'Get information about the user' })
   @ApiOkResponse({
     description: 'The data returned successfully',
-    type: UserPostsDto,
-  })
-  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  @Get('/:user_id/submitted')
-  getUserPosts(@Param('user_id') _userId: string) {
-    // TODO
-  }
-
-  @ApiOperation({ description: 'Get information about the user' })
-  @ApiOkResponse({
-    description: 'The data returned successfully',
     type: UserCommentsDto,
   })
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
@@ -526,5 +515,21 @@ export class UserController {
     @Query() paginationParams: PaginationParamsDto,
   ) {
     return this.userService.getSavedPosts(userId, paginationParams);
+  }
+
+  @ApiOperation({ description: 'Get posts of the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserPostsDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/:user_id/posts')
+  @UseGuards(IsUserExistGuard)
+  getUserPosts(
+    @User('_id') ownerId: Types.ObjectId,
+    @Param('user_id', ParseObjectIdPipe) userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.userService.getUserPosts(ownerId, userId, pagination);
   }
 }

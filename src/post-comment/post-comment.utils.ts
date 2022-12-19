@@ -405,7 +405,13 @@ export class ThingFetch {
       nsfw: 1,
       type: 1,
       visited: 1,
-      images: 1,
+      images: {
+        $map: {
+          input: '$images',
+          as: '$image',
+          in: { $concat: ['/assets/posts-media/', '$$image'] },
+        },
+      },
     };
   }
 
