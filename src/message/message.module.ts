@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { BlockModule } from '../block/block.module';
@@ -9,11 +9,12 @@ import { MessageService } from './message.service';
 
 @Module({
   imports: [
-    BlockModule,
-    UserModule,
+    forwardRef(() => BlockModule),
+    forwardRef(() => UserModule),
     MongooseModule.forFeature([{ name: 'Message', schema: MessageSchema }]),
   ],
   controllers: [MessageController],
   providers: [MessageService],
+  exports: [MessageService],
 })
 export class MessageModule {}

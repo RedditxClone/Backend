@@ -29,7 +29,12 @@ describe('CommentController', () => {
   describe('create comment', () => {
     it('should create successfully', async () => {
       const userId = new Types.ObjectId(123);
-      const res = await controller.create(userId, new CreateCommentDto());
+      const username = 'usrname';
+      const res = await controller.create(
+        username,
+        userId,
+        new CreateCommentDto(),
+      );
       expect(res).toEqual(stubComment());
     });
   });

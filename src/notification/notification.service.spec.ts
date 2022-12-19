@@ -9,6 +9,7 @@ import { UserStrategy } from '../auth/strategies/user.strategy';
 import { BlockModule } from '../block/block.module';
 import { BlockService } from '../block/block.service';
 import { FollowModule } from '../follow/follow.module';
+import { MessageModule } from '../message/message.module';
 import { PostCommentModule } from '../post-comment/post-comment.module';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
@@ -46,6 +47,7 @@ describe('NotificationService', () => {
       imports: [
         ConfigModule.forRoot(),
         rootMongooseTestModule(),
+        MessageModule,
         NotificationModule,
         FollowModule,
         BlockModule,

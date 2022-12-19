@@ -3,6 +3,7 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 
+import { MessageService } from '../message/message.service';
 import { NotificationModule } from '../notification/notification.module';
 import { PostSchema } from '../post/post.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
@@ -15,6 +16,7 @@ import { CommentService } from './comment.service';
 import type { CreateCommentDto } from './dto';
 import { stubComment } from './test/stubs/comment.stubs';
 
+jest.mock('../message/message.service.ts');
 describe('CommentService', () => {
   let service: CommentService;
   let module: TestingModule;
@@ -47,7 +49,7 @@ describe('CommentService', () => {
         ]),
       ],
 
-      providers: [CommentService],
+      providers: [CommentService, MessageService],
     }).compile();
 
     service = module.get<CommentService>(CommentService);
@@ -59,7 +61,8 @@ describe('CommentService', () => {
   describe('create comment spec', () => {
     test('should create successfully', async () => {
       const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
-      const comment = await service.create(userId, commentDto);
+      const username = 'usrname';
+      const comment = await service.create(username, userId, commentDto);
       const expected = stubComment();
       expect(comment).toEqual(expect.objectContaining(expected));
     });

@@ -15,6 +15,7 @@ import { CommentSchema } from '../comment/comment.schema';
 import { CommentService } from '../comment/comment.service';
 import { FollowSchema } from '../follow/follow.schema';
 import { FollowService } from '../follow/follow.service';
+import { MessageService } from '../message/message.service';
 import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import type { Post } from '../post/post.schema';
@@ -38,6 +39,8 @@ import type { PostComment } from './post-comment.schema';
 import { PostCommentSchema } from './post-comment.schema';
 import { PostCommentService } from './post-comment.service';
 
+jest.mock('../message/message.service.ts');
+
 describe('PostCommentService', () => {
   let service: PostCommentService;
   let postService: PostService;
@@ -47,6 +50,7 @@ describe('PostCommentService', () => {
   let subreddit: SubredditDocument;
   let flairId: Types.ObjectId;
   let userSR: Types.ObjectId;
+  let username: string;
   let userService: UserService;
   let user;
   let normalId;
@@ -96,6 +100,7 @@ describe('PostCommentService', () => {
         UserService,
         FollowService,
         BlockService,
+        MessageService,
       ],
     }).compile();
 
@@ -116,6 +121,7 @@ describe('PostCommentService', () => {
     });
     normalId = userNormal._id;
     userSR = user._id;
+    username = user.username;
     subreddit = await subredditService.create(
       {
         name: 'subreddit',
@@ -152,7 +158,7 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(userId, {
+      comment = await commentService.create(username, userId, {
         subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
@@ -213,7 +219,7 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(userId, {
+      comment = await commentService.create(username, userId, {
         subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
@@ -251,7 +257,7 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(userId, {
+      comment = await commentService.create(username, userId, {
         subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
@@ -297,7 +303,7 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(userId, {
+      comment = await commentService.create(username, userId, {
         subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
@@ -347,7 +353,7 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(userSR, {
+      comment = await commentService.create(username, userSR, {
         subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
@@ -427,7 +433,7 @@ describe('PostCommentService', () => {
       });
 
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(userSR, {
+      comment = await commentService.create(username, userSR, {
         subredditId: curSR._id,
         parentId: post._id,
         postId: post._id,

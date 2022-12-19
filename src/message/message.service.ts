@@ -165,15 +165,32 @@ export class MessageService {
     return { modifiedCount: res.modifiedCount };
   }
 
+  async messageOnReplies(
+    authorName: string,
+    destName: string,
+    title: string,
+    body: string,
+    postCommentId: Types.ObjectId,
+    type: string,
+  ) {
+    const subject = type + ' reply: ' + title;
+    type += '_reply';
+
+    return this.messageModel.create({
+      authorName,
+      destName,
+      subject,
+      body,
+      postCommentId,
+      type,
+    });
+  }
+
   findAll() {
     return `This action returns all message`;
   }
 
   findOne(id: number) {
     return `This action returns a #${id} message`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} message`;
   }
 }

@@ -235,6 +235,59 @@ describe('MessageService', () => {
     });
   });
 
+  describe('messageOnReplies', () => {
+    const user = stubUser();
+    const authorName = 'authorUser';
+    const destName = user.username;
+    const body = 'a body reply';
+    const title = 'post title';
+    it('should generate message from comment successfully', async () => {
+      const postCommentId = new Types.ObjectId(56_799);
+      const returnMessage: MessageReturnDto = await service.messageOnReplies(
+        authorName,
+        destName,
+        title,
+        body,
+        postCommentId,
+        'comment',
+      );
+      const subject = 'comment reply: ' + title;
+      expect(returnMessage).toEqual(
+        expect.objectContaining({
+          authorName,
+          destName,
+          body,
+          subject,
+          postCommentId,
+          type: 'comment_reply',
+        }),
+      );
+    });
+
+    it('should generate message from post successfully', async () => {
+      const postCommentId = new Types.ObjectId(56_800);
+      const returnMessage: MessageReturnDto = await service.messageOnReplies(
+        authorName,
+        destName,
+        title,
+        body,
+        postCommentId,
+        'post',
+      );
+      const subject = 'post reply: ' + title;
+      expect(returnMessage).toEqual(
+        expect.objectContaining({
+          authorName,
+          destName,
+          body,
+          subject,
+          postCommentId,
+          type: 'post_reply',
+        }),
+      );
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
