@@ -6,6 +6,7 @@ import { HideSchema } from '../post/hide.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserModule } from '../user/user.module';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { VoteSchema } from '../vote/vote.schema';
 import { SubredditController } from './subreddit.controller';
@@ -38,7 +39,7 @@ import { SubredditUserLeftSchema } from './subreddit-user-left.schema';
     NotificationModule,
   ],
   controllers: [SubredditController],
-  providers: [SubredditService, PostCommentService],
+  providers: [SubredditService, ApiFeaturesService, PostCommentService],
   exports: [SubredditService],
 })
 export class SubredditModule {}

@@ -990,8 +990,8 @@ export class SubredditService {
 
     return res[0].map((v, i) => ({
       date: v._id,
-      joined: v.joined,
-      left: res[1][i].left,
+      joined: v.joined ?? 0,
+      left: res[1][i]?.left ?? 0,
     }));
   }
 
@@ -1021,8 +1021,8 @@ export class SubredditService {
 
     return res[0].map((v, i) => ({
       date: v._id,
-      joined: v.joined,
-      left: res[1][i].left,
+      joined: v.joined ?? 0,
+      left: res[1][i]?.left ?? 0,
     }));
   }
 }
