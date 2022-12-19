@@ -142,6 +142,26 @@ describe('MessageService', () => {
     });
   });
 
+  describe('spam', () => {
+    it('should throw error', async () => {
+      await expect(async () => {
+        await service.spam(message.authorName, message._id);
+      }).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw error', async () => {
+      await expect(async () => {
+        await service.spam(message.authorName, new Types.ObjectId(123));
+      }).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should spam successfully', async () => {
+      expect(await service.spam(message.destName, message._id)).toEqual({
+        status: 'success',
+      });
+    });
+  });
+
   describe('delete', () => {
     it('should throw error', async () => {
       await expect(async () => {
