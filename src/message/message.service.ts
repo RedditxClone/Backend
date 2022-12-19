@@ -363,4 +363,25 @@ export class MessageService {
 
     return plainToInstance(MessageReturnDto, message);
   }
+
+  async spam(username: string, messageId: Types.ObjectId) {
+    const findFilter = {
+      _id: messageId,
+      destName: username,
+      softDeleted: false,
+    }; // only spam recieved messages
+    const updateFilter = { spammed: true };
+    const message = await this.messageModel.findOneAndUpdate(
+      findFilter,
+      updateFilter,
+    );
+
+    if (!message) {
+      throw new NotFoundException(
+        'Message is not found or cannot spam this message',
+      );
+    }
+
+    return { status: 'success' };
+  }
 }

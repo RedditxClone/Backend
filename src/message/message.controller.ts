@@ -226,14 +226,17 @@ export class MessageController {
     );
   }
 
-  @ApiCreatedResponse({ description: 'The message spammed successfully' })
-  @ApiUnauthorizedResponse({ description: "you haven't receive this message" })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiOperation({ description: 'spam a message' })
+  @ApiOkResponse({ description: 'The message has been spam successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticaed' })
+  @ApiNotFoundResponse({ description: 'Message not found' })
+  @ApiOperation({ description: 'Report specific message with message_id' })
   @UseGuards(JWTUserGuard)
   @Post('/:message_id/spam')
-  spamMessage(@Param('message_id', ParseObjectIdPipe) _messageId: string) {
-    return { status: 'success' };
+  spamMessage(
+    @User('username') username: string,
+    @Param('message_id', ParseObjectIdPipe) messageId: Types.ObjectId,
+  ) {
+    return this.messageService.spam(username, messageId);
   }
 
   @ApiOkResponse({ description: 'The message has been deleted successfully' })
