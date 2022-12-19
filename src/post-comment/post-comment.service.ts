@@ -773,6 +773,31 @@ export class PostCommentService {
     ]);
   }
 
+  async getPostsOfSubreddit(
+    subredditId: Types.ObjectId,
+    userId: Types.ObjectId | undefined,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { page, limit, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificFilter({ subredditId }),
+      ...fetcher.filterBlocked(),
+      ...fetcher.filterHidden(),
+      ...fetcher.getPaginated(page, limit),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
   async getUnModeratedThingsForSubreddit(
     subredditId: Types.ObjectId,
     pagination: PaginationParamsDto,

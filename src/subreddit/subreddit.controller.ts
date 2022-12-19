@@ -28,10 +28,14 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { PostCommentService } from 'post-comment/post-comment.service';
 
 import { User } from '../auth/decorators/user.decorator';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
+import { ReturnPostDto } from '../post/dto';
+import { PostService } from '../post/post.service';
+import { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { ActiveTopicsDto } from './dto/activeTopic.dto';
@@ -51,7 +55,10 @@ import { SubredditService } from './subreddit.service';
 @ApiTags('subreddit')
 @Controller('subreddit')
 export class SubredditController {
-  constructor(private readonly subredditService: SubredditService) {}
+  constructor(
+    private readonly subredditService: SubredditService,
+    private readonly postCommentService: PostCommentService,
+  ) {}
 
   @ApiOperation({ description: 'Create a new subreddit' })
   @ApiCreatedResponse({ description: 'The resource was created succesfully' })
@@ -670,5 +677,24 @@ export class SubredditController {
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
   ) {
     return this.subredditService.getSrStatitisticsYear(subreddit);
+  }
+
+  @ApiOperation({ description: 'get posts of subreddit' })
+  @ApiOkResponse({
+    description: 'posts returned successfully',
+    type: ReturnPostDto,
+  })
+  @UseGuards(IsUserExistGuard)
+  @Get('/:subreddit_id/posts')
+  getSubredditPosts(
+    @User() userInfo: UserUniqueKeys,
+    @Param('subreddit_id', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getPostsOfSubreddit(
+      subredditId,
+      userInfo._id,
+      pagination,
+    );
   }
 }
