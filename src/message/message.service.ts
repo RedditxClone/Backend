@@ -342,7 +342,25 @@ export class MessageService {
     );
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
+  async findOne(
+    username: string,
+    messageId: Types.ObjectId,
+  ): Promise<MessageReturnDto> {
+    const message: MessageDocument | null = await this.messageModel.findById(
+      messageId,
+    );
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    if (
+      (message.authorName !== username || message.softDeleted === true) &&
+      message.destName !== username
+    ) {
+      throw new ForbiddenException('You are not allowed to view this message');
+    }
+
+    return plainToInstance(MessageReturnDto, message);
   }
 }

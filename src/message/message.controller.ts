@@ -226,6 +226,16 @@ export class MessageController {
     );
   }
 
+  @ApiCreatedResponse({ description: 'The message spammed successfully' })
+  @ApiUnauthorizedResponse({ description: "you haven't receive this message" })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiOperation({ description: 'spam a message' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:message_id/spam')
+  spamMessage(@Param('message_id', ParseObjectIdPipe) _messageId: string) {
+    return { status: 'success' };
+  }
+
   @ApiOkResponse({ description: 'The message has been deleted successfully' })
   @ApiUnauthorizedResponse({ description: 'Unauthenticaed' })
   @ApiNotFoundResponse({ description: 'Message not found' })
@@ -239,25 +249,21 @@ export class MessageController {
     return this.messageService.delete(authorName, messageId);
   }
 
-  @ApiCreatedResponse({ description: 'The message spammed successfully' })
-  @ApiUnauthorizedResponse({ description: "you haven't receive this message" })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiOperation({ description: 'spam a message' })
-  @Post('/:message_id/spam')
-  spamMessage(@Param('message_id', ParseObjectIdPipe) _messageId: string) {
-    return { status: 'success' };
-  }
-
   @ApiOkResponse({
     description: 'The resource was returned successfully',
     type: MessageReturnDto,
   })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiOperation({ description: 'get specific message with message_id' })
+  @ApiOperation({ description: 'Get specific message with message_id' })
+  @UseGuards(JWTUserGuard)
   @Get('/:message_id')
-  findOne(@Param('message_id') id: string) {
-    return this.messageService.findOne(Number(id));
+  findOne(
+    @User('username') username: string,
+    @Param('message_id', ParseObjectIdPipe) messageId: Types.ObjectId,
+  ): Promise<MessageReturnDto> {
+    return this.messageService.findOne(username, messageId);
   }
 
   // @ApiOkResponse({
