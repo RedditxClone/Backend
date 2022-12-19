@@ -6,19 +6,20 @@ import { HideSchema } from '../post/hide.schema';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserModule } from '../user/user.module';
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
 import { VoteSchema } from '../vote/vote.schema';
 import { SubredditController } from './subreddit.controller';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 import { SubredditUserSchema } from './subreddit-user.schema';
+import { SubredditUserLeftSchema } from './subreddit-user-left.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Subreddit', schema: SubredditSchema },
       { name: 'UserSubreddit', schema: SubredditUserSchema },
+      { name: 'UserSubredditLeft', schema: SubredditUserLeftSchema },
       {
         name: 'PostComment',
         schema: PostCommentSchema,
@@ -37,7 +38,7 @@ import { SubredditUserSchema } from './subreddit-user.schema';
     NotificationModule,
   ],
   controllers: [SubredditController],
-  providers: [SubredditService, ApiFeaturesService, PostCommentService],
+  providers: [SubredditService, PostCommentService],
   exports: [SubredditService],
 })
 export class SubredditModule {}
