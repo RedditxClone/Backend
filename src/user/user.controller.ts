@@ -520,6 +520,21 @@ export class UserController {
     return this.userService.getUserPosts(ownerId, userId, pagination);
   }
 
+  @ApiOperation({ description: 'Get posts and comments of the user' })
+  @ApiOkResponse({
+    description: 'The data returned successfully',
+    type: UserPostsDto,
+  })
+  @ApiBadRequestResponse({ description: 'The user_id is not valid' })
+  @Get('/me/overview')
+  @UseGuards(JWTUserGuard)
+  getMyOverview(
+    @User('_id') userId: Types.ObjectId,
+    @Query() pagination: PaginationParamsDto,
+  ) {
+    return this.userService.getOverviewThings(userId, pagination);
+  }
+
   // @ApiOperation({ description: 'Get posts of the user' })
   // @ApiOkResponse({
   //   description: 'The data returned successfully',

@@ -10,7 +10,6 @@ import { Model } from 'mongoose';
 
 import { NotificationService } from '../notification/notification.service';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import {
   postSelectedFileds,
@@ -296,6 +295,25 @@ export class PostCommentService {
       ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificUser(),
+      ...fetcher.getPaginated(page, limit),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
