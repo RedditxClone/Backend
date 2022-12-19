@@ -11,7 +11,6 @@ import mongoose, { Model } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserService } from '../user/user.service';
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { subredditSelectedFields } from '../utils/project-selected-fields';
@@ -29,6 +28,7 @@ import type { UpdateRuleDto } from './dto/update-rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
 import type { SubredditUser } from './subreddit-user.schema';
+import type { SubredditUserLeft } from './subreddit-user-left.schema';
 @Injectable()
 export class SubredditService {
   constructor(
@@ -36,9 +36,10 @@ export class SubredditService {
     private readonly subredditModel: Model<Subreddit>,
     @InjectModel('UserSubreddit')
     private readonly userSubredditModel: Model<SubredditUser>,
+    @InjectModel('UserSubredditLeft')
+    private readonly userSubredditLeftModel: Model<SubredditUserLeft>,
     private readonly userService: UserService,
     private readonly imagesHandlerService: ImagesHandlerService,
-    private readonly apiFeatureService: ApiFeaturesService,
     private readonly postCommentService: PostCommentService,
   ) {}
 
@@ -241,6 +242,11 @@ export class SubredditService {
         `user with id ${userId} not joined subreddit with id ${subredditId}`,
       );
     }
+
+    await this.userSubredditLeftModel.create({
+      subredditId,
+      userId,
+    });
 
     return { status: 'success' };
   }
@@ -921,5 +927,102 @@ export class SubredditService {
     }
 
     return this.modifiedCountResponse(res ?? 0);
+  }
+
+  private getSubredditStatsGeneral = (
+    model,
+    subreddit,
+    fieldName: string,
+    format: string,
+    fromDate: Date,
+    toDate: Date,
+  ) => {
+    const groupObject = {
+      _id: { $dateToString: { format, date: '$date' } },
+    };
+    groupObject[fieldName] = {
+      $count: {},
+    };
+
+    return model.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              subredditId: subreddit,
+              date: {
+                $gt: fromDate,
+                $lt: toDate,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $group: groupObject,
+      },
+    ]);
+  };
+
+  async getSrStatitisticsWeek(subreddit) {
+    const d = new Date();
+    const fromDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 6);
+    const toDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+
+    const res = await Promise.all([
+      this.getSubredditStatsGeneral(
+        this.userSubredditModel,
+        subreddit,
+        'joined',
+        '%Y-%m-%d',
+        fromDate,
+        toDate,
+      ),
+      this.getSubredditStatsGeneral(
+        this.userSubredditLeftModel,
+        subreddit,
+        'left',
+        '%Y-%m-%d',
+        fromDate,
+        toDate,
+      ),
+    ]);
+
+    return res[0].map((v, i) => ({
+      date: v._id,
+      joined: v.joined ?? 0,
+      left: res[1][i]?.left ?? 0,
+    }));
+  }
+
+  async getSrStatitisticsYear(subreddit) {
+    const d = new Date();
+    const fromDate = new Date(d.getFullYear(), 0);
+    const toDate = new Date(d.getFullYear() + 1, 0);
+
+    const res = await Promise.all([
+      this.getSubredditStatsGeneral(
+        this.userSubredditModel,
+        subreddit,
+        'joined',
+        '%Y-%m',
+        fromDate,
+        toDate,
+      ),
+      this.getSubredditStatsGeneral(
+        this.userSubredditLeftModel,
+        subreddit,
+        'left',
+        '%Y-%m',
+        fromDate,
+        toDate,
+      ),
+    ]);
+
+    return res[0].map((v, i) => ({
+      date: v._id,
+      joined: v.joined ?? 0,
+      left: res[1][i]?.left ?? 0,
+    }));
   }
 }

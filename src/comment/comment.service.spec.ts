@@ -3,6 +3,7 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 
+import { MessageService } from '../message/message.service';
 import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
 import { PostSchema } from '../post/post.schema';
@@ -17,8 +18,8 @@ import { VoteSchema } from '../vote/vote.schema';
 import { CommentSchema } from './comment.schema';
 import { CommentService } from './comment.service';
 import type { CreateCommentDto } from './dto';
-import { stubComment } from './test/stubs/comment.stubs';
 
+jest.mock('../message/message.service.ts');
 describe('CommentService', () => {
   let service: CommentService;
   let module: TestingModule;
@@ -59,7 +60,12 @@ describe('CommentService', () => {
         ]),
       ],
 
-      providers: [CommentService, PostService, PostCommentService],
+      providers: [
+        CommentService,
+        PostService,
+        PostCommentService,
+        MessageService,
+      ],
     }).compile();
 
     service = module.get<CommentService>(CommentService);

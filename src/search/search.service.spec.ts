@@ -6,6 +6,7 @@ import { Types } from 'mongoose';
 import { BlockModule } from '../block/block.module';
 import { CommentService } from '../comment/comment.service';
 import type { CreateCommentDto } from '../comment/dto';
+import { MessageModule } from '../message/message.module';
 import { NotificationModule } from '../notification/notification.module';
 import type { CreatePostDto } from '../post/dto';
 import { PostService } from '../post/post.service';
@@ -90,6 +91,7 @@ describe('SearchService', () => {
         PostCommentModule,
         SubredditModule,
         NotificationModule,
+        MessageModule,
       ],
       controllers: [SearchController],
       providers: [SearchService, ApiFeaturesService],
@@ -135,7 +137,7 @@ describe('SearchService', () => {
     flair.text += 'kB';
     await subredditService.createFlair(subredditId1.toString(), flair);
 
-    const c = await commentService.create(id1, commentData);
+    const c = await commentService.create(user1.username, id1, commentData);
     commentId = c._id;
     postId = p._id;
   });

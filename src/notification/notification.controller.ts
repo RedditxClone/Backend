@@ -53,8 +53,11 @@ export class NotificationController {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @UseGuards(JWTUserGuard)
   @Get('/count')
-  findCount(@User('_id') userId: Types.ObjectId) {
-    return this.notificationService.countNew(userId);
+  findCount(
+    @User('_id') userId: Types.ObjectId,
+    @User('username') username: string,
+  ) {
+    return this.notificationService.countNew(userId, username);
   }
 
   @ApiOperation({ description: 'Hides a notification makes it disappear.' })

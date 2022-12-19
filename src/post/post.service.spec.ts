@@ -15,6 +15,7 @@ import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
+import { SubredditUserLeftSchema } from '../subreddit/subreddit-user-left.schema';
 import type { UserDocument } from '../user/user.schema';
 import { UserSchema } from '../user/user.schema';
 import { UserService } from '../user/user.service';
@@ -73,6 +74,7 @@ describe('PostService', () => {
           { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'UserSubredditLeft', schema: SubredditUserLeftSchema },
           { name: 'User', schema: UserSchema },
           {
             name: 'Vote',

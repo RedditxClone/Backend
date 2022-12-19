@@ -45,6 +45,9 @@ export class MessageReturnDto {
   @ApiProperty({ type: String, nullable: true })
   postCommentId: Types.ObjectId | null;
 
+  @Expose()
+  subreddit: string;
+
   @ExposeId()
   @Expose()
   @ApiProperty({ type: String })

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,9 +22,12 @@ import { Types } from 'mongoose';
 
 import { User } from '../auth/decorators/user.decorator';
 import { JWTUserGuard } from '../auth/guards';
+import { ApiPaginatedOkResponse } from '../utils/apiFeatures/decorators/api-paginated-ok-response.decorator';
+import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreateMessageDto,
+  MessageAggregationDto,
   MessageIdListDto,
   MessageReplyDto,
   ModifiedCountDto,
@@ -66,14 +70,118 @@ export class MessageController {
     return this.messageService.markAsUnRead(username, messageIdList);
   }
 
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me')
+  findAllForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams);
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all post reply messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/post')
+  findAllPostForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'post');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all post reply messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/comment')
+  findAllCommentForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'comment');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all private messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/message')
+  findAllPMForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'msg');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all unread messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/unread')
+  findAllUnreadForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'unread');
+  }
+
+  @ApiPaginatedOkResponse(
+    MessageAggregationDto,
+    'all messages have been returned successfully',
+  )
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiOperation({
+    description: 'Get all sent private messages for current user',
+  })
+  @UseGuards(JWTUserGuard)
+  @Get('/me/sent')
+  findAllSentForMe(
+    @User('username') username: string,
+    @Query() paginationParams: PaginationParamsDto,
+  ) {
+    return this.messageService.findAll(username, paginationParams, 'sent');
+  }
+
   @ApiCreatedResponse({
     description: 'The message was created successfully',
     type: MessageReturnDto,
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiForbiddenResponse({
+    description: 'Unauthorized Request. Cannot send message to this user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
-  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiNotFoundResponse({ description: 'User not Found' })
   @ApiOperation({ description: 'Send a private message to a user' })
   @UseGuards(JWTUserGuard)
   @Post('/:user_name')
@@ -96,9 +204,11 @@ export class MessageController {
     type: MessageReturnDto,
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiForbiddenResponse({
+    description: 'Unauthorized Request. Cannot send message to this user',
+  })
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
-  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiNotFoundResponse({ description: 'Parent Message Or User Not Found' })
   @ApiOperation({ description: 'Reply to a private message' })
   @UseGuards(JWTUserGuard)
   @Post('/:message_id/reply')
@@ -116,12 +226,23 @@ export class MessageController {
     );
   }
 
+  @ApiOkResponse({ description: 'The message has been spam successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticaed' })
+  @ApiNotFoundResponse({ description: 'Message not found' })
+  @ApiOperation({ description: 'Report specific message with message_id' })
+  @UseGuards(JWTUserGuard)
+  @Post('/:message_id/spam')
+  spamMessage(
+    @User('username') username: string,
+    @Param('message_id', ParseObjectIdPipe) messageId: Types.ObjectId,
+  ) {
+    return this.messageService.spam(username, messageId);
+  }
+
   @ApiOkResponse({ description: 'The message has been deleted successfully' })
-  @ApiUnauthorizedResponse({
-    description: 'Unauthenticaed',
-  })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiOperation({ description: 'delete specific message with message_id' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticaed' })
+  @ApiNotFoundResponse({ description: 'Message not found' })
+  @ApiOperation({ description: 'Delete specific message with message_id' })
   @UseGuards(JWTUserGuard)
   @Delete('/:message_id')
   remove(
@@ -131,25 +252,21 @@ export class MessageController {
     return this.messageService.delete(authorName, messageId);
   }
 
-  @ApiCreatedResponse({ description: 'The message spammed successfully' })
-  @ApiUnauthorizedResponse({ description: "you haven't receive this message" })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiOperation({ description: 'spam a message' })
-  @Post('/:message_id/spam')
-  spamMessage(@Param('message_id', ParseObjectIdPipe) _messageId: string) {
-    return { status: 'success' };
-  }
-
   @ApiOkResponse({
     description: 'The resource was returned successfully',
     type: MessageReturnDto,
   })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiOperation({ description: 'get specific message with message_id' })
+  @ApiOperation({ description: 'Get specific message with message_id' })
+  @UseGuards(JWTUserGuard)
   @Get('/:message_id')
-  findOne(@Param('message_id') id: string) {
-    return this.messageService.findOne(Number(id));
+  findOne(
+    @User('username') username: string,
+    @Param('message_id', ParseObjectIdPipe) messageId: Types.ObjectId,
+  ): Promise<MessageReturnDto> {
+    return this.messageService.findOne(username, messageId);
   }
 
   // @ApiOkResponse({
@@ -194,20 +311,6 @@ export class MessageController {
   //   //   status: 'success',
   //   //   messages: [],
   //   // };
-  // }
-
-  // @ApiOkResponse({
-  //   description: 'all messages have been returned successfully',
-  //   type: [MessageReturnDto],
-  // })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @ApiOperation({
-  //   description: 'get all messages sent|received by current user',
-  // })
-  // @ApiNotFoundResponse({ description: 'user_id not found not found' })
-  // @Get('/me')
-  // findAllForMe(@Query() _dto: GetMessagesDto) {
-  //   return this.messageService.findAll();
   // }
 
   // @ApiOkResponse({

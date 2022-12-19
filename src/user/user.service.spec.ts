@@ -13,6 +13,7 @@ import { BlockModule } from '../block/block.module';
 import { BlockService } from '../block/block.service';
 import { stubBlock } from '../block/test/stubs/blocked-users.stub';
 import { FollowModule } from '../follow/follow.module';
+import { MessageModule } from '../message/message.module';
 import type { Post } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { PostCommentModule } from '../post-comment/post-comment.module';
@@ -20,6 +21,7 @@ import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
+import { SubredditUserLeftSchema } from '../subreddit/subreddit-user-left.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerModule } from '../utils/imagesHandler/images-handler.module';
@@ -49,12 +51,14 @@ describe('UserService', () => {
         ConfigModule.forRoot(),
         FollowModule,
         BlockModule,
+        MessageModule,
         PostCommentModule,
         ImagesHandlerModule,
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'UserSubredditLeft', schema: SubredditUserLeftSchema },
           { name: 'User', schema: UserSchema },
         ]),
       ],
@@ -172,6 +176,10 @@ describe('UserService', () => {
         createdAt: userAccount.createdAt,
         isFollowed: false,
         isBlocked: false,
+        about: '',
+        nsfw: false,
+        displayName: '',
+        socialLinks: [],
       });
     });
   });

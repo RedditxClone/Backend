@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { MessageService } from '../message/message.service';
 import { NotificationService } from '../notification/notification.service';
 import { PostService } from '../post/post.service';
 import type { Comment } from './comment.schema';
@@ -15,6 +16,7 @@ export class CommentService {
     private readonly postCommentModel: Model<Comment>,
     private readonly notificationService: NotificationService,
     private readonly postService: PostService,
+    private readonly messageService: MessageService,
   ) {}
 
   /**
@@ -25,6 +27,7 @@ export class CommentService {
    * @throws BadRequestException when falling to create a Comment
    */
   create = async (
+    username: string,
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
   ): Promise<Comment & { _id: Types.ObjectId }> => {
@@ -71,6 +74,14 @@ export class CommentService {
           as: 'user',
         },
       },
+      {
+        $lookup: {
+          from: 'postcomments',
+          localField: 'postId',
+          foreignField: '_id',
+          as: 'post',
+        },
+      },
     ]);
     let replyType = 'comment';
 
@@ -91,6 +102,16 @@ export class CommentService {
         info.subreddit[0].name,
         info.user[0].username,
         info.user[0]._id,
+      );
+
+      await this.messageService.messageOnReplies(
+        username,
+        info.user[0].username,
+        info.title || info.post[0].title,
+        comment.text,
+        comment._id,
+        replyType,
+        info.subreddit[0].name,
       );
     }
 

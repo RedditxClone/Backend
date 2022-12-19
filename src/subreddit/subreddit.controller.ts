@@ -653,4 +653,22 @@ export class SubredditController {
       username,
     );
   }
+
+  @ApiOperation({ description: 'get sr statistics of a week ago' })
+  @ApiOkResponse({ description: 'The data retrived successfully' })
+  @Get('/:subreddit/statistics/week')
+  getSrWeekStat(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.getSrStatitisticsWeek(subreddit);
+  }
+
+  @ApiOperation({ description: 'get sr statistics of a year ago' })
+  @ApiOkResponse({ description: 'The data retrived successfully' })
+  @Get('/:subreddit/statistics/year')
+  getSrYearStat(
+    @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
+  ) {
+    return this.subredditService.getSrStatitisticsYear(subreddit);
+  }
 }
