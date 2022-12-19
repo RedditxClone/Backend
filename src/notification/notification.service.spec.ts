@@ -37,6 +37,7 @@ describe('NotificationService', () => {
   let userService: UserService;
   let module: TestingModule;
   let id2;
+  let username2: string;
   const userDto: CreateUserDto = {
     username: 'omarfareed',
     password: '12345678',
@@ -72,6 +73,7 @@ describe('NotificationService', () => {
     userService = module.get<UserService>(UserService);
     const user: UserDocument = await userService.createUser(userDto);
     id2 = user._id;
+    username2 = user.username;
     await service.notifyOnReplies(id2, id2, 'post', 'folan1', 'folan2', id2);
     await service.notifyOnVotes(id2, id2, 'post', 'folan1', id2);
     await service.notifyOnFollow(id2, id2, id2, 'folan1');
@@ -168,8 +170,10 @@ describe('NotificationService', () => {
   });
   describe('get count spec', () => {
     it('should pass', async () => {
-      const res = await service.countNew(id2);
+      const res = await service.countNew(id2, username2);
       expect(res.count).toEqual(9);
+      expect(res.messageCount).toEqual(0);
+      expect(res.total).toEqual(9);
     });
   });
   describe('get notifications spec', () => {
