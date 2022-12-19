@@ -307,14 +307,40 @@ export class PostCommentService {
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
-      ...fetcher.getPaginated(page, limit),
       {
         $sort: fetcher.getSortObject(sort),
       },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.voteInfo(),
+      {
+        $match: {
+          $expr: {
+            $or: [{ $ne: ['$vote', []] }, { $eq: ['$userId', userId] }],
+          },
+        },
+      },
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.userInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -804,10 +830,10 @@ export class PostCommentService {
       ...fetcher.matchForSpecificFilter({ subredditId }),
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
-      ...fetcher.getPaginated(page, limit),
       {
         $sort: fetcher.getSortObject(sort),
       },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),

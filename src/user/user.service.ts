@@ -670,4 +670,8 @@ export class UserService {
   getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     return this.postCommentService.getOverviewThings(userId, pagination);
   }
+
+  getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    return this.postCommentService.getHistoryThings(userId, pagination);
+  }
 }
