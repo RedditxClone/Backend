@@ -555,6 +555,9 @@ export class ThingFetch {
             false,
           ],
         },
+        joinDate: {
+          $ifNull: [this.mongoIndexAt('$PostUserSubreddit.date', 0), null],
+        },
         description: this.mongoIndexAt('$subreddit.description', 0),
         isModerator: {
           $cond: [
