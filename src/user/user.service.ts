@@ -277,7 +277,17 @@ export class UserService {
         },
       },
     ]);
-    const { _id, profilePhoto, coverPhoto, createdAt, username } = user;
+    const {
+      _id,
+      profilePhoto,
+      coverPhoto,
+      createdAt,
+      username,
+      about,
+      displayName,
+      socialLinks,
+      nsfw,
+    } = user;
     let isBlocked = false;
 
     // eslint-disable-next-line unicorn/consistent-destructuring
@@ -300,6 +310,10 @@ export class UserService {
       createdAt,
       isBlocked,
       isFollowed,
+      about,
+      displayName,
+      socialLinks,
+      nsfw,
     };
   }
 

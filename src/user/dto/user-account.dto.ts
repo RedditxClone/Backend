@@ -11,6 +11,18 @@ export class UserAccountDto {
   @ApiProperty({ description: 'The account cover' })
   coverPhoto: string;
 
+  @ApiProperty({ description: "The user's about" })
+  about: string;
+
+  @ApiProperty({ description: "The user's preferred display name" })
+  displayName: string;
+
+  @ApiProperty({ description: "The user's social links like linkedin" })
+  socialLinks: string[];
+
+  @ApiProperty({ description: "The user's account is +18 content" })
+  nsfw: boolean;
+
   @ApiProperty({ description: 'id of current user' })
   _id: Types.ObjectId;
 

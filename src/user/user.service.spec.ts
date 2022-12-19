@@ -172,6 +172,10 @@ describe('UserService', () => {
         createdAt: userAccount.createdAt,
         isFollowed: false,
         isBlocked: false,
+        about: '',
+        nsfw: false,
+        displayName: '',
+        socialLinks: [],
       });
     });
   });
