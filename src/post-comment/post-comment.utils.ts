@@ -595,7 +595,7 @@ export class ThingFetch {
   getIsSavedInfo() {
     return {
       isSaved: {
-        $toBool: false,
+        $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
       },
     };
   }
