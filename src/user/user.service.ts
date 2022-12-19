@@ -2,13 +2,11 @@ import { randomInt } from 'node:crypto';
 
 import {
   BadRequestException,
-  Get,
   Global,
   HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -667,5 +665,13 @@ export class UserService {
       userId,
       pagination,
     );
+  }
+
+  getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    return this.postCommentService.getOverviewThings(userId, pagination);
+  }
+
+  getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    return this.postCommentService.getHistoryThings(userId, pagination);
   }
 }

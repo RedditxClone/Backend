@@ -10,7 +10,6 @@ import { Model } from 'mongoose';
 
 import { NotificationService } from '../notification/notification.service';
 import type { Flair, Subreddit } from '../subreddit/subreddit.schema';
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import {
   postSelectedFileds,
@@ -297,6 +296,51 @@ export class PostCommentService {
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
       ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.matchForSpecificUser(),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.voteInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      ...fetcher.filterBlocked(),
+      ...fetcher.voteInfo(),
+      {
+        $match: {
+          $expr: {
+            $or: [{ $ne: ['$vote', []] }, { $eq: ['$userId', userId] }],
+          },
+        },
+      },
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.userInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -786,10 +830,10 @@ export class PostCommentService {
       ...fetcher.matchForSpecificFilter({ subredditId }),
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
-      ...fetcher.getPaginated(page, limit),
       {
         $sort: fetcher.getSortObject(sort),
       },
+      ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
