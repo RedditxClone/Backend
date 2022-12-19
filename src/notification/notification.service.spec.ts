@@ -14,6 +14,7 @@ import { PostCommentModule } from '../post-comment/post-comment.module';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
+import { SubredditUserLeftSchema } from '../subreddit/subreddit-user-left.schema';
 import type { CreateUserDto } from '../user/dto';
 import type { UserDocument } from '../user/user.schema';
 import { UserSchema } from '../user/user.schema';
@@ -57,6 +58,7 @@ describe('NotificationService', () => {
         MongooseModule.forFeature([
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'UserSubredditLeft', schema: SubredditUserLeftSchema },
           { name: 'User', schema: UserSchema },
         ]),
       ],

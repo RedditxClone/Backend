@@ -35,6 +35,7 @@ import type { SubredditDocument } from './subreddit.schema';
 import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 import { SubredditUserSchema } from './subreddit-user.schema';
+import { SubredditUserLeftSchema } from './subreddit-user-left.schema';
 
 jest.mock('../utils/imagesHandler/images-handler.service');
 describe('SubredditService', () => {
@@ -122,6 +123,7 @@ describe('SubredditService', () => {
           { name: 'Hide', schema: HideSchema },
           { name: 'Subreddit', schema: SubredditSchema },
           { name: 'UserSubreddit', schema: SubredditUserSchema },
+          { name: 'UserSubredditLeft', schema: SubredditUserLeftSchema },
           { name: 'User', schema: UserSchema },
           {
             name: 'Vote',
@@ -1009,6 +1011,63 @@ describe('SubredditService', () => {
           subTopics: ['sport', 'math', 'physics'],
         }),
       );
+    });
+  });
+
+  let statId;
+
+  const createDummyDataForStats = async () => {
+    const sr = await subredditService.create(
+      {
+        name: 'stat',
+        over18: false,
+        type: 'public',
+      },
+      username,
+      userId,
+    );
+
+    statId = sr._id;
+
+    const promisesJoined: any = [];
+    const promisesLeft: any = [];
+    const ides: any = [];
+
+    for (let i = 0; i < 20; i++) {
+      ides.push(new Types.ObjectId(i));
+
+      promisesJoined.push(subredditService.joinSubreddit(ides[i], statId));
+    }
+
+    await Promise.all(promisesJoined);
+
+    for (let i = 0; i < 20; i += 3) {
+      promisesLeft.push(subredditService.leaveSubreddit(ides[i], statId));
+    }
+
+    await Promise.all(promisesLeft);
+  };
+
+  // formatOutputOfWeekStats(data) {
+
+  // }
+
+  describe('subreddit statitistics', () => {
+    it('should get statitstics right', async () => {
+      await createDummyDataForStats();
+      const res = await subredditService.getSrStatitisticsWeek(statId);
+
+      expect(res.length).toBe(1);
+      expect(res[0]).toEqual(expect.objectContaining({ joined: 14, left: 7 }));
+    });
+  });
+
+  describe('subreddit statitistics', () => {
+    it('should get statitstics right', async () => {
+      const res = await subredditService.getSrStatitisticsYear(statId);
+
+      expect(res.length).toBe(1);
+      expect(res[0]).toEqual(expect.objectContaining({ joined: 14, left: 7 }));
     });
   });
 
