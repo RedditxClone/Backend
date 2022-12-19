@@ -4,6 +4,7 @@ import type { Types } from 'mongoose';
 import { Model } from 'mongoose';
 
 import type { MessageIdListDto } from '../message/dto';
+import type { Message } from '../message/message.schema';
 import type { User } from '../user/user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
@@ -17,6 +18,8 @@ export class NotificationService {
     private readonly notificationModel: Model<Notification>,
     @InjectModel('User')
     private readonly userModel: Model<User>,
+    @InjectModel('Message')
+    private readonly messageModel: Model<Message>,
     private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
@@ -54,17 +57,27 @@ export class NotificationService {
    * @param userId user id
    * @returns object: {count: 1}
    */
-  countNew = async (userId: Types.ObjectId) => {
-    const [count] = await this.notificationModel.aggregate([
+  countNew = async (userId: Types.ObjectId, username: string) => {
+    const [countRes] = await this.notificationModel.aggregate([
       { $match: { userId, hidden: false, new: true } },
       { $count: 'count' },
     ]);
 
-    if (!count) {
-      return { count: 0 };
-    }
+    const count: number = countRes?.count ?? 0;
 
-    return count;
+    const [messageCountRes] = await this.messageModel.aggregate([
+      {
+        $match: {
+          destName: username,
+          isRead: false,
+        },
+      },
+      { $count: 'count' },
+    ]);
+
+    const messageCount: number = messageCountRes?.count ?? 0;
+
+    return { count, messageCount, total: count + messageCount };
   };
 
   /**
