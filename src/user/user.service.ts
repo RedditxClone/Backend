@@ -600,6 +600,21 @@ export class UserService {
     return { status: 'success' };
   }
 
+  async unsavePost(userId: Types.ObjectId, postId: Types.ObjectId) {
+    const data = await this.userModel.updateOne(
+      { _id: userId },
+      {
+        $pull: { savedPosts: postId },
+      },
+    );
+
+    if (data.modifiedCount === 0) {
+      throw new BadRequestException("you haven't saved the post");
+    }
+
+    return { status: 'success' };
+  }
+
   getSavedPosts(userId: Types.ObjectId, paginationParams: PaginationParamsDto) {
     return this.postCommentService.getSavedPosts(userId, paginationParams);
   }
