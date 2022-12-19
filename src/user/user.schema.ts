@@ -1,9 +1,26 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 import type { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 export type UserWithId = User & { _id: Types.ObjectId };
+
+export class SocialLink {
+  @Prop({ required: true })
+  @ApiProperty({ description: "like 'reddit'" })
+  platform: string;
+
+  @ApiProperty({ description: "user's name on the platform" })
+  @Prop({ required: true })
+  displayName: string;
+
+  @ApiProperty({ description: 'the platform url is optional' })
+  @Prop()
+  @IsOptional()
+  url?: string;
+}
 @Schema()
 export class User {
   @Prop({ required: true, unique: true })
@@ -46,7 +63,7 @@ export class User {
   about: string;
 
   @Prop({ default: [] })
-  socialLinks: string[];
+  socialLinks: SocialLink[];
 
   @Prop({ default: false })
   nsfw: boolean;

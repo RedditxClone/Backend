@@ -459,6 +459,12 @@ export class UserService {
    * @returns succuss status if Ok
    */
   updateUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
+    if (prefsDto.socialLinks !== undefined && prefsDto.socialLinks.length > 5) {
+      throw new BadRequestException(
+        "Social links array can't be larger than 5 elements",
+      );
+    }
+
     await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
 
     return { status: 'success' };

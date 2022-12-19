@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
+import type { SocialLink } from '../user.schema';
+
 export class UserAccountDto {
   @ApiProperty({ description: 'The account user name' })
   username: string;
@@ -18,7 +20,7 @@ export class UserAccountDto {
   displayName: string;
 
   @ApiProperty({ description: "The user's social links like linkedin" })
-  socialLinks: string[];
+  socialLinks?: SocialLink[];
 
   @ApiProperty({ description: "The user's account is +18 content" })
   nsfw: boolean;
