@@ -35,9 +35,6 @@ export class Post extends PostComment {
   @Prop({ default: false })
   commentsLocked: boolean;
 
-  @Prop({ default: false })
-  visited: boolean;
-
   @Prop({ default: null })
   approvedBy: string;
 
