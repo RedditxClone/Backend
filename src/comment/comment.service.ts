@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { MessageService } from '../message/message.service';
 import { NotificationService } from '../notification/notification.service';
+import { PostService } from '../post/post.service';
 import type { Comment } from './comment.schema';
 import type { CreateCommentDto, UpdateCommentDto } from './dto';
 
@@ -14,6 +15,7 @@ export class CommentService {
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<Comment>,
     private readonly notificationService: NotificationService,
+    private readonly postService: PostService,
     private readonly messageService: MessageService,
   ) {}
 
@@ -32,6 +34,18 @@ export class CommentService {
     const parentId = new Types.ObjectId(createCommentDto.parentId);
     const postId = new Types.ObjectId(createCommentDto.postId);
     const subredditId = new Types.ObjectId(createCommentDto.subredditId);
+    const incremented = await this.postService.addToComments(
+      postId,
+      subredditId,
+      1,
+    );
+
+    if (!incremented) {
+      throw new NotFoundException(
+        `there is no such a post in the subreddit with id ${subredditId}`,
+      );
+    }
+
     const comment: Comment & { _id: Types.ObjectId } =
       await this.commentModel.create({
         userId,
@@ -77,9 +91,9 @@ export class CommentService {
 
     if (
       info !== undefined &&
-      !info.userId.equals(userId) &&
-      !info.user[0].dontNotifyIds.includes(parentId) &&
-      !info.user[0].dontNotifyIds.includes(postId)
+      !info.userId?.equals(userId) &&
+      !info.user[0]?.dontNotifyIds?.includes(parentId) &&
+      !info.user[0]?.dontNotifyIds?.includes(postId)
     ) {
       await this.notificationService.notifyOnReplies(
         info.userId,

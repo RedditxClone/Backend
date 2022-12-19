@@ -405,7 +405,13 @@ export class ThingFetch {
       nsfw: 1,
       type: 1,
       visited: 1,
-      images: 1,
+      images: {
+        $map: {
+          input: '$images',
+          as: 'image',
+          in: { $concat: ['/assets/posts-media/', '$$image'] },
+        },
+      },
     };
   }
 
@@ -418,6 +424,19 @@ export class ThingFetch {
           ...this.getIsSavedInfo(),
           ...this.getSubredditInfo(),
           ...this.getUserInfo(),
+        },
+      },
+    ];
+  }
+
+  postInfoOfComment() {
+    return [
+      {
+        $lookup: {
+          from: 'postcomments',
+          as: 'post',
+          localField: 'postId',
+          foreignField: '_id',
         },
       },
     ];
@@ -442,9 +461,19 @@ export class ThingFetch {
     };
   }
 
+  private mongoIndexAt(arrayName, index) {
+    return {
+      $arrayElemAt: [arrayName, index],
+    };
+  }
+
   commentInfo() {
     return {
       text: 1,
+      postInfo: {
+        title: this.mongoIndexAt('$post.title', 0),
+      },
+
       replyNotification: 1,
       title: 1,
       postId: 1,
@@ -526,7 +555,7 @@ export class ThingFetch {
             false,
           ],
         },
-        // test: { $ifNull: ['$subreddit.moderators', [[]]] },
+        description: this.mongoIndexAt('$subreddit.description', 0),
         isModerator: {
           $cond: [
             {

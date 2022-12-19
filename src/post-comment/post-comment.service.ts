@@ -30,7 +30,6 @@ export class PostCommentService {
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
     private readonly notificationService: NotificationService,
-    private readonly featureService: ApiFeaturesService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
@@ -137,6 +136,7 @@ export class PostCommentService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
       ...fetcher.getIsFollowed(),
+      ...fetcher.voteInfo(),
       ...fetcher.getCommentProject(),
       {
         $lookup: {
@@ -157,6 +157,7 @@ export class PostCommentService {
             ...fetcher.userInfo(),
             ...fetcher.filterBlocked(),
             ...fetcher.getIsFollowed(),
+            ...fetcher.voteInfo(),
             ...fetcher.getCommentProject(),
           ],
         },
@@ -680,6 +681,69 @@ export class PostCommentService {
       ...fetcher.filterBlocked(),
       ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async getPostsOfOwner(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      {
+        $match: {
+          $expr: {
+            $and: [{ $eq: ['$userId', ownerId] }, { $eq: ['$type', 'Post'] }],
+          },
+        },
+      },
+      ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
+      ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async getCommentsOfOwner(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: ['$userId', ownerId] },
+              { $eq: ['$type', 'Comment'] },
+            ],
+          },
+        },
+      },
+      ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.postInfoOfComment(),
+      ...fetcher.userInfo(),
+      ...fetcher.postInfoOfComment(),
+      ...fetcher.getCommentProject(),
     ]);
   }
 

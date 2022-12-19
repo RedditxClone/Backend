@@ -2,11 +2,13 @@ import { randomInt } from 'node:crypto';
 
 import {
   BadRequestException,
+  Get,
   Global,
   HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -19,7 +21,6 @@ import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { userSelectedFields } from '../utils/project-selected-fields';
@@ -40,7 +41,6 @@ export class UserService {
     private readonly blockService: BlockService,
     private readonly postCommentService: PostCommentService,
     private readonly imagesHandlerService: ImagesHandlerService,
-    private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
   getFriends() {
@@ -642,4 +642,24 @@ export class UserService {
 
     return { status: 'success' };
   };
+
+  async getUserPosts(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getPostsOfOwner(ownerId, userId, pagination);
+  }
+
+  async getUserComments(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getCommentsOfOwner(
+      ownerId,
+      userId,
+      pagination,
+    );
+  }
 }

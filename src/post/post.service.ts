@@ -222,6 +222,21 @@ export class PostService {
     ]);
   }
 
+  async addToComments(
+    postId: Types.ObjectId,
+    subredditId: Types.ObjectId,
+    num: number,
+  ): Promise<boolean> {
+    const dataUpdated = await this.postModel.updateOne(
+      { _id: postId, subredditId },
+      {
+        $inc: { commentCount: num },
+      },
+    );
+
+    return dataUpdated.matchedCount > 0;
+  }
+
   async approve(modUsername: string, thingId: Types.ObjectId) {
     const [post] = await this.postCommentService.getThingIModerate(
       modUsername,

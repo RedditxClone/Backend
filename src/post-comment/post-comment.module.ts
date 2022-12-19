@@ -52,7 +52,6 @@ import { PostCommentService } from './post-comment.service';
     PostCommentService,
     PostService,
     CommentService,
-    ApiFeaturesService,
     JWTUserIfExistGuard,
     ImagesHandlerService,
   ],

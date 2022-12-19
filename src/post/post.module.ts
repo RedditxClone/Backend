@@ -4,7 +4,6 @@ import { PassportModule } from '@nestjs/passport';
 import { MulterModule } from '@nestjs/platform-express';
 
 import { UserIfExistStrategy } from '../auth/strategies/user-if-exist.strategy';
-import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import { PostController } from './post.controller';
 import { PostSchema } from './post.schema';
 import { PostService } from './post.service';
@@ -18,7 +17,7 @@ import { PostService } from './post.service';
     }),
   ],
   controllers: [PostController],
-  providers: [PostService, UserIfExistStrategy, ApiFeaturesService],
+  providers: [PostService, UserIfExistStrategy],
   exports: [PostService],
 })
 export class PostModule {}
