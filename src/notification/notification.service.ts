@@ -9,7 +9,7 @@ import type { User } from '../user/user.schema';
 import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 
-//type notification type ['private_msg', 'comment_reply','post_reply','post_vote','comment_vote','follow',]
+//type notification type ['private_msg', 'comment_reply','post_reply','post_vote','comment_vote','follow','mention']
 
 @Injectable()
 export class NotificationService {
@@ -235,7 +235,8 @@ export class NotificationService {
    * @param refId the reference object id
    * @param type post or comment
    * @param subredditName subreddit name
-   * @param replierName
+   * @param replierName The user who generated the notification
+   * @param notifierId the user who is replying
    */
   notifyOnReplies = async (
     userId: Types.ObjectId,
@@ -321,5 +322,64 @@ export class NotificationService {
       status: 'success',
       timestamp: new Date(),
     };
+  };
+
+  /**
+   * Notify a user on username mention
+   * @param username the user to be notified
+   * @param refId the reference object id (postComment)
+   * @param type post or comment
+   * @param subredditName subreddit name
+   * @param replierName the user who mentions the other user
+   * @param notifierId the user who is mentioning
+   */
+  notifyOnUserMentions = async (
+    username: string,
+    refId: Types.ObjectId,
+    type: string,
+    subredditName: string,
+    replierName: string,
+    notifierId: Types.ObjectId,
+  ) => {
+    let body = '';
+
+    const refType = type.toLowerCase();
+    //get user id => this better be removed in future
+    const userToBeMentioned: any = await this.userModel.findOne({
+      username,
+    });
+
+    if (!userToBeMentioned) {
+      return {};
+    }
+
+    const { _id: userId }: any = userToBeMentioned;
+    const { repliesComments, commentsOnPost } = await this.skipNotify(userId);
+
+    //if user turned off notifications on posts or comments replies
+
+    if (
+      (refType === 'post' && !commentsOnPost) ||
+      (refType === 'comment' && !repliesComments)
+    ) {
+      return {};
+    }
+
+    body = `u/${replierName} mentioned you on a ${refType} in r/${subredditName}`;
+
+    return this.notificationModel.findOneAndUpdate(
+      {
+        userId,
+        body,
+      },
+      {
+        userId,
+        body,
+        refId,
+        type: 'mention',
+        notifierId,
+      },
+      { upsert: true, returnOriginal: false },
+    );
   };
 }

@@ -19,6 +19,7 @@ export class Notification {
       'post_vote', // upvote on post
       'comment_vote', // upvote on comment
       'follow', // user follow
+      'mention', //user mention
     ],
     required: true,
   })
