@@ -4,10 +4,13 @@ import {
   IsBoolean,
   IsDefined,
   IsIn,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
 } from 'class-validator';
+
+import type { SocialLink } from '../user.schema';
 
 @Exclude()
 export class PrefsDto {
@@ -56,8 +59,8 @@ export class PrefsDto {
   @IsOptional()
   @Expose()
   @ApiProperty({ description: 'social links like twitter' })
-  @IsString({ each: true })
-  socialLinks?: string[];
+  @IsObject({ each: true })
+  socialLinks?: SocialLink[];
 
   @IsOptional()
   @Expose()
