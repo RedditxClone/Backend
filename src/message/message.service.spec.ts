@@ -1,22 +1,22 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { Types } from 'mongoose';
 
 import { BlockModule } from '../block/block.module';
 import { stubUser } from '../user/test/stubs/user.stub';
 import { UserModule } from '../user/user.module';
+import { ApiFeaturesService } from '../utils/apiFeatures/api-features.service';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '../utils/mongoose-in-memory';
-import type {
-  CreateMessageDto,
-  MessageReplyDto,
-  MessageReturnDto,
-} from './dto';
+import type { CreateMessageDto, MessageReplyDto } from './dto';
+import { MessageReturnDto } from './dto';
 import { MessageSchema } from './message.schema';
 import { MessageService } from './message.service';
 
@@ -36,7 +36,7 @@ describe('MessageService', () => {
         rootMongooseTestModule(),
         MongooseModule.forFeature([{ name: 'Message', schema: MessageSchema }]),
       ],
-      providers: [MessageService],
+      providers: [MessageService, ApiFeaturesService],
     }).compile();
     service = module.get<MessageService>(MessageService);
   });
@@ -161,6 +161,7 @@ describe('MessageService', () => {
       });
     });
   });
+
   describe('markAsRead/Unread', () => {
     it('should not modify any', async () => {
       const a = new Types.ObjectId(456);
@@ -241,6 +242,7 @@ describe('MessageService', () => {
     const destName = user.username;
     const body = 'a body reply';
     const title = 'post title';
+    const subreddit = 'srname';
     it('should generate message from comment successfully', async () => {
       const postCommentId = new Types.ObjectId(56_799);
       const returnMessage: MessageReturnDto = await service.messageOnReplies(
@@ -250,6 +252,7 @@ describe('MessageService', () => {
         body,
         postCommentId,
         'comment',
+        subreddit,
       );
       const subject = 'comment reply: ' + title;
       expect(returnMessage).toEqual(
@@ -260,6 +263,7 @@ describe('MessageService', () => {
           subject,
           postCommentId,
           type: 'comment_reply',
+          subreddit,
         }),
       );
     });
@@ -273,6 +277,7 @@ describe('MessageService', () => {
         body,
         postCommentId,
         'post',
+        subreddit,
       );
       const subject = 'post reply: ' + title;
       expect(returnMessage).toEqual(
@@ -283,8 +288,143 @@ describe('MessageService', () => {
           subject,
           postCommentId,
           type: 'post_reply',
+          subreddit,
         }),
       );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should throw not found error', async () => {
+      await expect(async () => {
+        await service.findOne(message.authorName, new Types.ObjectId(123));
+      }).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw forbidden error', async () => {
+      await expect(async () => {
+        await service.findOne('NotAuthor', message._id);
+      }).rejects.toThrowError(ForbiddenException);
+    });
+
+    it('should throw forbidden error', async () => {
+      await expect(async () => {
+        await service.findOne(message.authorName, message._id);
+      }).rejects.toThrowError(ForbiddenException);
+    });
+
+    it('should find successfully', async () => {
+      expect(await service.findOne(message.destName, message._id)).toEqual(
+        plainToInstance(MessageReturnDto, message),
+      );
+    });
+  });
+
+  const paginationParams: PaginationParamsDto = {
+    limit: 15,
+    page: 1,
+    sort: 'new',
+  };
+
+  describe('findAll', () => {
+    it('should find all', async () => {
+      const response = await service.findAll(
+        message.destName,
+        paginationParams,
+      );
+      const messages: any[] = [];
+
+      for (const listing of response.data) {
+        for (const msg of listing.messages) {
+          messages.push(msg);
+        }
+      }
+
+      expect(messages).toHaveLength(5);
+    });
+
+    it('should find unread', async () => {
+      const response = await service.findAll(
+        message.destName,
+        paginationParams,
+        'unread',
+      );
+      const messages: any[] = [];
+
+      for (const listing of response.data) {
+        for (const msg of listing.messages) {
+          messages.push(msg);
+        }
+      }
+
+      expect(messages).toHaveLength(4);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should find comment', async () => {
+      const response = await service.findAll(
+        message.destName,
+        paginationParams,
+        'comment',
+      );
+      const messages: any[] = [];
+
+      for (const listing of response.data) {
+        for (const msg of listing.messages) {
+          messages.push(msg);
+        }
+      }
+
+      expect(messages).toHaveLength(1);
+
+      for (const msg of messages) {
+        expect(msg.type).toBe('comment_reply');
+      }
+    });
+  });
+
+  describe('findAll', () => {
+    it('should find sent', async () => {
+      const response = await service.findAll(
+        message.destName,
+        paginationParams,
+        'sent',
+      );
+      const messages: any[] = [];
+
+      for (const listing of response.data) {
+        for (const msg of listing.messages) {
+          messages.push(msg);
+        }
+      }
+
+      expect(messages).toHaveLength(1);
+
+      for (const msg of messages) {
+        expect(msg.type).toBe('private_msg');
+      }
+    });
+
+    it('should find post', async () => {
+      const response = await service.findAll(
+        message.destName,
+        paginationParams,
+        'post',
+      );
+      const messages: any[] = [];
+
+      for (const listing of response.data) {
+        for (const msg of listing.messages) {
+          messages.push(msg);
+        }
+      }
+
+      expect(messages).toHaveLength(1);
+
+      for (const msg of messages) {
+        expect(msg.type).toBe('post_reply');
+      }
     });
   });
 

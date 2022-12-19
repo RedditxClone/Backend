@@ -97,6 +97,7 @@ export class CommentService {
         comment.text,
         comment._id,
         replyType,
+        info.subreddit[0].name,
       );
     }
 
