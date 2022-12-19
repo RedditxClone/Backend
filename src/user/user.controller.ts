@@ -489,6 +489,23 @@ export class UserController {
   }
 
   @ApiOperation({
+    description: 'unsave post',
+  })
+  @ApiOkResponse({ description: 'post saved successfully ' })
+  @ApiUnauthorizedResponse({
+    description: 'unautherized',
+  })
+  @HttpCode(200)
+  @UseGuards(JWTUserGuard)
+  @Post('/post/:post_id/unsave')
+  unsavePost(
+    @Param('post_id', ParseObjectIdPipe) post_id: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+  ) {
+    return this.userService.unsavePost(userId, post_id);
+  }
+
+  @ApiOperation({
     description: 'get saved posts',
   })
   @ApiPaginatedOkResponse(ReturnPostDto, 'saved posts returned successfully ')
