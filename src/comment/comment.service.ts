@@ -97,10 +97,10 @@ export class CommentService {
     ) {
       await this.notificationService.notifyOnReplies(
         info.userId,
-        userId,
+        comment._id,
         replyType,
         info.subreddit[0].name,
-        info.user[0].username,
+        username,
         info.user[0]._id,
       );
 
@@ -113,6 +113,42 @@ export class CommentService {
         replyType,
         info.subreddit[0].name,
       );
+      // if the user didn't receive a post or comment notification check if he was mentioned then notify him
+      const usernameMentions: string[] = [];
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      const promises: Array<Promise<{}>> = [];
+      //username mentions regex
+      const regex = /(?<!\S)(u\/[\da-z]*)(?!\S)/gim;
+      const body = createCommentDto.text;
+      //extract all mentions
+      let m;
+
+      do {
+        m = regex.exec(body);
+
+        if (m) {
+          usernameMentions.push(m[1].slice(2));
+        }
+      } while (m);
+
+      for (const name of usernameMentions) {
+        // if got already a notification for a comment
+        if (name !== username) {
+          promises.push(
+            this.notificationService.notifyOnUserMentions(
+              name,
+              comment._id,
+              replyType,
+              info.subreddit[0].name,
+              username,
+              info.user[0]._id,
+            ),
+          );
+        }
+      }
+
+      //await on all promises
+      await Promise.all(promises);
     }
 
     return comment;
