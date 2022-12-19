@@ -30,7 +30,6 @@ export class PostCommentService {
     private readonly postCommentModel: Model<PostComment>,
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
     private readonly notificationService: NotificationService,
-    private readonly featureService: ApiFeaturesService,
   ) {}
 
   create(_createPostCommentDto: CreatePostCommentDto) {
