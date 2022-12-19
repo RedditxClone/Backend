@@ -408,7 +408,7 @@ export class ThingFetch {
       images: {
         $map: {
           input: '$images',
-          as: '$image',
+          as: 'image',
           in: { $concat: ['/assets/posts-media/', '$$image'] },
         },
       },
