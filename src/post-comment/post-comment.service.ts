@@ -709,12 +709,42 @@ export class PostCommentService {
       },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
+      ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
+    ]);
+  }
+
+  async getCommentsOfOwner(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    const fetcher = new ThingFetch(userId);
+    const { limit, page, sort } = pagination;
+
+    return this.postCommentModel.aggregate([
+      ...fetcher.prepare(),
       {
-        $group: {
-          _id: null,
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: ['$userId', ownerId] },
+              { $eq: ['$type', 'Comment'] },
+            ],
+          },
         },
       },
+      ...fetcher.filterBlocked(),
+      ...fetcher.prepareBeforeStoring(sort),
+      {
+        $sort: fetcher.getSortObject(sort),
+      },
+      ...fetcher.getPaginated(page, limit),
+      ...fetcher.SRInfo(),
+      ...fetcher.postInfoOfComment(),
+      ...fetcher.userInfo(),
+      ...fetcher.postInfoOfComment(),
+      ...fetcher.getCommentProject(),
     ]);
   }
 

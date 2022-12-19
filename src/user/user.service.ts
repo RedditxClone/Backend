@@ -14,13 +14,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import type { Response } from 'express';
-import { Model, Types } from 'mongoose';
+import type { Types } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
-import { PaginationParamsDto } from '../utils/apiFeatures/dto';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { userSelectedFields } from '../utils/project-selected-fields';
 import type {
@@ -634,5 +635,17 @@ export class UserService {
     pagination: PaginationParamsDto,
   ) {
     return this.postCommentService.getPostsOfOwner(ownerId, userId, pagination);
+  }
+
+  async getUserComments(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getCommentsOfOwner(
+      ownerId,
+      userId,
+      pagination,
+    );
   }
 }

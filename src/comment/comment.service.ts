@@ -66,9 +66,9 @@ export class CommentService {
 
     if (
       info !== undefined &&
-      !info.userId.equals(userId) &&
-      !info.user[0].dontNotifyIds.includes(parentId) &&
-      !info.user[0].dontNotifyIds.includes(postId)
+      !info.userId?.equals(userId) &&
+      !info.user[0]?.dontNotifyIds?.includes(parentId) &&
+      !info.user[0]?.dontNotifyIds?.includes(postId)
     ) {
       await this.notificationService.notifyOnReplies(
         info.userId,
