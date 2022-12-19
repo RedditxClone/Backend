@@ -555,6 +555,9 @@ export class ThingFetch {
             false,
           ],
         },
+        joinDate: {
+          $ifNull: [this.mongoIndexAt('$PostUserSubreddit.date', 0), null],
+        },
         description: this.mongoIndexAt('$subreddit.description', 0),
         isModerator: {
           $cond: [
@@ -595,7 +598,7 @@ export class ThingFetch {
   getIsSavedInfo() {
     return {
       isSaved: {
-        $toBool: false,
+        $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
       },
     };
   }

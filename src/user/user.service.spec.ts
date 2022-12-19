@@ -470,6 +470,7 @@ describe('UserService', () => {
             name: subreddits[0].name,
             isModerator: true,
             isJoin: true,
+            joinDate: res[1].subredditInfo.joinDate,
           },
           user: {
             id: user2._id,

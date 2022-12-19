@@ -285,6 +285,7 @@ describe('PostService', () => {
               name: subreddits[0].name,
               isModerator: true,
               isJoin: true,
+              joinDate: timeline[1].subredditInfo.joinDate,
             },
             user: {
               id: user2._id,
@@ -318,6 +319,7 @@ describe('PostService', () => {
               name: subreddits[0].name,
               isModerator: true,
               isJoin: true,
+              joinDate: timeline[0].subredditInfo.joinDate,
             },
             user: {
               id: user2._id,
