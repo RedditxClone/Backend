@@ -638,6 +638,25 @@ export class ThingFetch {
     ];
   }
 
+  filterBannedUsers() {
+    return [
+      {
+        $match: {
+          $expr: {
+            $not: [
+              {
+                $in: [
+                  this.mongoIndexAt('$me.username', 0),
+                  this.mongoIndexAt('$subreddit.bannedUsers', 0),
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
   getIsSavedInfo() {
     return {
       isSaved: {

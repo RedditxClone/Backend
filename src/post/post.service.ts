@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { Subreddit } from 'subreddit/subreddit.schema';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
@@ -23,6 +24,7 @@ export class PostService {
     @InjectModel('Hide') private readonly hideModel: Model<Hide>,
     @InjectModel('UserSubreddit')
     private readonly subredditUserModel: Model<SubredditUser>,
+    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
     private readonly postCommentService: PostCommentService,
   ) {}
 
@@ -44,6 +46,44 @@ export class PostService {
     return { status: 'success' };
   }
 
+  async checkIfTheUserJoinedSR(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    const userJoined = await this.subredditUserModel.exists({
+      userId: userInfo._id,
+      subredditId,
+    });
+
+    if (!userJoined) {
+      throw new NotFoundException("you haven't joined such a subreddit");
+    }
+  }
+
+  async checkIfTheUserCanDoActionInsideSR(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    const username = userInfo.username || '';
+    const sr = await this.subredditModel.findById(subredditId);
+    const bannedUsers = sr?.bannedUsers.map(({ username }) => username);
+    const mutedUsers = sr?.mutedUsers.map(({ username }) => username);
+
+    if (bannedUsers?.includes(username) || mutedUsers?.includes(username)) {
+      throw new BadRequestException(
+        'banned and muted users cannot do this action',
+      );
+    }
+  }
+
+  async checkIfTheUserCanCreatePost(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    await this.checkIfTheUserJoinedSR(userInfo, subredditId);
+    await this.checkIfTheUserCanDoActionInsideSR(userInfo, subredditId);
+  }
+
   /**
    * Create a post in a subreddit.
    * @param userId user's id whom is creating the post
@@ -52,21 +92,13 @@ export class PostService {
    * @throws BadRequestException when falling to create a post
    */
   create = async (
-    userId: Types.ObjectId,
+    userInfo: UserUniqueKeys,
     createPostDto: CreatePostDto,
   ): Promise<Post & { _id: Types.ObjectId }> => {
     const subredditId = new Types.ObjectId(createPostDto.subredditId);
-    const userJoined = await this.subredditUserModel.exists({
-      userId,
-      subredditId,
-    });
-
-    if (!userJoined) {
-      throw new NotFoundException("you haven't joined such a subreddit");
-    }
-
+    await this.checkIfTheUserCanCreatePost(userInfo, subredditId);
     const post: Post & { _id: Types.ObjectId } = await this.postModel.create({
-      userId,
+      userId: userInfo._id,
       ...createPostDto,
       subredditId,
     });
@@ -186,8 +218,9 @@ export class PostService {
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
       ...fetcher.getMe(),
-      ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
+      ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -218,6 +251,7 @@ export class PostService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -252,6 +286,7 @@ export class PostService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -316,7 +351,9 @@ export class PostService {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
+      ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -341,6 +378,7 @@ export class PostService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.SRInfo(),
       ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),

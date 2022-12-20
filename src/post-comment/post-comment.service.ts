@@ -293,8 +293,9 @@ export class PostCommentService {
       },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
-      ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
+      ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -314,6 +315,7 @@ export class PostCommentService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -343,6 +345,7 @@ export class PostCommentService {
       ...fetcher.userInfo(),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -450,6 +453,7 @@ export class PostCommentService {
       ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -469,6 +473,7 @@ export class PostCommentService {
       ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -749,6 +754,7 @@ export class PostCommentService {
       ...fetcher.filterBlocked(),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -778,6 +784,7 @@ export class PostCommentService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -875,6 +882,7 @@ export class PostCommentService {
       ...fetcher.getPaginated(page, limit),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),

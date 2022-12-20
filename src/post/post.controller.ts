@@ -139,10 +139,10 @@ export class PostController {
   @UseGuards(JWTUserGuard)
   @Post('/submit')
   async create(
-    @User('_id') userId: Types.ObjectId,
+    @User() userInfo: UserUniqueKeys,
     @Body() createPostDto: CreatePostDto,
   ) {
-    return this.postService.create(userId, createPostDto);
+    return this.postService.create(userInfo, createPostDto);
   }
 
   @ApiOperation({ description: 'upload a post media.' })
