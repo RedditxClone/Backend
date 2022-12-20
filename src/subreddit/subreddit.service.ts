@@ -127,6 +127,7 @@ export class SubredditService {
       .findOneAndUpdate(
         { name: subreddit, moderators: username },
         updateSubredditDto,
+        { runValidators: true },
       )
       .select('_id');
 
