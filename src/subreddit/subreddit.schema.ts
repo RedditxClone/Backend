@@ -142,7 +142,7 @@ export class Subreddit {
   @Prop({ default: [] })
   subTopics: string[];
 
-  @Prop()
+  @Prop({ default: null })
   activeTopic: string;
 
   @Prop({ default: false })
@@ -157,7 +157,7 @@ export class Subreddit {
   @Prop({ default: false })
   banPostBodyWords: boolean;
 
-  @Prop()
+  @Prop({ default: [] })
   postBodyBannedWords: string[];
 
   @Prop({ default: false })
@@ -184,7 +184,7 @@ export class Subreddit {
   @Prop({ default: [] })
   moderators: string[];
 
-  @Prop()
+  @Prop({ default: null })
   icon: string;
 
   @Prop({ default: [] })
