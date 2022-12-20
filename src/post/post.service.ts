@@ -66,8 +66,8 @@ export class PostService {
   ) {
     const username = userInfo.username || '';
     const sr = await this.subredditModel.findById(subredditId);
-    const bannedUsers = sr?.bannedUsers.map(({ username }) => username);
-    const mutedUsers = sr?.mutedUsers.map(({ username }) => username);
+    const bannedUsers = sr?.bannedUsers.map((user) => user.username);
+    const mutedUsers = sr?.mutedUsers.map((user) => user.username);
 
     if (bannedUsers?.includes(username) || mutedUsers?.includes(username)) {
       throw new BadRequestException(
