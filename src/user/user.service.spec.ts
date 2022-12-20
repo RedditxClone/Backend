@@ -381,8 +381,7 @@ describe('UserService', () => {
   });
   describe('Delete user by setting the accountClosed to true', () => {
     it('should close the account successfully', async () => {
-      const user = { _id: id };
-      expect(await service.deleteAccount(user)).toEqual({
+      expect(await service.deleteAccount(id)).toEqual({
         status: 'success',
       });
     });
