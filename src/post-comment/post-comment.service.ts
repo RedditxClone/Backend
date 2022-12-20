@@ -43,7 +43,7 @@ export class PostCommentService {
     return `This action returns a #${id} postComment`;
   }
 
-  private checkIfTheOwner(
+  checkIfTheOwner(
     userId: Types.ObjectId,
     postUserId: Types.ObjectId | undefined,
   ): void | never {
@@ -54,7 +54,7 @@ export class PostCommentService {
     throw new UnauthorizedException('only the owner can do this operation');
   }
 
-  private checkIfValidFlairId(
+  checkIfValidFlairId(
     flairId: Types.ObjectId | undefined,
     flairs: Flair[] | undefined | null,
   ): void | never {

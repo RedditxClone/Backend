@@ -121,8 +121,33 @@ export class PostService {
     return `This action returns a #${id} post`;
   }
 
-  update(id: number, _updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(id: Types.ObjectId, dto: UpdatePostDto, userId: Types.ObjectId) {
+    const thing: any = await this.postModel
+      .findById(id)
+      .populate('subredditId', 'flairList');
+
+    if (!thing) {
+      throw new BadRequestException(`id : ${id} not found `);
+    }
+
+    this.postCommentService.checkIfTheOwner(userId, thing.userId);
+
+    this.postCommentService.checkIfValidFlairId(
+      dto.flair,
+      thing.subredditId.flairList,
+    );
+
+    const updatedThing = await this.postModel.findByIdAndUpdate(id, {
+      ...dto,
+      editedAt: Date.now(),
+      editCheckedBy: null,
+    });
+
+    if (!updatedThing) {
+      throw new NotFoundException(`id : ${id} not found`);
+    }
+
+    return { status: 'success' };
   }
 
   remove(id: number) {
