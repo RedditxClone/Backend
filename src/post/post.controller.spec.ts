@@ -40,7 +40,6 @@ describe('PostController', () => {
       expect(res.status).toEqual('success');
     });
   });
-
   describe('update post', () => {
     it('should be updated successfully', async () => {
       // const res = await controller.update(

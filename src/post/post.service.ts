@@ -85,11 +85,11 @@ export class PostService {
    * @returns a list of uploaded images Ids for referencing.
    */
   async uploadPostMedia(
-    files: Express.Multer.File[],
+    files: Express.Multer.File[] | undefined,
     postId: Types.ObjectId,
     userId: Types.ObjectId,
   ) {
-    if (files.length === 0) {
+    if (!files || files.length === 0) {
       throw new BadRequestException('no media uploaded');
     }
 
@@ -121,8 +121,33 @@ export class PostService {
     return `This action returns a #${id} post`;
   }
 
-  update(id: number, _updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(id: Types.ObjectId, dto: UpdatePostDto, userId: Types.ObjectId) {
+    const thing: any = await this.postModel
+      .findById(id)
+      .populate('subredditId', 'flairList');
+
+    if (!thing) {
+      throw new BadRequestException(`id : ${id} not found `);
+    }
+
+    this.postCommentService.checkIfTheOwner(userId, thing.userId);
+
+    this.postCommentService.checkIfValidFlairId(
+      dto.flair,
+      thing.subredditId.flairList,
+    );
+
+    const updatedThing = await this.postModel.findByIdAndUpdate(id, {
+      ...dto,
+      editedAt: Date.now(),
+      editCheckedBy: null,
+    });
+
+    if (!updatedThing) {
+      throw new NotFoundException(`id : ${id} not found`);
+    }
+
+    return { status: 'success' };
   }
 
   remove(id: number) {
@@ -161,6 +186,11 @@ export class PostService {
     if (post.length === 0) {
       throw new BadRequestException(`there is no post with id ${postId}`);
     }
+
+    //increment post insights
+    await this.postModel.findByIdAndUpdate(postId, {
+      $inc: { insightsCount: 1 },
+    });
 
     return post[0];
   }
@@ -232,7 +262,7 @@ export class PostService {
     const dataUpdated = await this.postModel.updateOne(
       { _id: postId, subredditId },
       {
-        $inc: { commentCount: num },
+        $inc: { commentCount: num, insightsCount: num },
       },
     );
 

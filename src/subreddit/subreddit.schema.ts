@@ -33,7 +33,7 @@ class MutedUsers {
   date: Date;
 
   @Prop()
-  reason: string;
+  reason?: string;
 }
 
 class BannedUsers {
@@ -47,16 +47,16 @@ class BannedUsers {
   reason: string;
 
   @Prop()
-  modNote: string;
+  modNote?: string;
 
   @Prop()
-  permanent: boolean;
+  permanent?: boolean;
 
   @Prop()
-  duration: string;
+  duration?: string;
 
   @Prop()
-  message: string;
+  message?: string;
 }
 
 export class Rule {
@@ -142,7 +142,7 @@ export class Subreddit {
   @Prop({ default: [] })
   subTopics: string[];
 
-  @Prop()
+  @Prop({ default: null })
   activeTopic: string;
 
   @Prop({ default: false })
@@ -157,7 +157,7 @@ export class Subreddit {
   @Prop({ default: false })
   banPostBodyWords: boolean;
 
-  @Prop()
+  @Prop({ default: [] })
   postBodyBannedWords: string[];
 
   @Prop({ default: false })
@@ -184,7 +184,7 @@ export class Subreddit {
   @Prop({ default: [] })
   moderators: string[];
 
-  @Prop()
+  @Prop({ default: null })
   icon: string;
 
   @Prop({ default: [] })
@@ -210,6 +210,9 @@ export class Subreddit {
 
   @Prop({ default: 0 })
   notificationType: number;
+
+  @Prop({ default: 1 })
+  users: number;
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

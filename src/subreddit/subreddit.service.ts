@@ -6,8 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { Types } from 'mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserService } from '../user/user.service';
@@ -85,25 +84,25 @@ export class SubredditService {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async findSubredditByName(subredditName: string, userId?) {
-    let username;
-
-    if (userId) {
-      const user = await this.userService.getUserById(userId);
-      username = user.username;
-    }
-
+  async findSubredditByName(subredditName: string, user?) {
     const sr = await this.subredditModel.aggregate([
-      { $match: { name: subredditName } },
-      srGetUsersRelated,
-      srProjectionNumOfUsersAndIfModerator(userId, username),
+      {
+        $match: {
+          $and: [
+            { name: subredditName },
+            { bannedUsers: { $ne: user?.username } },
+          ],
+        },
+      },
+      srGetUsersRelated(user?._id),
+      srProjectionNumOfUsersAndIfModerator(user?._id, user?.username),
     ]);
 
     if (sr.length === 0) {
-      throw new NotFoundException('No subreddit with such name');
+      throw new NotFoundException();
     }
 
-    return { ...sr[0], joined: Boolean(sr[0].joined) };
+    return { ...sr[0], joined: sr[0].joined.length > 0 };
   }
 
   async checkSubredditAvailable(subredditName: string) {
@@ -117,13 +116,23 @@ export class SubredditService {
     return { status: 'success' };
   }
 
-  async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
+  async update(
+    subreddit: string,
+    updateSubredditDto: UpdateSubredditDto,
+    username,
+  ) {
+    this.checkUserNotNull(username);
+
     const sr: SubredditDocument | null | undefined = await this.subredditModel
-      .findOneAndUpdate({ name: subreddit }, updateSubredditDto)
+      .findOneAndUpdate(
+        { name: subreddit, moderators: username },
+        updateSubredditDto,
+        { runValidators: true },
+      )
       .select('_id');
 
     if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+      throw new BadRequestException();
     }
 
     return {
@@ -134,11 +143,13 @@ export class SubredditService {
   async createFlair(
     subreddit: string,
     flairDto: FlairDto,
+    username: string,
   ): Promise<SubredditDocument> {
-    flairDto._id = new mongoose.Types.ObjectId();
+    this.checkUserNotNull(username);
+    flairDto._id = new Types.ObjectId(Math.random() * 100);
     const sr: SubredditDocument | null | undefined = await this.subredditModel
-      .findByIdAndUpdate(
-        subreddit,
+      .findOneAndUpdate(
+        { _id: subreddit, moderators: username },
         {
           $push: { flairList: flairDto },
         },
@@ -147,7 +158,7 @@ export class SubredditService {
       .select('flairList');
 
     if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+      throw new NotFoundException();
     }
 
     return sr;
@@ -165,46 +176,62 @@ export class SubredditService {
     return sr;
   }
 
-  async uploadIcon(subreddit: string, file) {
-    const sr = await this.subredditModel.findById(subreddit).select('_id');
+  async uploadIcon(subreddit: string, file, username: string) {
+    const sr = await this.subredditModel
+      .findOne({ _id: subreddit, moderators: username })
+      .select('_id');
 
     if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+      throw new BadRequestException();
     }
 
     return this.imagesHandlerService.uploadPhoto(
       'subreddit_icons',
       file,
       this.subredditModel,
-      new mongoose.Types.ObjectId(subreddit),
+      new Types.ObjectId(subreddit),
       'icon',
     );
   }
 
-  async removeIcon(subreddit: string) {
+  private checkUserNotNull(user) {
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async removeIcon(subreddit: string, username: string) {
+    this.checkUserNotNull(username);
     const saveDir = `assets/subreddit_icons/${subreddit}.jpeg`;
     const sr = await this.subredditModel
-      .findByIdAndUpdate(subreddit, {
-        icon: '',
-      })
+      .updateOne(
+        { _id: subreddit, moderators: username },
+        {
+          icon: '',
+        },
+      )
       .select('');
 
-    if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!sr.modifiedCount) {
+      throw new BadRequestException();
     }
 
     return this.imagesHandlerService.removePhoto(saveDir);
   }
 
-  async deleteFlairById(subreddit: string, flair_id: string) {
-    const flair = await this.subredditModel.findByIdAndUpdate(subreddit, {
-      $pull: {
-        flairList: { _id: new mongoose.Types.ObjectId(flair_id) },
+  async deleteFlairById(subreddit: string, flair_id: string, username: string) {
+    this.checkUserNotNull(username);
+    const flair = await this.subredditModel.updateOne(
+      { _id: subreddit, moderators: username },
+      {
+        $pull: {
+          flairList: { _id: new Types.ObjectId(flair_id) },
+        },
       },
-    });
+    );
 
-    if (!flair) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!flair.modifiedCount) {
+      throw new BadRequestException();
     }
 
     return { status: 'success' };
@@ -223,10 +250,20 @@ export class SubredditService {
       );
     }
 
-    await this.userSubredditModel.create({
+    const queryObject = {
       subredditId,
       userId,
-    });
+    };
+
+    await Promise.all([
+      await this.userSubredditModel.create(queryObject),
+      await this.userSubredditLeftModel.deleteOne(queryObject),
+    ]);
+
+    await this.subredditModel.updateOne(
+      { _id: subredditId },
+      { $inc: { users: 1 } },
+    );
 
     return { status: 'success' };
   }
@@ -243,16 +280,19 @@ export class SubredditService {
       );
     }
 
-    await this.userSubredditLeftModel.create({
-      subredditId,
-      userId,
-    });
+    await Promise.all([
+      await this.userSubredditLeftModel.create({
+        subredditId,
+        userId,
+      }),
+
+      await this.subredditModel.updateOne(
+        { _id: subredditId },
+        { $inc: { users: -1 } },
+      ),
+    ]);
 
     return { status: 'success' };
-  }
-
-  getHotSubreddits(_subreddit: string) {
-    return 'Waiting for api features to use the sort function';
   }
 
   private getSrCommonStages(userId, page, limit) {
@@ -263,7 +303,7 @@ export class SubredditService {
           srId: '$_id',
         },
       },
-      srGetUsersRelated,
+      srGetUsersRelated(userId),
       srProjectionNumOfUsersAndIfIamJoined(userId),
       ...srPagination(page, limit),
     ];
@@ -289,7 +329,7 @@ export class SubredditService {
       ...this.getSrCommonStages(userId, page, numberOfData),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   async getSearchSubredditAggregation(
@@ -317,7 +357,7 @@ export class SubredditService {
       ...this.getSrCommonStages(userId, pageNumber, numberOfData),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   getSearchFlairsAggregate(
@@ -360,6 +400,7 @@ export class SubredditService {
     username: string,
     categories: string[],
   ) {
+    this.checkUserNotNull(username);
     const sr = await this.subredditModel.updateOne(
       {
         _id: subreddit,
@@ -384,13 +425,18 @@ export class SubredditService {
     page = 1,
     limit = 50,
     userId?,
+    username?,
   ) {
     const res = await this.subredditModel.aggregate([
-      { $match: { categories: category } },
+      {
+        $match: {
+          $and: [{ categories: category }, { bannedUsers: { $ne: username } }],
+        },
+      },
       ...this.getSrCommonStages(userId, page, limit),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   private modifiedCountResponse(modifiedCount, message?) {
@@ -408,6 +454,12 @@ export class SubredditService {
     newModuratorUsername: string,
     subreddit: Types.ObjectId,
   ) {
+    if (
+      !(await this.userService.userExist({ username: newModuratorUsername }))
+    ) {
+      throw new BadRequestException("user doesn't exist");
+    }
+
     const res = await this.subredditModel.updateOne(
       {
         moderators: moderatorUsername,
@@ -428,16 +480,20 @@ export class SubredditService {
     );
   }
 
-  async subredditIModerate(username: string) {
-    return this.subredditModel.find({
-      moderators: username,
-    });
+  async getSubredditsWithMatch(matchStage, page = 1, limit = 50, userId?) {
+    this.checkUserNotNull(userId);
+    const res = await this.subredditModel.aggregate([
+      { $match: matchStage },
+      ...this.getSrCommonStages(userId, page, limit),
+    ]);
+
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
-  async checkIfModerator(subredditId: Types.ObjectId, username: string) {
+  async checkIfModerator(srName: string, username: string) {
     const moderator = await this.subredditModel.exists({
       moderators: username,
-      _id: subredditId,
+      name: srName,
     });
 
     if (!moderator) {
@@ -448,45 +504,46 @@ export class SubredditService {
   }
 
   async getUnModeratedThings(
-    subredditId: Types.ObjectId,
+    srName: string,
     modUsername: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
-    await this.checkIfModerator(subredditId, modUsername);
+    await this.checkIfModerator(srName, modUsername);
+    console.log(srName);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
-      subredditId,
+      srName,
       pagination,
       type,
     );
   }
 
   async getSpammedThings(
-    subredditId: Types.ObjectId,
+    srName: string,
     modUsername: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
-    await this.checkIfModerator(subredditId, modUsername);
+    await this.checkIfModerator(srName, modUsername);
 
     return this.postCommentService.getSpammedThingsForSubreddit(
-      subredditId,
+      srName,
       pagination,
       type,
     );
   }
 
   async getEditedThings(
-    subredditId: Types.ObjectId,
+    srName: string,
     modUsername: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
-    await this.checkIfModerator(subredditId, modUsername);
+    await this.checkIfModerator(srName, modUsername);
 
     return this.postCommentService.getEditedThingsForSubreddit(
-      subredditId,
+      srName,
       pagination,
       type,
     );
@@ -564,6 +621,7 @@ export class SubredditService {
   }
 
   async isModerator(username: string, subreddit: Types.ObjectId) {
+    this.checkUserNotNull(username);
     const res = await this.subredditModel.findOne({
       moderators: username,
       _id: subreddit,
@@ -573,7 +631,7 @@ export class SubredditService {
   }
 
   async addRule(subreddit: Types.ObjectId, username: string, ruleDto: RuleDto) {
-    ruleDto._id = new mongoose.Types.ObjectId();
+    ruleDto._id = new Types.ObjectId();
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,
@@ -842,6 +900,11 @@ export class SubredditService {
     extraStage = {},
   ) {
     const { username } = dataSent;
+
+    if (!(await this.userService.userExist({ username }))) {
+      throw new BadRequestException("user doesn't exist");
+    }
+
     const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
       username,
       subredditId,
@@ -929,9 +992,9 @@ export class SubredditService {
     return this.modifiedCountResponse(res ?? 0);
   }
 
-  private getSubredditStatsGeneral = (
+  private getSubredditStatsGeneral = async (
     model,
-    subreddit,
+    srName,
     fieldName: string,
     format: string,
     fromDate: Date,
@@ -941,15 +1004,19 @@ export class SubredditService {
       _id: { $dateToString: { format, date: '$date' } },
     };
     groupObject[fieldName] = {
-      $count: {},
+      $sum: 1,
     };
+
+    const sr = await this.subredditModel
+      .findOne({ name: srName })
+      .select('_id');
 
     return model.aggregate([
       {
         $match: {
           $and: [
             {
-              subredditId: subreddit,
+              subredditId: sr?._id,
               date: {
                 $gt: fromDate,
                 $lt: toDate,
@@ -964,7 +1031,7 @@ export class SubredditService {
     ]);
   };
 
-  async getSrStatitisticsWeek(subreddit) {
+  async getSrStatitisticsWeek(srName: string) {
     const d = new Date();
     const fromDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 6);
     const toDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
@@ -972,7 +1039,7 @@ export class SubredditService {
     const res = await Promise.all([
       this.getSubredditStatsGeneral(
         this.userSubredditModel,
-        subreddit,
+        srName,
         'joined',
         '%Y-%m-%d',
         fromDate,
@@ -980,7 +1047,7 @@ export class SubredditService {
       ),
       this.getSubredditStatsGeneral(
         this.userSubredditLeftModel,
-        subreddit,
+        srName,
         'left',
         '%Y-%m-%d',
         fromDate,
@@ -995,7 +1062,7 @@ export class SubredditService {
     }));
   }
 
-  async getSrStatitisticsYear(subreddit) {
+  async getSrStatitisticsYear(srName: string) {
     const d = new Date();
     const fromDate = new Date(d.getFullYear(), 0);
     const toDate = new Date(d.getFullYear() + 1, 0);
@@ -1003,7 +1070,7 @@ export class SubredditService {
     const res = await Promise.all([
       this.getSubredditStatsGeneral(
         this.userSubredditModel,
-        subreddit,
+        srName,
         'joined',
         '%Y-%m',
         fromDate,
@@ -1011,7 +1078,7 @@ export class SubredditService {
       ),
       this.getSubredditStatsGeneral(
         this.userSubredditLeftModel,
-        subreddit,
+        srName,
         'left',
         '%Y-%m',
         fromDate,

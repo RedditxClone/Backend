@@ -13,4 +13,7 @@ export class GetUserInfoDto {
 
   @ApiProperty({ description: 'if i follow this user or not' })
   isFollowed: boolean;
+
+  @ApiProperty()
+  name: string;
 }
