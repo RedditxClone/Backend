@@ -434,10 +434,10 @@ export class SubredditService {
     });
   }
 
-  async checkIfModerator(subredditId: Types.ObjectId, username: string) {
+  async checkIfModerator(srName: string, username: string) {
     const moderator = await this.subredditModel.exists({
       moderators: username,
-      _id: subredditId,
+      name: srName,
     });
 
     if (!moderator) {
@@ -448,45 +448,46 @@ export class SubredditService {
   }
 
   async getUnModeratedThings(
-    subredditId: Types.ObjectId,
+    srName: string,
     modUsername: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
-    await this.checkIfModerator(subredditId, modUsername);
+    await this.checkIfModerator(srName, modUsername);
+    console.log(srName);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
-      subredditId,
+      srName,
       pagination,
       type,
     );
   }
 
   async getSpammedThings(
-    subredditId: Types.ObjectId,
+    srName: string,
     modUsername: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
-    await this.checkIfModerator(subredditId, modUsername);
+    await this.checkIfModerator(srName, modUsername);
 
     return this.postCommentService.getSpammedThingsForSubreddit(
-      subredditId,
+      srName,
       pagination,
       type,
     );
   }
 
   async getEditedThings(
-    subredditId: Types.ObjectId,
+    srName: string,
     modUsername: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
-    await this.checkIfModerator(subredditId, modUsername);
+    await this.checkIfModerator(srName, modUsername);
 
     return this.postCommentService.getEditedThingsForSubreddit(
-      subredditId,
+      srName,
       pagination,
       type,
     );

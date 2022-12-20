@@ -33,7 +33,6 @@ import { User } from '../auth/decorators/user.decorator';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ReturnPostDto } from '../post/dto';
-import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
@@ -416,13 +415,13 @@ export class SubredditController {
   @Get('/:subreddit/unmoderated')
   @UseGuards(JWTUserGuard)
   unmoderated(
-    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Param('subreddit') srName: string,
     @Query() pagination: PaginationParamsDto,
     @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getUnModeratedThings(
-      subredditId,
+      srName,
       username,
       pagination,
       thingType.type,
@@ -432,13 +431,13 @@ export class SubredditController {
   @Get('/:subreddit/spammed')
   @UseGuards(JWTUserGuard)
   spammed(
-    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Param('subreddit') srName: string,
     @Query() pagination: PaginationParamsDto,
     @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getSpammedThings(
-      subredditId,
+      srName,
       username,
       pagination,
       thingType.type,
@@ -448,13 +447,13 @@ export class SubredditController {
   @Get('/:subreddit/edited')
   @UseGuards(JWTUserGuard)
   edited(
-    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Param('subreddit') srName: string,
     @Query() pagination: PaginationParamsDto,
     @Query() thingType: ThingTypeDto,
     @User('username') username: string,
   ) {
     return this.subredditService.getEditedThings(
-      subredditId,
+      srName,
       username,
       pagination,
       thingType.type,

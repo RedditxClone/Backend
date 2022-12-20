@@ -481,7 +481,7 @@ export class ThingFetch {
     };
   }
 
-  private mongoIndexAt(arrayName, index) {
+  mongoIndexAt(arrayName, index) {
     return {
       $arrayElemAt: [arrayName, index],
     };
