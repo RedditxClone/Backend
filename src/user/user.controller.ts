@@ -207,6 +207,18 @@ export class UserController {
     return this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
 
+  @ApiOperation({ description: 'Get user by id' })
+  @ApiOkResponse({ description: 'User returned successfully' })
+  @ApiBadRequestResponse({
+    description: 'invalid user id',
+  })
+  @Get('/:user_id/id')
+  async getUser(
+    @Param('user_id', ParseObjectIdPipe) userId: Types.ObjectId,
+  ): Promise<any> {
+    return this.userService.getUserById(userId);
+  }
+
   @ApiOperation({ description: 'follow specific user' })
   @ApiCreatedResponse({
     description: 'you have followed the user successfully',
@@ -340,6 +352,21 @@ export class UserController {
     @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
   ) {
     return this.userService.makeAdmin(user_id);
+  }
+
+  @ApiOperation({
+    description: 'Delete a user (must be done by admin)',
+  })
+  @ApiOkResponse({ description: 'User deleted successfully' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTAdminGuard)
+  @Delete('/:user_id')
+  async deleteUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return this.userService.deleteAccount(user_id);
   }
 
   @ApiOperation({
