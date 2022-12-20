@@ -2,14 +2,27 @@ import type { Types } from 'mongoose';
 
 import { subredditSelectedFields } from './project-selected-fields';
 
-export const srGetUsersRelated = {
+export const srGetUsersRelated = (userId) => ({
   $lookup: {
     from: 'usersubreddits',
-    localField: '_id',
-    foreignField: 'subredditId',
-    as: 'users',
+    as: 'joined',
+    let: {
+      subredditId: '$_id',
+    },
+    pipeline: [
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: ['$subredditId', '$$subredditId'] },
+              { $eq: ['$userId', userId] },
+            ],
+          },
+        },
+      },
+    ],
   },
-};
+});
 
 export const srProjectionNumOfUsersAndIfModerator = (
   userId: Types.ObjectId | undefined,
@@ -22,43 +35,21 @@ export const srProjectionNumOfUsersAndIfModerator = (
       moderator: {
         $in: [username, '$moderators'],
       },
-      joined: {
-        $arrayElemAt: [
-          {
-            $filter: {
-              input: '$users',
-              cond: { $eq: ['$$this.userId', userId] },
-            },
-          },
-          0,
-        ],
-      },
     };
   }
 
   return {
     $addFields: {
-      users: { $size: '$users' },
       ...extraFields,
     },
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const srProjectionNumOfUsersAndIfIamJoined = (userId) => ({
   $project: {
     ...subredditSelectedFields,
-    users: { $size: '$users' },
-    joined: {
-      $arrayElemAt: [
-        {
-          $filter: {
-            input: '$users',
-            cond: { $eq: ['$$this.userId', userId] },
-          },
-        },
-        0,
-      ],
-    },
+    joined: 1,
   },
 });
 
