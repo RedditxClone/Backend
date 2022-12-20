@@ -146,7 +146,9 @@ export class SubredditService {
     username: string,
   ): Promise<SubredditDocument> {
     this.checkUserNotNull(username);
-    flairDto._id = new Types.ObjectId(Math.random() * 100);
+    flairDto._id = new Types.ObjectId(
+      Number(Date.now().toString().slice(-8, -1)),
+    );
     const sr: SubredditDocument | null | undefined = await this.subredditModel
       .findOneAndUpdate(
         { _id: subreddit, moderators: username },
@@ -162,6 +164,51 @@ export class SubredditService {
     }
 
     return sr;
+  }
+
+  updateList(list, updateDto, updateId) {
+    return list.map((v) => {
+      if (v._id.toString() === updateId) {
+        // eslint-disable-next-line unicorn/no-array-for-each
+        Object.keys(updateDto).forEach((key) => {
+          v[key] = updateDto[key];
+        });
+      }
+
+      return v;
+    });
+  }
+
+  async updateGeneralArrayOfObjects(
+    subreddit,
+    updateId,
+    updateDto,
+    username,
+    updatedField: string,
+  ) {
+    this.checkUserNotNull(username);
+    const res = await this.subredditModel
+      .findById(subreddit)
+      .select(updatedField);
+
+    if (!res) {
+      throw new BadRequestException();
+    }
+
+    const list = this.updateList(res[updatedField], updateDto, updateId);
+
+    const updateObject = {};
+    updateObject[updatedField] = list;
+
+    const res2 = await this.subredditModel.updateOne(
+      {
+        _id: subreddit,
+        moderators: username,
+      },
+      updateObject,
+    );
+
+    return this.modifiedCountResponse(res2.modifiedCount);
   }
 
   async getFlairs(subreddit: string): Promise<SubredditDocument> {

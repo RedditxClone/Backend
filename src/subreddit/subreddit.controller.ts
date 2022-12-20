@@ -43,6 +43,7 @@ import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
 import { SubTopicsDto } from './dto/subTopic.dto';
 import { ThingTypeDto } from './dto/thing-type.dto';
+import { UpdateFlairDto } from './dto/update-flair.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
@@ -165,6 +166,28 @@ export class SubredditController {
       subreddit,
       flairDto,
       user?.username,
+    );
+  }
+
+  @ApiOperation({ description: 'Update a post flair in a subreddit' })
+  @ApiCreatedResponse({ description: 'The flairs updated successfully' })
+  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(IsUserExistGuard)
+  @Patch('/:subreddit/flair/:flairId')
+  updateFlairlist(
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @Param('flairId') flairId,
+    @Body() updateFlairDto: UpdateFlairDto,
+    @Req() { user },
+  ) {
+    return this.subredditService.updateGeneralArrayOfObjects(
+      subreddit,
+      flairId,
+      updateFlairDto,
+      user?.username,
+      'flairList',
     );
   }
 
