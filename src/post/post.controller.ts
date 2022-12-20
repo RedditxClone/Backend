@@ -202,7 +202,9 @@ export class PostController {
     return this.postCommentService.remove(id, userId, 'Post');
   }
 
-  @ApiOperation({ description: 'Edit the body text of a post.' })
+  @ApiOperation({
+    description: 'edit some post information',
+  })
   @ApiOkResponse({
     description: 'The resource was updated successfully',
     type: ReturnPostDto,
@@ -216,7 +218,7 @@ export class PostController {
     @Body() dto: UpdatePostDto,
     @User('_id') userId: Types.ObjectId,
   ) {
-    return this.postCommentService.update(id, dto, userId);
+    return this.postService.update(id, dto, userId);
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })

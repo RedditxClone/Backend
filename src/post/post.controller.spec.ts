@@ -41,14 +41,14 @@ describe('PostController', () => {
     });
   });
 
-  describe('update post', () => {
-    it('should be updated successfully', async () => {
-      const res = await controller.update(
-        new Types.ObjectId(1),
-        { text: 'new text' },
-        new Types.ObjectId(1),
-      );
-      expect(res).toEqual(stubPostComment());
-    });
+  // describe('update post', () => {
+  //   it('should be updated successfully', async () => {
+  //     const res = await controller.update(
+  //       new Types.ObjectId(1),
+  //       { text: 'new text' },
+  //       new Types.ObjectId(1),
+  //     );
+  //     expect(res).toEqual(stubPostComment());
+  //   });
   });
 });

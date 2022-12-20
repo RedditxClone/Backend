@@ -8,15 +8,28 @@ export class UpdatePostDto {
   @IsString()
   text?: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsMongoId({ message: 'flair must be a mongo id' })
   flair?: Types.ObjectId;
 
+  @ApiProperty()
   @IsOptional()
   @IsBoolean()
   nsfw?: boolean;
 
+  @ApiProperty()
   @IsOptional()
   @IsBoolean()
   spoiler?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  commentsLocked?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  replyNotifications?: boolean;
 }
