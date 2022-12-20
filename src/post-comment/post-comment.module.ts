@@ -11,6 +11,8 @@ import { HideSchema } from '../post/hide.schema';
 import { PostController } from '../post/post.controller';
 import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
+import { SubredditSchema } from '../subreddit/subreddit.schema';
+import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
 import { VoteSchema } from '../vote/vote.schema';
 import { PostCommentController } from './post-comment.controller';
@@ -42,6 +44,11 @@ import { PostCommentService } from './post-comment.service';
       {
         name: 'Hide',
         schema: HideSchema,
+      },
+      { name: 'UserSubreddit', schema: SubredditUserSchema },
+      {
+        name: 'Subreddit',
+        schema: SubredditSchema,
       },
     ]),
     NotificationModule,

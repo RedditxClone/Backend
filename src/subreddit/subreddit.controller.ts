@@ -46,6 +46,9 @@ import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
 import { SubTopicsDto } from './dto/subTopic.dto';
 import { ThingTypeDto } from './dto/thing-type.dto';
+import { UpdateBannedUserDto } from './dto/update-ban-user.dto';
+import { UpdateFlairDto } from './dto/update-flair.dto';
+import { UpdateMutedUserDto } from './dto/update-mute-user.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
@@ -171,6 +174,28 @@ export class SubredditController {
       subreddit,
       flairDto,
       user?.username,
+    );
+  }
+
+  @ApiOperation({ description: 'Update a post flair in a subreddit' })
+  @ApiCreatedResponse({ description: 'The flairs updated successfully' })
+  @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
+  @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(IsUserExistGuard)
+  @Patch('/:subreddit/flair/:flairId')
+  updateFlairlist(
+    @Param('subreddit', ParseObjectIdPipe) subreddit,
+    @Param('flairId') flairId,
+    @Body() updateFlairDto: UpdateFlairDto,
+    @Req() { user },
+  ) {
+    return this.subredditService.updateGeneralArrayOfObjects(
+      subreddit,
+      flairId,
+      updateFlairDto,
+      user?.username,
+      'flairList',
     );
   }
 
@@ -570,6 +595,46 @@ export class SubredditController {
     );
   }
 
+  @ApiOperation({ description: 'update banned user' })
+  @ApiCreatedResponse({ description: 'The user updated successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(IsUserExistGuard)
+  @Patch('/:subreddit/user/:username/ban')
+  async updateBannedUser(
+    @Req() { user },
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Body() updateBannedUserDto: UpdateBannedUserDto,
+  ) {
+    return this.subredditService.updateListUserDate(
+      subredditId,
+      user?.username,
+      username,
+      'bannedUsers',
+      updateBannedUserDto,
+    );
+  }
+
+  @ApiOperation({ description: 'update muted users' })
+  @ApiCreatedResponse({ description: 'The user updated successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(IsUserExistGuard)
+  @Patch('/:subreddit/user/:username/mute')
+  async updateMutedUser(
+    @Req() { user },
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Body() updateMutedUserDto: UpdateMutedUserDto,
+  ) {
+    return this.subredditService.updateListUserDate(
+      subredditId,
+      user?.username,
+      username,
+      'mutedUsers',
+      updateMutedUserDto,
+    );
+  }
+
   @ApiOperation({ description: 'get banned users' })
   @ApiCreatedResponse({ description: 'The users returned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
@@ -700,14 +765,14 @@ export class SubredditController {
     type: ReturnPostDto,
   })
   @UseGuards(IsUserExistGuard)
-  @Get('/:subreddit_id/posts')
+  @Get('/:subreddit/posts')
   getSubredditPosts(
     @User() userInfo: UserUniqueKeys,
-    @Param('subreddit_id', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Param('subreddit') srName: string,
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postCommentService.getPostsOfSubreddit(
-      subredditId,
+      srName,
       userInfo._id,
       pagination,
     );
