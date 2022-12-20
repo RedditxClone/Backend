@@ -187,6 +187,11 @@ export class PostService {
       throw new BadRequestException(`there is no post with id ${postId}`);
     }
 
+    //increment post insights
+    await this.postModel.findByIdAndUpdate(postId, {
+      $inc: { insightsCount: 1 },
+    });
+
     return post[0];
   }
 
@@ -257,7 +262,7 @@ export class PostService {
     const dataUpdated = await this.postModel.updateOne(
       { _id: postId, subredditId },
       {
-        $inc: { commentCount: num },
+        $inc: { commentCount: num, insightsCount: num },
       },
     );
 
