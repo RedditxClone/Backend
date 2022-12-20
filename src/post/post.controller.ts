@@ -202,7 +202,9 @@ export class PostController {
     return this.postCommentService.remove(id, userId, 'Post');
   }
 
-  @ApiOperation({ description: 'Edit the body text of a post.' })
+  @ApiOperation({
+    description: 'edit some post information',
+  })
   @ApiOkResponse({
     description: 'The resource was updated successfully',
     type: ReturnPostDto,
@@ -212,8 +214,8 @@ export class PostController {
   @UseGuards(JWTUserGuard)
   @Patch(':id')
   update(
-    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() dto: UpdatePostDto,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @User('_id') userId: Types.ObjectId,
   ) {
     return this.postCommentService.update(id, dto, userId);
