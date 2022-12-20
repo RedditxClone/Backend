@@ -69,9 +69,6 @@ export class ThingFetch {
           ],
         },
       },
-      {
-        $unwind: '$me',
-      },
     ];
   }
 
@@ -81,7 +78,10 @@ export class ThingFetch {
       {
         $match: {
           $expr: {
-            $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
+            $in: [
+              '$_id',
+              { $ifNull: [this.mongoIndexAt('$me.savedPosts', 0), []] },
+            ],
           },
         },
       },
@@ -383,6 +383,7 @@ export class ThingFetch {
     return {
       text: 1,
       title: 1,
+      // subreddit: 1,
       replyNotifications: {
         $ifNull: ['$replyNotifications', false],
       },
@@ -467,6 +468,7 @@ export class ThingFetch {
         id: '$user._id',
         photo: '$user.profilePhoto',
         username: '$user.username',
+        name: '$user.displayName',
         isFollowed: {
           $cond: [
             { $gt: [{ $size: { $ifNull: ['$follow', []] } }, 0] },
@@ -496,6 +498,7 @@ export class ThingFetch {
       userPostInfo: {
         username: this.mongoIndexAt('$postUser.username', 0),
         userId: this.mongoIndexAt('$post.userId', 0),
+        name: this.mongoIndexAt('$postUser.displayName', 0),
       },
       replyNotification: 1,
       title: 1,
@@ -582,11 +585,13 @@ export class ThingFetch {
           $ifNull: [this.mongoIndexAt('$PostUserSubreddit.date', 0), null],
         },
         description: this.mongoIndexAt('$subreddit.description', 0),
+        icon: this.mongoIndexAt('$subreddit.icon', 0),
+        membersCount: this.mongoIndexAt('$subreddit.users', 0),
         isModerator: {
           $cond: [
             {
               $in: [
-                '$me.username',
+                this.mongoIndexAt('$me.username', 0),
                 {
                   $ifNull: [{ $arrayElemAt: ['$subreddit.moderators', 0] }, []],
                 },
@@ -621,7 +626,10 @@ export class ThingFetch {
   getIsSavedInfo() {
     return {
       isSaved: {
-        $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
+        $in: [
+          '$_id',
+          { $ifNull: [this.mongoIndexAt('$me.savedPosts', 0), []] },
+        ],
       },
     };
   }
