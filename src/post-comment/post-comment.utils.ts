@@ -404,6 +404,7 @@ export class ThingFetch {
       spammedAt: 1,
       nsfw: 1,
       type: 1,
+      insightsCount: 1,
       postType: 1,
       images: {
         $map: {
