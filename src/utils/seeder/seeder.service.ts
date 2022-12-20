@@ -1,10 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { CreateUserDto } from 'user/dto';
 
+import { CommentService } from '../../comment/comment.service';
+import { FollowService } from '../../follow/follow.service';
 import { PostService } from '../../post/post.service';
 import { SubredditService } from '../../subreddit/subreddit.service';
 import { UserService } from '../../user/user.service';
-import { joins, posts, subreddits, users } from './data/seeder-data';
+import {
+  follows,
+  joins,
+  postComments,
+  subreddits,
+  users,
+} from './data/seeder-data';
 
 /**
  * Provide seeding functionality
@@ -17,6 +25,8 @@ export class SeederService {
     private readonly userService: UserService,
     private readonly subredditService: SubredditService,
     private readonly postService: PostService,
+    private readonly commentService: CommentService,
+    private readonly followService: FollowService,
     private readonly logger: Logger,
   ) {}
 
@@ -26,9 +36,10 @@ export class SeederService {
   async seed() {
     await this.seedAdmin();
     await this.seedUsers();
+    await this.seedFollows();
     await this.seedSubreddits();
     await this.seedJoins();
-    await this.seedPosts();
+    await this.seedPostComments();
   }
 
   /**
@@ -64,23 +75,56 @@ export class SeederService {
    * Seed users.
    */
   private async seedUsers(): Promise<void> {
-    let hasError = false;
+    let hasError = 'no';
 
-    const results = await Promise.allSettled(
-      users.map(async (userData) => this.userService.createUser(userData)),
+    await Promise.all(
+      users.map(async (userData) =>
+        this.userService.createUser(userData).catch((error) => {
+          hasError = 'yes';
+          this.logger.error(
+            `Could not seed user: ${userData.username} \nReason: ${error}`,
+          );
+        }),
+      ),
     );
 
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        hasError = true;
-        this.logger.error(`Could not seed user: ${result.reason}`);
-      }
-    }
-
-    if (hasError) {
+    if (hasError !== 'no') {
       this.logger.warn('Seeded users with errors...');
     } else {
       this.logger.log('Successfuly seeded users...');
+    }
+  }
+
+  /**
+   * Seed follows.
+   */
+  private async seedFollows(): Promise<void> {
+    let hasError = 'no';
+
+    await Promise.all(
+      follows.map(async (followData) => {
+        const userFollower = await this.userService.getUserByUsername(
+          followData.follower,
+        );
+        const userFollowed = await this.userService.getUserByUsername(
+          followData.followed,
+        );
+
+        return this.followService
+          .follow({ follower: userFollower._id, followed: userFollowed._id })
+          .catch((error) => {
+            hasError = 'yes';
+            this.logger.error(
+              `Could not seed join: ${userFollower.username} following ${userFollowed.username}\nReason: ${error}`,
+            );
+          });
+      }),
+    );
+
+    if (hasError !== 'no') {
+      this.logger.warn('Seeded follows with errors...');
+    } else {
+      this.logger.log('Successfuly seeded follows...');
     }
   }
 
@@ -148,11 +192,11 @@ export class SeederService {
   /**
    * Seed posts.
    */
-  private async seedPosts(): Promise<void> {
+  private async seedPostComments(): Promise<void> {
     let hasError = 'no';
 
     await Promise.all(
-      posts.map(async (postData) => {
+      postComments.map(async (postData) => {
         const user = await this.userService.getUserByUsername(
           postData.username,
         );
@@ -162,7 +206,7 @@ export class SeederService {
 
         const subredditId = subreddit._id;
 
-        return this.postService
+        const post = await this.postService
           .create(user._id, { subredditId, ...postData.data })
           .catch((error) => {
             hasError = 'yes';
@@ -170,13 +214,45 @@ export class SeederService {
               `Could not seed post: ${user.username} posting in ${subreddit.name}\nReason: ${error}`,
             );
           });
+
+        if (postData.comments) {
+          return Promise.all(
+            postData.comments.map((comment) =>
+              this.recCreateComment(comment, post, post, subredditId),
+            ),
+          );
+        }
       }),
     );
 
     if (hasError !== 'no') {
-      this.logger.log('Successfuly seeded posts...');
+      this.logger.warn('Seeded posts and comments with errors...');
     } else {
-      this.logger.warn('Seeded posts with errors...');
+      this.logger.log('Successfuly seeded posts and comments...');
+    }
+  }
+
+  private async recCreateComment(commentData, post, parent, subredditId) {
+    const user = await this.userService.getUserByUsername(commentData.username);
+    const commentRes = await this.commentService
+      .create(user.username, user._id, {
+        parentId: parent._id,
+        postId: post._id,
+        subredditId,
+        text: commentData.text,
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Could not seed comment: ${user.username} commenting on ${post.title}\nReason: ${error}`,
+        );
+      });
+
+    if (commentData.comments) {
+      return Promise.all(
+        commentData.comments.map((comment) =>
+          this.recCreateComment(comment, post, commentRes, subredditId),
+        ),
+      );
     }
   }
 }

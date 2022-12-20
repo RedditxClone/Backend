@@ -5,19 +5,18 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BlockSchema } from '../../block/block.schema';
 import { BlockService } from '../../block/block.service';
 import { CommentSchema } from '../../comment/comment.schema';
+import { CommentService } from '../../comment/comment.service';
 import { FollowSchema } from '../../follow/follow.schema';
 import { FollowService } from '../../follow/follow.service';
 import { MessageSchema } from '../../message/message.schema';
-import { NotificationModule } from '../../notification/notification.module';
+import { MessageService } from '../../message/message.service';
 import { NotificationSchema } from '../../notification/notification.schema';
 import { NotificationService } from '../../notification/notification.service';
 import { HideSchema } from '../../post/hide.schema';
 import { PostSchema } from '../../post/post.schema';
 import { PostService } from '../../post/post.service';
-import { PostCommentModule } from '../../post-comment/post-comment.module';
 import { PostCommentSchema } from '../../post-comment/post-comment.schema';
 import { PostCommentService } from '../../post-comment/post-comment.service';
-import { SubredditModule } from '../../subreddit/subreddit.module';
 import { SubredditSchema } from '../../subreddit/subreddit.schema';
 import { SubredditService } from '../../subreddit/subreddit.service';
 import { SubredditUserSchema } from '../../subreddit/subreddit-user.schema';
@@ -27,7 +26,6 @@ import { UserService } from '../../user/user.service';
 import { VoteSchema } from '../../vote/vote.schema';
 import { ApiFeaturesService } from '../apiFeatures/api-features.service';
 import { ImagesHandlerModule } from '../imagesHandler/images-handler.module';
-import { rootMongooseTestModule } from '../mongoose-in-memory';
 import { SeederService } from './seeder.service';
 
 /**
@@ -38,37 +36,8 @@ import { SeederService } from './seeder.service';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    // MongooseModule.forRoot(process.env.DB_CONNECTION_STRING || ''),
-    rootMongooseTestModule(),
-    // MongooseModule.forFeature([
-    //   {
-    //     name: 'PostComment',
-    //     schema: PostCommentSchema,
-    //     discriminators: [
-    //       {
-    //         name: 'Post',
-    //         schema: PostSchema,
-    //       },
-    //       {
-    //         name: 'Comment',
-    //         schema: CommentSchema,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     name: 'Vote',
-    //     schema: VoteSchema,
-    //   },
-    //   {
-    //     name: 'Hide',
-    //     schema: HideSchema,
-    //   },
-    // ]),
-    // PostCommentModule,
-    // SubredditModule,
-    rootMongooseTestModule(),
+    MongooseModule.forRoot(process.env.DB_CONNECTION_STRING || ''),
     ImagesHandlerModule,
-    // NotificationModule,
     MongooseModule.forFeature([
       {
         name: 'PostComment',
@@ -107,14 +76,16 @@ import { SeederService } from './seeder.service';
   providers: [
     SeederService,
     Logger,
-    PostCommentService,
-    PostService,
     SubredditService,
     UserService,
     FollowService,
     BlockService,
     ApiFeaturesService,
     NotificationService,
+    CommentService,
+    PostService,
+    PostCommentService,
+    MessageService,
   ],
   exports: [SeederService],
 })

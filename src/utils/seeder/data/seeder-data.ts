@@ -26,6 +26,50 @@ export const users = [
   },
 ];
 
+export const follows = [
+  {
+    follower: 'user1',
+    followed: 'user2',
+  },
+  {
+    follower: 'user1',
+    followed: 'user3',
+  },
+  {
+    follower: 'user1',
+    followed: 'user4',
+  },
+  {
+    follower: 'user1',
+    followed: 'user5',
+  },
+
+  {
+    follower: 'user5',
+    followed: 'user1',
+  },
+
+  {
+    follower: 'user5',
+    followed: 'user2',
+  },
+
+  {
+    follower: 'user4',
+    followed: 'user2',
+  },
+
+  {
+    follower: 'user3',
+    followed: 'user2',
+  },
+
+  {
+    follower: 'user2',
+    followed: 'user5',
+  },
+];
+
 export const subreddits = [
   {
     username: 'user2',
@@ -94,7 +138,7 @@ export const joins = [
   },
 ];
 
-export const posts = [
+export const postComments = [
   {
     username: 'user5',
     subreddit: 'srfirst',
@@ -102,6 +146,12 @@ export const posts = [
       title: 'My first post in srfirst!',
       text: 'Hello everyone ^_^',
     },
+    comments: [
+      {
+        username: 'user2',
+        text: 'hi and welcome!',
+      },
+    ],
   },
 
   {
@@ -111,6 +161,32 @@ export const posts = [
       title: 'I like this subreddit',
       text: 'We should post alot more here',
     },
+    comments: [
+      {
+        username: 'user5',
+        text: 'I agree',
+      },
+      {
+        username: 'user5',
+        text: 'I am really feeling at home here',
+        comments: [
+          {
+            username: 'user4',
+            text: 'Me too',
+            comments: [
+              {
+                username: 'user1',
+                text: 'And me',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        username: 'user4',
+        text: 'Most popular baby!',
+      },
+    ],
   },
 
   {
@@ -120,6 +196,12 @@ export const posts = [
       title: 'Announcement: we are the most popular subreddit',
       text: 'We got seeded into being popular. Yay!',
     },
+    comments: [
+      {
+        username: 'user5',
+        text: 'I know right',
+      },
+    ],
   },
 
   {
@@ -138,5 +220,11 @@ export const posts = [
       title: 'why',
       text: 'Why so many subreddits? /u/user2',
     },
+    comments: [
+      {
+        username: 'user2',
+        text: 'srfirst was a huge success. why not srsecond ?',
+      },
+    ],
   },
 ];
