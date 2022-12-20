@@ -941,7 +941,7 @@ export class SubredditService {
       _id: { $dateToString: { format, date: '$date' } },
     };
     groupObject[fieldName] = {
-      $count: {},
+      $sum: 1,
     };
 
     return model.aggregate([
