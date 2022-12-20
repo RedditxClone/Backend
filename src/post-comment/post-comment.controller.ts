@@ -67,12 +67,18 @@ export class PostCommentController {
     return this.postCommentService.findOne(Number(id));
   }
 
+  @UseGuards(IsUserExistGuard)
   @Get('/:thing_id/with-children')
   getThingWithComments(
     @Param('thing_id', ParseObjectIdPipe) thingId: Types.ObjectId,
     @Query() pagination: PaginationParamsDto,
+    @User('_id') userId: Types.ObjectId,
   ) {
-    return this.postCommentService.getThings({ _id: thingId }, pagination);
+    return this.postCommentService.getThings(
+      { _id: thingId },
+      pagination,
+      userId,
+    );
   }
 
   @ApiOperation({

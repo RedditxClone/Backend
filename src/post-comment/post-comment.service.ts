@@ -103,8 +103,9 @@ export class PostCommentService {
   getThings = async (
     filter: FilterPostCommentDto,
     pagination: PaginationParamsDto,
+    userId: Types.ObjectId | undefined,
   ) => {
-    const fetcher = new ThingFetch(undefined);
+    const fetcher = new ThingFetch(userId);
     const { sort, limit, page } = pagination;
     const thing: any[] = await this.postCommentModel.aggregate([
       { $match: filter },
