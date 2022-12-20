@@ -383,7 +383,6 @@ export class ThingFetch {
     return {
       text: 1,
       title: 1,
-      // subreddit: 1,
       replyNotifications: {
         $ifNull: ['$replyNotifications', false],
       },
@@ -601,6 +600,23 @@ export class ThingFetch {
             false,
           ],
         },
+      },
+      flair: {
+        $arrayElemAt: [
+          {
+            $filter: {
+              input: this.mongoIndexAt('$subreddit.flairList', 0),
+              as: 'flairItem',
+              cond: {
+                $eq: [
+                  { $toString: '$$flairItem._id' },
+                  { $toString: '$flair' },
+                ],
+              },
+            },
+          },
+          0,
+        ],
       },
     };
   }

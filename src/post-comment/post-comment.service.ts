@@ -532,6 +532,17 @@ export class PostCommentService {
         },
       },
       ...fetcher.getPaginated(page, limit),
+      {
+        $set: {
+          images: {
+            $map: {
+              input: '$images',
+              as: 'image',
+              in: { $concat: ['/assets/posts-media/', '$$image'] },
+            },
+          },
+        },
+      },
     ]);
   }
 
@@ -830,7 +841,7 @@ export class PostCommentService {
   }
 
   async getPostsOfSubreddit(
-    subredditId: Types.ObjectId,
+    srName: string,
     userId: Types.ObjectId | undefined,
     pagination: PaginationParamsDto,
   ) {
@@ -839,7 +850,14 @@ export class PostCommentService {
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.matchForSpecificFilter({ subredditId }),
+      ...fetcher.SRInfo(),
+      {
+        $match: {
+          $expr: {
+            $eq: [fetcher.mongoIndexAt('$subreddit.name', 0), srName],
+          },
+        },
+      },
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
       ...fetcher.prepareBeforeStoring(sort),

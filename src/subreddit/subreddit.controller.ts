@@ -700,14 +700,14 @@ export class SubredditController {
     type: ReturnPostDto,
   })
   @UseGuards(IsUserExistGuard)
-  @Get('/:subreddit_id/posts')
+  @Get('/:subreddit/posts')
   getSubredditPosts(
     @User() userInfo: UserUniqueKeys,
-    @Param('subreddit_id', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Param('subreddit') srName: string,
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postCommentService.getPostsOfSubreddit(
-      subredditId,
+      srName,
       userInfo._id,
       pagination,
     );
