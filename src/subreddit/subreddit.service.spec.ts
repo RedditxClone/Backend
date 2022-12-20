@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
@@ -232,11 +232,11 @@ describe('SubredditService', () => {
     it('Should throw an error', async () => {
       await expect(async () => {
         await subredditService.findSubredditByName('JPDptiOyGFdH');
-      }).rejects.toThrow('No subreddit with such name');
+      }).rejects.toThrowError();
 
       await expect(async () => {
         await subredditService.findSubredditByName('JPDptiOyGFdH');
-      }).rejects.toThrowError(NotFoundException);
+      }).rejects.toThrowError();
     });
   });
 
@@ -271,16 +271,27 @@ describe('SubredditService', () => {
       const subredditUpdated = await subredditService.update(
         subredditDocument.name,
         updatedFields,
+        username,
       );
       expect(subredditUpdated).toEqual({ status: 'success' });
     });
 
     it('Should throw an error', async () => {
       await expect(async () => {
-        await subredditService.update('dsah1', updatedFields);
-      }).rejects.toThrow('No subreddit with such id');
+        await subredditService.update(
+          subredditDocument.name,
+          updatedFields,
+          userMute1.username,
+        );
+      }).rejects.toThrowError();
+    });
+
+    it('Should throw an error', async () => {
       await expect(async () => {
-        await subredditService.update('ad;slkj1', updatedFields);
+        await subredditService.update('dsah1', updatedFields, username);
+      }).rejects.toThrowError();
+      await expect(async () => {
+        await subredditService.update('ad;slkj1', updatedFields, username);
       }).rejects.toThrowError();
     });
   });
@@ -296,7 +307,9 @@ describe('SubredditService', () => {
       const subredditWithFlairs1 = await subredditService.createFlair(
         id,
         flair,
+        username,
       );
+
       const newFlair1: FlairDto = {
         ...flair,
         _id: new mongoose.Types.ObjectId(
@@ -312,6 +325,7 @@ describe('SubredditService', () => {
       const subredditWithFlairs2 = await subredditService.createFlair(
         id,
         flair,
+        username,
       );
       const newFlair2: FlairDto = {
         ...flair,
@@ -339,6 +353,7 @@ describe('SubredditService', () => {
       const subredditWithFlairs1 = await subredditService.createFlair(
         id,
         flair,
+        username,
       );
       const newFlair1: FlairDto = {
         ...flair,
@@ -346,9 +361,11 @@ describe('SubredditService', () => {
           subredditWithFlairs1.flairList[0]._id.toString(),
         ),
       };
+
       const subredditWithFlairs2 = await subredditService.createFlair(
         id,
         flair,
+        username,
       );
 
       // flair object was unused here
@@ -360,6 +377,7 @@ describe('SubredditService', () => {
         const newSubreddit = await subredditService.deleteFlairById(
           id,
           newFlair1._id.toString(),
+          username,
         );
         expect(newSubreddit).toEqual({
           status: 'success',
@@ -373,22 +391,27 @@ describe('SubredditService', () => {
   describe('uploadIcon', () => {
     it('should upload the icon successfully', async () => {
       const file = await readFile(__dirname + '/test/photos/testingPhoto.jpeg');
-      expect(await subredditService.uploadIcon(id, { buffer: file })).toEqual(
-        stubImagesHandler(),
-      );
+      expect(
+        await subredditService.uploadIcon(id, { buffer: file }, username),
+      ).toEqual(stubImagesHandler());
     });
   });
 
   describe('removeIcon', () => {
+    it('should throw error', async () => {
+      await expect(
+        subredditService.removeIcon(id, 'usernotexist'),
+      ).rejects.toThrowError();
+    });
     it('should remove the icon successfully', async () => {
-      expect(await subredditService.removeIcon(id)).toEqual({
+      expect(await subredditService.removeIcon(id, username)).toEqual({
         status: 'success',
       });
     });
     it('should throw error', async () => {
       await expect(
-        subredditService.removeIcon(new Types.ObjectId(1).toString()),
-      ).rejects.toThrowError('No subreddit with such id');
+        subredditService.removeIcon(new Types.ObjectId(1).toString(), username),
+      ).rejects.toThrowError();
     });
   });
 
@@ -494,13 +517,23 @@ describe('SubredditService', () => {
 
   describe('get subreddits I moderate', () => {
     it('should get subreddits successfully', async () => {
-      const res = await subredditService.subredditIModerate(username);
+      const res = await subredditService.getSubredditsWithMatch(
+        { moderators: username },
+        1,
+        10,
+        userId,
+      );
       expect(res.length).toEqual(2);
       expect(res[0]._id).toEqual(subredditDocument._id);
     });
 
     it('should return empty array', async () => {
-      const res = await subredditService.subredditIModerate('hf91');
+      const res = await subredditService.getSubredditsWithMatch(
+        { moderators: 'hf91' },
+        1,
+        10,
+        userId,
+      );
       expect(res.length).toEqual(0);
     });
   });

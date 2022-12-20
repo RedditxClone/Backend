@@ -74,9 +74,9 @@ export class SubredditController {
   @Get('/r/:subreddit_name')
   getSubredditByName(
     @Param('subreddit_name') subredditName: string,
-    @Req() { _id },
+    @Req() { user },
   ) {
-    return this.subredditService.findSubredditByName(subredditName, _id);
+    return this.subredditService.findSubredditByName(subredditName, user);
   }
 
   @ApiOperation({ description: 'Check if subreddit name is available' })
@@ -106,6 +106,7 @@ export class SubredditController {
   @ApiOperation({ description: 'Add or edit a subreddit icon.' })
   @ApiCreatedResponse({ description: 'The resource was created successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(JWTUserGuard)
   @Post(':subreddit/icon')
   uploadIcon(
     @Param('subreddit') subreddit: string,
@@ -117,8 +118,9 @@ export class SubredditController {
         .build(),
     )
     file,
+    @User('username') username: string,
   ) {
-    return this.subredditService.uploadIcon(subreddit, file);
+    return this.subredditService.uploadIcon(subreddit, file, username);
   }
 
   @ApiProperty({ description: 'join subreddit' })
@@ -152,12 +154,18 @@ export class SubredditController {
   @ApiForbiddenResponse({ description: 'Only admin can perform this action' })
   @ApiBadRequestResponse({ description: 'The subreddit id is not valid' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(IsUserExistGuard)
   @Post('/:subreddit/flair')
   createFlairlist(
     @Param('subreddit') subreddit: string,
     @Body() flairDto: FlairDto,
+    @Req() { user },
   ) {
-    return this.subredditService.createFlair(subreddit, flairDto);
+    return this.subredditService.createFlair(
+      subreddit,
+      flairDto,
+      user?.username,
+    );
   }
 
   @ApiOperation({ description: 'Get the flairs of a post in a subreddit' })
@@ -174,54 +182,60 @@ export class SubredditController {
   @ApiOkResponse({ description: 'The resource was updated successfully' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(IsUserExistGuard)
   @Patch('r/:subreddit_name')
   updateSubreddit(
     @Param('subreddit_name') subreddit: string,
     @Body() updateSubredditDto: UpdateSubredditDto,
+    @Req() { user },
   ) {
-    return this.subredditService.update(subreddit, updateSubredditDto);
+    return this.subredditService.update(
+      subreddit,
+      updateSubredditDto,
+      user?.username,
+    );
   }
 
   @ApiOperation({ description: 'Delete a subreddit icon' })
   @ApiOkResponse({ description: 'The icon was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'The subreddit not found' })
+  @UseGuards(IsUserExistGuard)
   @Delete(':subreddit/icon')
-  removeIcon(@Param('subreddit') subreddit: string) {
-    return this.subredditService.removeIcon(subreddit);
+  removeIcon(@Param('subreddit') subreddit: string, @Req() { user }) {
+    return this.subredditService.removeIcon(subreddit, user?.username);
   }
 
   @ApiOperation({ description: 'Delete flair from subreddit flairlist' })
   @ApiOkResponse({ description: 'The resource was deleted successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
+  @UseGuards(IsUserExistGuard)
   @Delete(':subreddit/flair/:flair_id')
   removeFlair(
     @Param('subreddit') subreddit: string,
     @Param('flair_id') flair_id: string,
+    @Req() { user },
   ) {
-    return this.subredditService.deleteFlairById(subreddit, flair_id);
-  }
-
-  @ApiOperation({ description: 'Get the hottest subreddits' })
-  @ApiOkResponse({ description: 'The hottest subreddits returned' })
-  @Get('/:subreddit/hot')
-  getHotSubreddits(@Param('subreddit') subreddit: string) {
-    return this.subredditService.getHotSubreddits(subreddit);
+    return this.subredditService.deleteFlairById(
+      subreddit,
+      flair_id,
+      user?.username,
+    );
   }
 
   @ApiOperation({ description: 'Add new categories to a subreddit' })
   @ApiOkResponse({ description: 'The categories were added successfully' })
-  @UseGuards(JWTUserGuard)
+  @UseGuards(IsUserExistGuard)
   @Post('/:subreddit/category')
   addSubredditsWithCategories(
     @Param('subreddit', ParseObjectIdPipe) subreddit: Types.ObjectId,
-    @User('username') username: string,
+    @Req() { user },
     @Body('categories') categories: string[],
   ) {
     return this.subredditService.addSubredditCategories(
       subreddit,
-      username,
+      user?.username,
       categories,
     );
   }
@@ -233,14 +247,14 @@ export class SubredditController {
   getSubredditsWithCategory(
     @Param('category') category: string,
     @Query() query,
-    @Req() { _id },
+    @Req() { user },
   ) {
-    // eslint-disable-next-line no-console
     return this.subredditService.getSubredditsWithCategory(
       category,
       query.page,
       query.limit,
-      _id,
+      user?._id,
+      user?.username,
     );
   }
 
@@ -263,10 +277,15 @@ export class SubredditController {
 
   @ApiOperation({ description: 'Get subreddits the user moderate' })
   @ApiOkResponse({ description: 'The subreddits returned succesfully' })
-  @UseGuards(JWTUserGuard)
+  @UseGuards(IsUserExistGuard)
   @Get('/moderation/me')
-  getSubredditsUserModerate(@User('username') username) {
-    return this.subredditService.subredditIModerate(username);
+  getSubredditsUserModerate(@Req() { user }, @Query() query) {
+    return this.subredditService.getSubredditsWithMatch(
+      { moderators: user?.username },
+      query?.page,
+      query?.limit,
+      user?._id,
+    );
   }
 
   @ApiOperation({ description: 'Get subreddits the user joined' })
@@ -297,12 +316,13 @@ export class SubredditController {
 
   @ApiOperation({ description: 'Am I a moderator in that sr' })
   @ApiOkResponse({ description: 'true or false response' })
+  @UseGuards(IsUserExistGuard)
   @Get('/:subreddit/moderation/me')
   isModerator(
     @Param('subreddit', ParseObjectIdPipe) subreddit,
-    @User('username') username: string,
+    @Req() { user },
   ) {
-    return this.subredditService.isModerator(username, subreddit);
+    return this.subredditService.isModerator(user?.username, subreddit);
   }
 
   @ApiOperation({ description: 'add a rule in a subreddit' })

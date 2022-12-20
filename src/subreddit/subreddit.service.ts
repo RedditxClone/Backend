@@ -6,8 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { Types } from 'mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserService } from '../user/user.service';
@@ -85,22 +84,22 @@ export class SubredditService {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async findSubredditByName(subredditName: string, userId?) {
-    let username;
-
-    if (userId) {
-      const user = await this.userService.getUserById(userId);
-      username = user.username;
-    }
-
+  async findSubredditByName(subredditName: string, user?) {
     const sr = await this.subredditModel.aggregate([
-      { $match: { name: subredditName } },
+      {
+        $match: {
+          $and: [
+            { name: subredditName },
+            { bannedUsers: { $ne: user?.username } },
+          ],
+        },
+      },
       srGetUsersRelated,
-      srProjectionNumOfUsersAndIfModerator(userId, username),
+      srProjectionNumOfUsersAndIfModerator(user?._id, user?.username),
     ]);
 
     if (sr.length === 0) {
-      throw new NotFoundException('No subreddit with such name');
+      throw new NotFoundException();
     }
 
     return { ...sr[0], joined: Boolean(sr[0].joined) };
@@ -117,13 +116,22 @@ export class SubredditService {
     return { status: 'success' };
   }
 
-  async update(subreddit: string, updateSubredditDto: UpdateSubredditDto) {
+  async update(
+    subreddit: string,
+    updateSubredditDto: UpdateSubredditDto,
+    username,
+  ) {
+    this.checkUserNotNull(username);
+
     const sr: SubredditDocument | null | undefined = await this.subredditModel
-      .findOneAndUpdate({ name: subreddit }, updateSubredditDto)
+      .findOneAndUpdate(
+        { name: subreddit, moderators: username },
+        updateSubredditDto,
+      )
       .select('_id');
 
     if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+      throw new BadRequestException();
     }
 
     return {
@@ -134,11 +142,13 @@ export class SubredditService {
   async createFlair(
     subreddit: string,
     flairDto: FlairDto,
+    username: string,
   ): Promise<SubredditDocument> {
-    flairDto._id = new mongoose.Types.ObjectId();
+    this.checkUserNotNull(username);
+    flairDto._id = new Types.ObjectId(Math.random() * 100);
     const sr: SubredditDocument | null | undefined = await this.subredditModel
-      .findByIdAndUpdate(
-        subreddit,
+      .findOneAndUpdate(
+        { _id: subreddit, moderators: username },
         {
           $push: { flairList: flairDto },
         },
@@ -147,7 +157,7 @@ export class SubredditService {
       .select('flairList');
 
     if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+      throw new NotFoundException();
     }
 
     return sr;
@@ -165,46 +175,62 @@ export class SubredditService {
     return sr;
   }
 
-  async uploadIcon(subreddit: string, file) {
-    const sr = await this.subredditModel.findById(subreddit).select('_id');
+  async uploadIcon(subreddit: string, file, username: string) {
+    const sr = await this.subredditModel
+      .findOne({ _id: subreddit, moderators: username })
+      .select('_id');
 
     if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+      throw new BadRequestException();
     }
 
     return this.imagesHandlerService.uploadPhoto(
       'subreddit_icons',
       file,
       this.subredditModel,
-      new mongoose.Types.ObjectId(subreddit),
+      new Types.ObjectId(subreddit),
       'icon',
     );
   }
 
-  async removeIcon(subreddit: string) {
+  private checkUserNotNull(user) {
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async removeIcon(subreddit: string, username: string) {
+    this.checkUserNotNull(username);
     const saveDir = `assets/subreddit_icons/${subreddit}.jpeg`;
     const sr = await this.subredditModel
-      .findByIdAndUpdate(subreddit, {
-        icon: '',
-      })
+      .updateOne(
+        { _id: subreddit, moderators: username },
+        {
+          icon: '',
+        },
+      )
       .select('');
 
-    if (!sr) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!sr.modifiedCount) {
+      throw new BadRequestException();
     }
 
     return this.imagesHandlerService.removePhoto(saveDir);
   }
 
-  async deleteFlairById(subreddit: string, flair_id: string) {
-    const flair = await this.subredditModel.findByIdAndUpdate(subreddit, {
-      $pull: {
-        flairList: { _id: new mongoose.Types.ObjectId(flair_id) },
+  async deleteFlairById(subreddit: string, flair_id: string, username: string) {
+    this.checkUserNotNull(username);
+    const flair = await this.subredditModel.updateOne(
+      { _id: subreddit, moderators: username },
+      {
+        $pull: {
+          flairList: { _id: new Types.ObjectId(flair_id) },
+        },
       },
-    });
+    );
 
-    if (!flair) {
-      throw new NotFoundException('No subreddit with such id');
+    if (!flair.modifiedCount) {
+      throw new BadRequestException();
     }
 
     return { status: 'success' };
@@ -223,10 +249,15 @@ export class SubredditService {
       );
     }
 
-    await this.userSubredditModel.create({
+    const queryObject = {
       subredditId,
       userId,
-    });
+    };
+
+    await Promise.all([
+      await this.userSubredditModel.create(queryObject),
+      await this.userSubredditLeftModel.deleteOne(queryObject),
+    ]);
 
     return { status: 'success' };
   }
@@ -249,10 +280,6 @@ export class SubredditService {
     });
 
     return { status: 'success' };
-  }
-
-  getHotSubreddits(_subreddit: string) {
-    return 'Waiting for api features to use the sort function';
   }
 
   private getSrCommonStages(userId, page, limit) {
@@ -360,6 +387,7 @@ export class SubredditService {
     username: string,
     categories: string[],
   ) {
+    this.checkUserNotNull(username);
     const sr = await this.subredditModel.updateOne(
       {
         _id: subreddit,
@@ -384,9 +412,14 @@ export class SubredditService {
     page = 1,
     limit = 50,
     userId?,
+    username?,
   ) {
     const res = await this.subredditModel.aggregate([
-      { $match: { categories: category } },
+      {
+        $match: {
+          $and: [{ categories: category }, { bannedUsers: { $ne: username } }],
+        },
+      },
       ...this.getSrCommonStages(userId, page, limit),
     ]);
 
@@ -428,10 +461,14 @@ export class SubredditService {
     );
   }
 
-  async subredditIModerate(username: string) {
-    return this.subredditModel.find({
-      moderators: username,
-    });
+  async getSubredditsWithMatch(matchStage, page = 1, limit = 50, userId?) {
+    this.checkUserNotNull(userId);
+    const res = await this.subredditModel.aggregate([
+      { $match: matchStage },
+      ...this.getSrCommonStages(userId, page, limit),
+    ]);
+
+    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
   }
 
   async checkIfModerator(subredditId: Types.ObjectId, username: string) {
@@ -564,6 +601,7 @@ export class SubredditService {
   }
 
   async isModerator(username: string, subreddit: Types.ObjectId) {
+    this.checkUserNotNull(username);
     const res = await this.subredditModel.findOne({
       moderators: username,
       _id: subreddit,
@@ -573,7 +611,7 @@ export class SubredditService {
   }
 
   async addRule(subreddit: Types.ObjectId, username: string, ruleDto: RuleDto) {
-    ruleDto._id = new mongoose.Types.ObjectId();
+    ruleDto._id = new Types.ObjectId();
     const res = await this.subredditModel.updateOne(
       {
         _id: subreddit,

@@ -25,7 +25,7 @@ export class IsUserExistGuard implements CanActivate {
       username: string;
     };
     req._id = new Types.ObjectId(id);
-    req.user = { _id: new Types.ObjectId(id), username };
+    req.user = { _id: req._id, username };
 
     return true;
   }

@@ -135,6 +135,7 @@ describe('PostCommentService', () => {
         text: 'flair1',
         textColor: 'blue',
       },
+      user.username,
     );
     flairId = flairList[0]._id;
   });

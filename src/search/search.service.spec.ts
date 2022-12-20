@@ -129,11 +129,23 @@ describe('SearchService', () => {
     commentData.postId = p._id;
     commentData.subredditId = subredditId1;
 
-    await subredditService.createFlair(subredditId1.toString(), flair);
+    await subredditService.createFlair(
+      subredditId1.toString(),
+      flair,
+      user1.username,
+    );
     flair.text += 'Ha';
-    await subredditService.createFlair(subredditId1.toString(), flair);
+    await subredditService.createFlair(
+      subredditId1.toString(),
+      flair,
+      user1.username,
+    );
     flair.text += 'kB';
-    await subredditService.createFlair(subredditId1.toString(), flair);
+    await subredditService.createFlair(
+      subredditId1.toString(),
+      flair,
+      user1.username,
+    );
 
     const c = await commentService.create(id1, commentData);
     commentId = c._id;
