@@ -33,7 +33,7 @@ class MutedUsers {
   date: Date;
 
   @Prop()
-  reason: string;
+  reason?: string;
 }
 
 class BannedUsers {
@@ -47,16 +47,16 @@ class BannedUsers {
   reason: string;
 
   @Prop()
-  modNote: string;
+  modNote?: string;
 
   @Prop()
-  permanent: boolean;
+  permanent?: boolean;
 
   @Prop()
-  duration: string;
+  duration?: string;
 
   @Prop()
-  message: string;
+  message?: string;
 }
 
 export class Rule {

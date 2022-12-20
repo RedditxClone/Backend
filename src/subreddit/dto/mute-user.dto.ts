@@ -5,5 +5,5 @@ export class MuteUserDto {
   username: string;
 
   @IsNotEmpty()
-  reason: string;
+  reason?: string;
 }

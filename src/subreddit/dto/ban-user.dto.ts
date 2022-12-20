@@ -7,11 +7,11 @@ export class BanUserDto {
   @IsNotEmpty()
   reason: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   modNote?: string;
 
-  @IsNotEmpty()
-  permanent: boolean;
+  @IsOptional()
+  permanent?: boolean;
 
   @IsOptional()
   duration?: string;
