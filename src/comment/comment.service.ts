@@ -30,6 +30,7 @@ export class CommentService {
     username: string,
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): Promise<Comment & { _id: Types.ObjectId }> => {
     const parentId = new Types.ObjectId(createCommentDto.parentId);
     const postId = new Types.ObjectId(createCommentDto.postId);
