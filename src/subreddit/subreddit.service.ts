@@ -90,7 +90,8 @@ export class SubredditService {
         $match: {
           $and: [
             { name: subredditName },
-            { bannedUsers: { $ne: user?.username } },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'bannedUsers.username': { $ne: user?.username } },
           ],
         },
       },
