@@ -518,8 +518,8 @@ export class UserController {
   @Get('/:user_id/posts')
   @UseGuards(IsUserExistGuard)
   getUserPosts(
-    @User('_id') ownerId: Types.ObjectId,
-    @Param('user_id', ParseObjectIdPipe) userId: Types.ObjectId,
+    @User('_id') userId: Types.ObjectId,
+    @Param('user_id', ParseObjectIdPipe) ownerId: Types.ObjectId,
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.userService.getUserPosts(ownerId, userId, pagination);
