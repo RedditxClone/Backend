@@ -239,23 +239,35 @@ export class PostService {
     const fetcher = new ThingFetch(userInfo._id);
     const { limit, page, sort } = pagination;
 
-    return this.postModel.aggregate([
+    const posts = await this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchAllRelatedPosts(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
-      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
+
+    if (posts.length >= limit) {
+      return posts;
+    }
+
+    const otherRandomPosts = await this.getRandomTimeLine({
+      limit: limit - posts.length,
+      page,
+      sort,
+    });
+
+    return [...posts, ...otherRandomPosts];
   }
 
   async getTimeLine(
@@ -279,14 +291,14 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
-      ...fetcher.getMe(),
-      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -346,14 +358,14 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.getHidden(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
-      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -371,14 +383,14 @@ export class PostService {
       ...fetcher.prepare(),
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
-      ...fetcher.getMe(),
-      ...fetcher.filterBannedUsers(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),

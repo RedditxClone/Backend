@@ -647,7 +647,12 @@ export class ThingFetch {
               {
                 $in: [
                   this.mongoIndexAt('$me.username', 0),
-                  this.mongoIndexAt('$subreddit.bannedUsers.username', 0),
+                  {
+                    $ifNull: [
+                      this.mongoIndexAt('$subreddit.bannedUsers.username', 0),
+                      [],
+                    ],
+                  },
                 ],
               },
             ],
