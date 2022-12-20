@@ -106,7 +106,7 @@ export class PostController {
   @Get('timeline')
   @UseGuards(IsUserExistGuard)
   getTimeLine(
-    @User() userInfo: UserUniqueKeys,
+    @User() userInfo: UserUniqueKeys | undefined,
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postService.getTimeLine(userInfo, pagination);
