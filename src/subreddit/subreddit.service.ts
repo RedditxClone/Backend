@@ -510,7 +510,6 @@ export class SubredditService {
     type: string | undefined,
   ) {
     await this.checkIfModerator(srName, modUsername);
-    console.log(srName);
 
     return this.postCommentService.getUnModeratedThingsForSubreddit(
       srName,
