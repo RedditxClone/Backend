@@ -283,6 +283,10 @@ export class PostService {
     await this.postModel.findByIdAndUpdate(thingId, {
       approvedBy: modUsername,
       approvedAt: Date.now(),
+      spammedAt: null,
+      spammedBy: null,
+      removedBy: null,
+      removedAt: null,
     });
 
     return { status: 'success' };

@@ -668,6 +668,10 @@ export class PostCommentService {
     await this.postCommentModel.findByIdAndUpdate(thingId, {
       spammedBy: moderatorUsername,
       spammedAt: Date.now(),
+      approvedBy: null,
+      approvedAt: null,
+      removedBy: null,
+      removedAt: null,
     });
 
     return { status: 'success' };
@@ -710,6 +714,10 @@ export class PostCommentService {
     await this.postCommentModel.findByIdAndUpdate(thingId, {
       removedBy: modUsername,
       removedAt: Date.now(),
+      spammedBy: null,
+      spammedAt: null,
+      approvedBy: null,
+      approvedAt: null,
     });
 
     return { status: 'success' };
