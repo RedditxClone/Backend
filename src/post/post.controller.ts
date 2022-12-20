@@ -214,11 +214,11 @@ export class PostController {
   @UseGuards(JWTUserGuard)
   @Patch(':id')
   update(
-    @Body() dto: UpdatePostDto,
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: UpdatePostDto,
     @User('_id') userId: Types.ObjectId,
   ) {
-    return this.postCommentService.update(id, dto, userId);
+    return this.postService.update(id, dto, userId);
   }
 
   @ApiNotFoundResponse({ description: 'Resource not found' })
