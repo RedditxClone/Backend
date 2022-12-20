@@ -7,7 +7,10 @@ import { BlockService } from '../../block/block.service';
 import { CommentSchema } from '../../comment/comment.schema';
 import { FollowSchema } from '../../follow/follow.schema';
 import { FollowService } from '../../follow/follow.service';
+import { MessageSchema } from '../../message/message.schema';
 import { NotificationModule } from '../../notification/notification.module';
+import { NotificationSchema } from '../../notification/notification.schema';
+import { NotificationService } from '../../notification/notification.service';
 import { HideSchema } from '../../post/hide.schema';
 import { PostSchema } from '../../post/post.schema';
 import { PostService } from '../../post/post.service';
@@ -61,11 +64,11 @@ import { SeederService } from './seeder.service';
     //     schema: HideSchema,
     //   },
     // ]),
-    PostCommentModule,
-    SubredditModule,
+    // PostCommentModule,
+    // SubredditModule,
     rootMongooseTestModule(),
     ImagesHandlerModule,
-    NotificationModule,
+    // NotificationModule,
     MongooseModule.forFeature([
       {
         name: 'PostComment',
@@ -87,7 +90,7 @@ import { SeederService } from './seeder.service';
       { name: 'Subreddit', schema: SubredditSchema },
       { name: 'UserSubreddit', schema: SubredditUserSchema },
       { name: 'UserSubredditLeft', schema: SubredditUserLeftSchema },
-
+      { name: 'Notification', schema: NotificationSchema },
       { name: 'User', schema: UserSchema },
       {
         name: 'Vote',
@@ -97,6 +100,7 @@ import { SeederService } from './seeder.service';
         name: 'Hide',
         schema: HideSchema,
       },
+      { name: 'Message', schema: MessageSchema },
     ]),
   ],
   controllers: [],
@@ -110,6 +114,7 @@ import { SeederService } from './seeder.service';
     FollowService,
     BlockService,
     ApiFeaturesService,
+    NotificationService,
   ],
   exports: [SeederService],
 })
