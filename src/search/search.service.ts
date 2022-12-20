@@ -22,39 +22,28 @@ export class SearchService {
     );
   }
 
-  searchCommunities = async (
-    data: string,
-    userId: Types.ObjectId,
-    page,
-    numberOfData,
-  ) => {
-    const user = await this.userService.getUserIfExist(userId);
-
-    return this.subredditService.getSearchSubredditAggregation(
+  searchCommunities = async (data: string, page, numberOfData, user?) =>
+    this.subredditService.getSearchSubredditAggregation(
       data,
       user?.username,
-      userId,
+      user?._id,
       page,
       numberOfData,
     );
-  };
 
   searchCommunitiesStartsWith = async (
     data: string,
-    userId: Types.ObjectId,
     page,
     numberOfData,
-  ) => {
-    const { username } = await this.userService.getUserById(userId);
-
-    return this.subredditService.getSubredditStartsWithChar(
+    user?,
+  ) =>
+    this.subredditService.getSubredditStartsWithChar(
       data,
-      username,
-      userId,
+      user?.username,
+      user?._id,
       page,
       numberOfData,
     );
-  };
 
   searchPosts = (data: string, query, blocker: Types.ObjectId) =>
     this.postCommentService.searchPostAggregate(

@@ -28,6 +28,8 @@ describe('SearchService', () => {
   let searchService: SearchService;
   let id1: Types.ObjectId;
   let id2: Types.ObjectId;
+  let username1;
+  let username2;
   let postId: Types.ObjectId;
   let commentId: Types.ObjectId;
   let subredditId1: Types.ObjectId;
@@ -101,8 +103,11 @@ describe('SearchService', () => {
       module.get<SubredditService>(SubredditService);
     const user1 = await userService.createUser(user1Data);
     id1 = user1._id;
+    username1 = user1.username;
+
     const user2 = await userService.createUser(user2Data);
     id2 = user2._id;
+    username2 = user2.username;
     await userService.createUser(user3Data);
 
     const subredditDocument1 = await subredditService.create(
@@ -228,7 +233,10 @@ describe('SearchService', () => {
 
   describe('search for communities', () => {
     it('should find the communities successfully', async () => {
-      const data = await searchService.searchCommunities('11', id1, 1, 10);
+      const data = await searchService.searchCommunities('11', 1, 10, {
+        _id: id1,
+        username: username1,
+      });
       expect(data).toEqual([
         expect.objectContaining({
           _id: subredditId1,
@@ -246,7 +254,10 @@ describe('SearchService', () => {
     });
 
     it('should find only 1 (Testing Joining and pagination)', async () => {
-      const data = await searchService.searchCommunities('11', id2, 2, 1);
+      const data = await searchService.searchCommunities('11', 2, 1, {
+        _id: id2,
+        username: username2,
+      });
 
       expect(data).toEqual([
         expect.objectContaining({
@@ -258,7 +269,10 @@ describe('SearchService', () => {
       ]);
     });
     it('should find only 1', async () => {
-      const data = await searchService.searchCommunities('11s', id1, 1, 10);
+      const data = await searchService.searchCommunities('11s', 1, 10, {
+        _id: id1,
+        username: username1,
+      });
       expect(data).toEqual([
         expect.objectContaining({
           _id: subredditId1,
@@ -269,7 +283,10 @@ describe('SearchService', () => {
       ]);
     });
     it('should find nothing', async () => {
-      const data = await searchService.searchCommunities('arref', id1, 1, 20);
+      const data = await searchService.searchCommunities('arref', 1, 20, {
+        _id: id1,
+        username: username1,
+      });
       expect(data.length).toBe(0);
     });
   });
@@ -278,9 +295,12 @@ describe('SearchService', () => {
     it('should find the communities successfully', async () => {
       const data = await searchService.searchCommunitiesStartsWith(
         '11',
-        id1,
         1,
         10,
+        {
+          _id: id1,
+          username: username1,
+        },
       );
       expect(data.length).toBe(1);
       expect(data[0]).toEqual(

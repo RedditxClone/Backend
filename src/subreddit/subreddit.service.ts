@@ -94,7 +94,7 @@ export class SubredditService {
           ],
         },
       },
-      srGetUsersRelated,
+      srGetUsersRelated(user?._id),
       srProjectionNumOfUsersAndIfModerator(user?._id, user?.username),
     ]);
 
@@ -102,7 +102,7 @@ export class SubredditService {
       throw new NotFoundException();
     }
 
-    return { ...sr[0], joined: Boolean(sr[0].joined) };
+    return { ...sr[0], joined: sr[0].joined.length > 0 };
   }
 
   async checkSubredditAvailable(subredditName: string) {
@@ -259,6 +259,11 @@ export class SubredditService {
       await this.userSubredditLeftModel.deleteOne(queryObject),
     ]);
 
+    await this.subredditModel.updateOne(
+      { _id: subredditId },
+      { $inc: { users: 1 } },
+    );
+
     return { status: 'success' };
   }
 
@@ -274,10 +279,17 @@ export class SubredditService {
       );
     }
 
-    await this.userSubredditLeftModel.create({
-      subredditId,
-      userId,
-    });
+    await Promise.all([
+      await this.userSubredditLeftModel.create({
+        subredditId,
+        userId,
+      }),
+
+      await this.subredditModel.updateOne(
+        { _id: subredditId },
+        { $inc: { users: -1 } },
+      ),
+    ]);
 
     return { status: 'success' };
   }
@@ -290,7 +302,7 @@ export class SubredditService {
           srId: '$_id',
         },
       },
-      srGetUsersRelated,
+      srGetUsersRelated(userId),
       srProjectionNumOfUsersAndIfIamJoined(userId),
       ...srPagination(page, limit),
     ];
@@ -316,7 +328,7 @@ export class SubredditService {
       ...this.getSrCommonStages(userId, page, numberOfData),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   async getSearchSubredditAggregation(
@@ -344,7 +356,7 @@ export class SubredditService {
       ...this.getSrCommonStages(userId, pageNumber, numberOfData),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   getSearchFlairsAggregate(
@@ -423,7 +435,7 @@ export class SubredditService {
       ...this.getSrCommonStages(userId, page, limit),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   private modifiedCountResponse(modifiedCount, message?) {
@@ -474,7 +486,7 @@ export class SubredditService {
       ...this.getSrCommonStages(userId, page, limit),
     ]);
 
-    return res.map((v) => ({ ...v, joined: Boolean(v.joined) }));
+    return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
   async checkIfModerator(subredditId: Types.ObjectId, username: string) {
@@ -990,7 +1002,7 @@ export class SubredditService {
       _id: { $dateToString: { format, date: '$date' } },
     };
     groupObject[fieldName] = {
-      $count: {},
+      $sum: 1,
     };
 
     return model.aggregate([

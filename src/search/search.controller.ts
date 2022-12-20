@@ -29,9 +29,9 @@ export class SearchController {
     @Query('word') word,
     @Query('page') page,
     @Query('limit') limit,
-    @Req() { _id },
+    @Req() { user },
   ) {
-    return this.searchService.searchCommunities(word, _id, page, limit);
+    return this.searchService.searchCommunities(word, page, limit, user);
   }
 
   @ApiProperty({
@@ -43,13 +43,13 @@ export class SearchController {
     @Query('word') word,
     @Query('page') page,
     @Query('limit') limit,
-    @Req() { _id },
+    @Req() { user },
   ) {
     return this.searchService.searchCommunitiesStartsWith(
       word,
-      _id,
       page,
       limit,
+      user,
     );
   }
 
@@ -77,10 +77,10 @@ export class SearchController {
   @UseGuards(IsUserExistGuard)
   @ApiProperty({ description: 'genral search' })
   @Get('/general')
-  searchGeneral(@Query('word') word, @Req() { _id }) {
+  searchGeneral(@Query('word') word, @Req() { user }) {
     return Promise.all([
-      this.searchService.searchPeople(word, 1, 5, _id),
-      this.searchService.searchCommunities(word, _id, 1, 5),
+      this.searchService.searchPeople(word, 1, 5, user?._id),
+      this.searchService.searchCommunities(word, 1, 5, user),
     ]);
   }
 

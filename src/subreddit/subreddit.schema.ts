@@ -210,6 +210,9 @@ export class Subreddit {
 
   @Prop({ default: 0 })
   notificationType: number;
+
+  @Prop({ default: 1 })
+  users: number;
 }
 
 export const SubredditSchema = SchemaFactory.createForClass(Subreddit);

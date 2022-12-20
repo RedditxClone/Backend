@@ -8,6 +8,7 @@ export const subredditSelectedFields = {
   over18: 1,
   categories: 1,
   createdDate: 1,
+  users: 1,
 };
 
 export const userSelectedFields = {
