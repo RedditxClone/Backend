@@ -343,6 +343,21 @@ export class UserController {
   }
 
   @ApiOperation({
+    description: 'Delete a user (must be done by admin)',
+  })
+  @ApiOkResponse({ description: 'User deleted successfully' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTAdminGuard)
+  @Delete('/:user_id')
+  async deleteUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return this.userService.deleteAccount(user_id);
+  }
+
+  @ApiOperation({
     description: 'Delete the user account by sitting the accountClosed to true',
   })
   @ApiOkResponse({ description: 'Account deleted successfully ' })
