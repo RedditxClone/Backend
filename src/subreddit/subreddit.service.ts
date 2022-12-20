@@ -991,9 +991,9 @@ export class SubredditService {
     return this.modifiedCountResponse(res ?? 0);
   }
 
-  private getSubredditStatsGeneral = (
+  private getSubredditStatsGeneral = async (
     model,
-    subreddit,
+    srName,
     fieldName: string,
     format: string,
     fromDate: Date,
@@ -1006,12 +1006,16 @@ export class SubredditService {
       $sum: 1,
     };
 
+    const sr = await this.subredditModel
+      .findOne({ name: srName })
+      .select('_id');
+
     return model.aggregate([
       {
         $match: {
           $and: [
             {
-              subredditId: subreddit,
+              subredditId: sr?._id,
               date: {
                 $gt: fromDate,
                 $lt: toDate,
@@ -1026,7 +1030,7 @@ export class SubredditService {
     ]);
   };
 
-  async getSrStatitisticsWeek(subreddit) {
+  async getSrStatitisticsWeek(srName: string) {
     const d = new Date();
     const fromDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 6);
     const toDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
@@ -1034,7 +1038,7 @@ export class SubredditService {
     const res = await Promise.all([
       this.getSubredditStatsGeneral(
         this.userSubredditModel,
-        subreddit,
+        srName,
         'joined',
         '%Y-%m-%d',
         fromDate,
@@ -1042,7 +1046,7 @@ export class SubredditService {
       ),
       this.getSubredditStatsGeneral(
         this.userSubredditLeftModel,
-        subreddit,
+        srName,
         'left',
         '%Y-%m-%d',
         fromDate,
@@ -1057,7 +1061,7 @@ export class SubredditService {
     }));
   }
 
-  async getSrStatitisticsYear(subreddit) {
+  async getSrStatitisticsYear(srName: string) {
     const d = new Date();
     const fromDate = new Date(d.getFullYear(), 0);
     const toDate = new Date(d.getFullYear() + 1, 0);
@@ -1065,7 +1069,7 @@ export class SubredditService {
     const res = await Promise.all([
       this.getSubredditStatsGeneral(
         this.userSubredditModel,
-        subreddit,
+        srName,
         'joined',
         '%Y-%m',
         fromDate,
@@ -1073,7 +1077,7 @@ export class SubredditService {
       ),
       this.getSubredditStatsGeneral(
         this.userSubredditLeftModel,
-        subreddit,
+        srName,
         'left',
         '%Y-%m',
         fromDate,

@@ -1047,7 +1047,8 @@ describe('SubredditService', () => {
     });
   });
 
-  let statId;
+  let statName: string;
+  let statId: Types.ObjectId;
 
   const createDummyDataForStats = async () => {
     const sr = await subredditService.create(
@@ -1061,6 +1062,7 @@ describe('SubredditService', () => {
     );
 
     statId = sr._id;
+    statName = sr.name;
 
     const promisesJoined: any = [];
     const promisesLeft: any = [];
@@ -1088,7 +1090,7 @@ describe('SubredditService', () => {
   describe('subreddit statitistics', () => {
     it('should get statitstics right', async () => {
       await createDummyDataForStats();
-      const res = await subredditService.getSrStatitisticsWeek(statId);
+      const res = await subredditService.getSrStatitisticsWeek(statName);
 
       expect(res.length).toBe(1);
       expect(res[0]).toEqual(expect.objectContaining({ joined: 14, left: 7 }));
@@ -1097,7 +1099,7 @@ describe('SubredditService', () => {
 
   describe('subreddit statitistics', () => {
     it('should get statitstics right', async () => {
-      const res = await subredditService.getSrStatitisticsYear(statId);
+      const res = await subredditService.getSrStatitisticsYear(statName);
 
       expect(res.length).toBe(1);
       expect(res[0]).toEqual(expect.objectContaining({ joined: 14, left: 7 }));
