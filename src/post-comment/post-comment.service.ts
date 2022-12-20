@@ -287,14 +287,15 @@ export class PostCommentService {
       ...fetcher.prepare(),
       ...fetcher.filterForSavedOnly(),
       ...fetcher.filterBlocked(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
-      ...fetcher.SRInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -307,13 +308,14 @@ export class PostCommentService {
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -335,14 +337,15 @@ export class PostCommentService {
           },
         },
       },
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.userInfo(),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -442,14 +445,15 @@ export class PostCommentService {
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetUpvoteOnly(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
-      ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -461,14 +465,15 @@ export class PostCommentService {
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchToGetDownvoteOnly(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
-      ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -741,14 +746,15 @@ export class PostCommentService {
           },
         },
       },
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
       ...fetcher.filterBlocked(),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
@@ -771,13 +777,14 @@ export class PostCommentService {
         },
       },
       ...fetcher.filterBlocked(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -868,13 +875,14 @@ export class PostCommentService {
       },
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),

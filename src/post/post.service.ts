@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { Subreddit } from 'subreddit/subreddit.schema';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { SubredditUser } from '../subreddit/subreddit-user.schema';
 import type { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
@@ -20,6 +22,9 @@ export class PostService {
   constructor(
     @InjectModel('Post') private readonly postModel: Model<Post>,
     @InjectModel('Hide') private readonly hideModel: Model<Hide>,
+    @InjectModel('UserSubreddit')
+    private readonly subredditUserModel: Model<SubredditUser>,
+    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
     private readonly postCommentService: PostCommentService,
   ) {}
 
@@ -41,6 +46,44 @@ export class PostService {
     return { status: 'success' };
   }
 
+  async checkIfTheUserJoinedSR(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    const userJoined = await this.subredditUserModel.exists({
+      userId: userInfo._id,
+      subredditId,
+    });
+
+    if (!userJoined) {
+      throw new NotFoundException("you haven't joined such a subreddit");
+    }
+  }
+
+  async checkIfTheUserCanDoActionInsideSR(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    const username = userInfo.username || '';
+    const sr = await this.subredditModel.findById(subredditId);
+    const bannedUsers = sr?.bannedUsers.map((user) => user.username);
+    const mutedUsers = sr?.mutedUsers.map((user) => user.username);
+
+    if (bannedUsers?.includes(username) || mutedUsers?.includes(username)) {
+      throw new BadRequestException(
+        'banned and muted users cannot do this action',
+      );
+    }
+  }
+
+  async checkIfTheUserCanCreatePost(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    await this.checkIfTheUserJoinedSR(userInfo, subredditId);
+    await this.checkIfTheUserCanDoActionInsideSR(userInfo, subredditId);
+  }
+
   /**
    * Create a post in a subreddit.
    * @param userId user's id whom is creating the post
@@ -49,15 +92,13 @@ export class PostService {
    * @throws BadRequestException when falling to create a post
    */
   create = async (
-    userId: Types.ObjectId,
+    userInfo: UserUniqueKeys,
     createPostDto: CreatePostDto,
   ): Promise<Post & { _id: Types.ObjectId }> => {
-    //TODO:
-    // add this validation to dto and it will transfer it and add validation
-    // make sure that there exist a subreddit with this id
     const subredditId = new Types.ObjectId(createPostDto.subredditId);
+    await this.checkIfTheUserCanCreatePost(userInfo, subredditId);
     const post: Post & { _id: Types.ObjectId } = await this.postModel.create({
-      userId,
+      userId: userInfo._id,
       ...createPostDto,
       subredditId,
     });
@@ -177,8 +218,9 @@ export class PostService {
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
       ...fetcher.getMe(),
-      ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
+      ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -202,22 +244,35 @@ export class PostService {
     const fetcher = new ThingFetch(userInfo._id);
     const { limit, page, sort } = pagination;
 
-    return this.postModel.aggregate([
+    const posts = await this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchAllRelatedPosts(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
+
+    if (posts.length >= limit) {
+      return posts;
+    }
+
+    const otherRandomPosts = await this.getRandomTimeLine({
+      limit: limit - posts.length,
+      page,
+      sort,
+    });
+
+    return [...posts, ...otherRandomPosts];
   }
 
   async getTimeLine(
@@ -241,13 +296,14 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -307,12 +363,14 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.getHidden(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
@@ -330,13 +388,14 @@ export class PostService {
       ...fetcher.prepare(),
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
