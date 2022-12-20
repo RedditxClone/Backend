@@ -69,9 +69,6 @@ export class ThingFetch {
           ],
         },
       },
-      {
-        $unwind: '$me',
-      },
     ];
   }
 
@@ -81,7 +78,10 @@ export class ThingFetch {
       {
         $match: {
           $expr: {
-            $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
+            $in: [
+              '$_id',
+              { $ifNull: [this.mongoIndexAt('$me.savedPosts', 0), []] },
+            ],
           },
         },
       },
@@ -590,7 +590,7 @@ export class ThingFetch {
           $cond: [
             {
               $in: [
-                '$me.username',
+                this.mongoIndexAt('$me.username', 0),
                 {
                   $ifNull: [{ $arrayElemAt: ['$subreddit.moderators', 0] }, []],
                 },
@@ -625,7 +625,10 @@ export class ThingFetch {
   getIsSavedInfo() {
     return {
       isSaved: {
-        $in: ['$_id', { $ifNull: ['$me.savedPosts', []] }],
+        $in: [
+          '$_id',
+          { $ifNull: [this.mongoIndexAt('$me.savedPosts', 0), []] },
+        ],
       },
     };
   }
