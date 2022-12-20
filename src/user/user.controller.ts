@@ -207,6 +207,18 @@ export class UserController {
     return this.userService.checkAvailableUsername(availableUsernameDto, res);
   }
 
+  @ApiOperation({ description: 'Get user by id' })
+  @ApiOkResponse({ description: 'User returned successfully' })
+  @ApiBadRequestResponse({
+    description: 'invalid user id',
+  })
+  @Get('/:user_id/id')
+  async getUser(
+    @Param('user_id', ParseObjectIdPipe) userId: Types.ObjectId,
+  ): Promise<any> {
+    return this.userService.getUserById(userId);
+  }
+
   @ApiOperation({ description: 'follow specific user' })
   @ApiCreatedResponse({
     description: 'you have followed the user successfully',
