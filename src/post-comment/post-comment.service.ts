@@ -792,6 +792,9 @@ export class PostCommentService {
       ...fetcher.postInfoOfComment(),
       ...fetcher.userInfo(),
       ...fetcher.getCommentProject(),
+      {
+        $sort: { postId: 1, _id: 1 },
+      },
     ]);
   }
 
