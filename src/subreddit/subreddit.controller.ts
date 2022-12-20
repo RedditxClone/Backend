@@ -46,7 +46,9 @@ import { MuteUserDto } from './dto/mute-user.dto';
 import { RuleDto } from './dto/rule.dto';
 import { SubTopicsDto } from './dto/subTopic.dto';
 import { ThingTypeDto } from './dto/thing-type.dto';
+import { UpdateBannedUserDto } from './dto/update-ban-user.dto';
 import { UpdateFlairDto } from './dto/update-flair.dto';
+import { UpdateMutedUserDto } from './dto/update-mute-user.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
@@ -590,6 +592,46 @@ export class SubredditController {
       moderatorUsername,
       username,
       'bannedUsers',
+    );
+  }
+
+  @ApiOperation({ description: 'update banned user' })
+  @ApiCreatedResponse({ description: 'The user updated successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(IsUserExistGuard)
+  @Patch('/:subreddit/user/:username/ban')
+  async updateBannedUser(
+    @Req() { user },
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Body() updateBannedUserDto: UpdateBannedUserDto,
+  ) {
+    return this.subredditService.updateListUserDate(
+      subredditId,
+      user?.username,
+      username,
+      'bannedUsers',
+      updateBannedUserDto,
+    );
+  }
+
+  @ApiOperation({ description: 'update muted users' })
+  @ApiCreatedResponse({ description: 'The user updated successfully' })
+  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
+  @UseGuards(IsUserExistGuard)
+  @Patch('/:subreddit/user/:username/mute')
+  async updateMutedUser(
+    @Req() { user },
+    @Param('username') username: string,
+    @Param('subreddit', ParseObjectIdPipe) subredditId: Types.ObjectId,
+    @Body() updateMutedUserDto: UpdateMutedUserDto,
+  ) {
+    return this.subredditService.updateListUserDate(
+      subredditId,
+      user?.username,
+      username,
+      'mutedUsers',
+      updateMutedUserDto,
     );
   }
 
