@@ -441,6 +441,12 @@ export class SubredditService {
     newModuratorUsername: string,
     subreddit: Types.ObjectId,
   ) {
+    if (
+      !(await this.userService.userExist({ username: newModuratorUsername }))
+    ) {
+      throw new BadRequestException("user doesn't exist");
+    }
+
     const res = await this.subredditModel.updateOne(
       {
         moderators: moderatorUsername,
@@ -880,6 +886,11 @@ export class SubredditService {
     extraStage = {},
   ) {
     const { username } = dataSent;
+
+    if (!(await this.userService.userExist({ username }))) {
+      throw new BadRequestException("user doesn't exist");
+    }
+
     const isUserAlreadyProccessed = await this.checkIfUserAlreadyProccessed(
       username,
       subredditId,
