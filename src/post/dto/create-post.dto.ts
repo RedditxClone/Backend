@@ -1,12 +1,19 @@
 import {
   IsBoolean,
   IsDate,
+  IsEnum,
   IsMongoId,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { Types } from 'mongoose';
 
+export enum PostType {
+  text,
+  images,
+  video,
+  link,
+}
 export class CreatePostDto {
   @IsMongoId()
   subredditId: Types.ObjectId;
@@ -32,4 +39,11 @@ export class CreatePostDto {
   @IsDate()
   @IsOptional()
   publishedDate?: Date;
+
+  @IsEnum(PostType, {
+    message: ({ value }) =>
+      `${value} must be one of (video, images, text and link)`,
+  })
+  @IsOptional()
+  postType?: string = 'text';
 }
