@@ -11,7 +11,7 @@ async function bootstrap() {
 
   try {
     await seeder.seed();
-    logger.debug('Seeding completed successfully!');
+    logger.log('Seeding completed successfully!');
   } catch (error) {
     logger.error('Seeding failed!');
 
@@ -19,6 +19,9 @@ async function bootstrap() {
   } finally {
     await appContext.close();
   }
+
+  // eslint-disable-next-line unicorn/no-process-exit
+  process.exit(0);
 }
 
 void bootstrap();
