@@ -8,7 +8,7 @@ export class PostComment {
   @Prop({ default: false })
   isDeleted: boolean;
 
-  @Prop({ required: true })
+  @Prop({ default: '' })
   text: string;
 
   @Prop({ default: 0 })

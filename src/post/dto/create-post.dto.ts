@@ -22,7 +22,8 @@ export class CreatePostDto {
   title: string;
 
   @IsString()
-  text: string;
+  @IsOptional()
+  text?: string;
 
   @IsBoolean()
   @IsOptional()
