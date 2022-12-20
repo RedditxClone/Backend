@@ -439,6 +439,24 @@ export class ThingFetch {
           foreignField: '_id',
         },
       },
+      {
+        $lookup: {
+          from: 'users',
+          as: 'postUser',
+          let: {
+            postUserId: this.mongoIndexAt('$post.userId', 0),
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$$postUserId', '$_id'],
+                },
+              },
+            },
+          ],
+        },
+      },
     ];
   }
 
@@ -471,9 +489,13 @@ export class ThingFetch {
     return {
       text: 1,
       postInfo: {
+        id: this.mongoIndexAt('$post._id', 0),
         title: this.mongoIndexAt('$post.title', 0),
       },
-
+      userPostInfo: {
+        username: this.mongoIndexAt('$postUser.username', 0),
+        userId: this.mongoIndexAt('$post.userId', 0),
+      },
       replyNotification: 1,
       title: 1,
       postId: 1,
