@@ -23,13 +23,7 @@ import { JWTUserGuard } from '../auth/guards';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { CommentService } from './comment.service';
-import {
-  CreateCommentDto,
-  SendRepliesCommentDto,
-  SpamCommentDto,
-  UpdateCommentDto,
-  VoteCommentDto,
-} from './dto';
+import { CreateCommentDto, UpdateCommentDto } from './dto';
 
 @ApiTags('comment')
 @Controller('comment')
@@ -64,8 +58,9 @@ export class CommentController {
   remove(
     @User('_id') userId: Types.ObjectId,
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.remove(id, userId, 'Comment');
+    return this.postCommentService.remove(id, userId, 'Comment', username);
   }
 
   @ApiOperation({ description: 'Edit the body text of a comment.' })
@@ -89,98 +84,5 @@ export class CommentController {
   @Get(':id')
   get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.postCommentService.get(id, 'Comment');
-  }
-
-  @ApiOperation({
-    description: 'Prevents new child comments from receiving new comments.',
-  })
-  @ApiCreatedResponse({ description: 'Successful comment lock' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/lock')
-  //todo
-  lock(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description: 'Unlock a comment, allows a comment to receive new comments.',
-  })
-  @ApiCreatedResponse({ description: 'Successful comment unlock' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/unlock')
-  //todo
-  unlock(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description:
-      "Brings it to the attention of the subreddit's moderators and marks it as spam.",
-  })
-  @ApiCreatedResponse({ description: 'Successful comment report spam' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/spam')
-  //todo
-  spam(@Param('id') id: string, @Body() spamCommentDto: SpamCommentDto) {
-    return spamCommentDto;
-  }
-
-  @ApiOperation({
-    description:
-      "Save comment, Saved things are kept in the user's saved listing for later perusal.",
-  })
-  @ApiCreatedResponse({ description: 'Successful comment save' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/save')
-  //todo
-  save(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description:
-      "UnSave a link or comment, this removes the thing from the user's saved listings as well.",
-  })
-  @ApiCreatedResponse({ description: 'Successful comment unsave' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/unsave')
-  //todo
-  unSave(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description:
-      'Enable or disable inbox replies for a comment, true to enable.',
-  })
-  @ApiCreatedResponse({ description: 'Successful comment set inbox replies' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/send_replies/')
-  //todo
-  sendReplies(
-    @Param('id') id,
-    @Body() sendRepliesCommentDto: SendRepliesCommentDto,
-  ) {
-    return sendRepliesCommentDto;
-  }
-
-  @ApiOperation({
-    description: `Cast a vote on a comment. 
-    dir indicates the direction of the vote. Voting 1 is an upvote,
-     -1 is a downvote, and 0 is equivalent to "un-voting" by clicking again on a highlighted arrow.`,
-  })
-  @ApiCreatedResponse({ description: 'Successful comment vote' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/vote')
-  //todo
-  vote(@Param('id') id, @Body() voteCommentDto: VoteCommentDto) {
-    return voteCommentDto;
   }
 }

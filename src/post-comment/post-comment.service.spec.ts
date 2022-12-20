@@ -253,7 +253,9 @@ describe('PostCommentService', () => {
     let post: Post & { _id: Types.ObjectId };
     let comment: Comment & { _id: Types.ObjectId };
     let userId: Types.ObjectId;
+    let userName: string;
     beforeAll(async () => {
+      userName = 'username';
       userId = new Types.ObjectId(1);
       post = await postService.create(userId, {
         subredditId: subreddit._id,
@@ -261,7 +263,7 @@ describe('PostCommentService', () => {
         title: 'post title',
       });
       expect(post._id).toBeInstanceOf(Types.ObjectId);
-      comment = await commentService.create(username, userId, {
+      comment = await commentService.create(userName, userId, {
         subredditId: subreddit._id,
         parentId: post._id,
         postId: post._id,
@@ -269,26 +271,31 @@ describe('PostCommentService', () => {
       });
     });
     it('should delete the post successfully', async () => {
-      const res = await service.remove(post._id, userId, 'Post');
+      const res = await service.remove(post._id, userId, 'Post', userName);
       expect(res.status).toEqual('success');
     });
     it('should delete the comment successfully', async () => {
-      const res = await service.remove(comment._id, userId, 'Comment');
+      const res = await service.remove(
+        comment._id,
+        userId,
+        'Comment',
+        userName,
+      );
       expect(res.status).toEqual('success');
     });
     it('should throw not found error', async () => {
       await expect(
-        service.remove(new Types.ObjectId(1), userId, 'Post'),
+        service.remove(new Types.ObjectId(1), userId, 'Post', userName),
       ).rejects.toThrow(NotFoundException);
     });
     it('should throw mistype error', async () => {
-      await expect(service.remove(comment._id, userId, 'Post')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.remove(comment._id, userId, 'Post', userName),
+      ).rejects.toThrow(BadRequestException);
     });
     it('should throw not authorized error', async () => {
       await expect(
-        service.remove(comment._id, new Types.ObjectId(1), 'Comment'),
+        service.remove(comment._id, new Types.ObjectId(1), 'Comment', userName),
       ).rejects.toThrow(UnauthorizedException);
     });
   });

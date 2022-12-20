@@ -244,7 +244,12 @@ export class PostCommentService {
    * @param type the type of the thing
    * @returns success if was able to delete
    */
-  remove = async (id: Types.ObjectId, userId: Types.ObjectId, type: string) => {
+  remove = async (
+    id: Types.ObjectId,
+    userId: Types.ObjectId,
+    type: string,
+    username: string,
+  ) => {
     const thing: (PostComment & { subredditId: Subreddit | null }) | null =
       await this.postCommentModel
         .findById(id)
@@ -260,13 +265,10 @@ export class PostCommentService {
       );
     }
 
-    //if moderator or the creator can remove the post
+    //if not moderator or the creator can remove the post
     if (
-      !(
-        thing.userId.equals(userId)
-        // TODO: Fix it after it becomes name,
-        // || thing.subredditId.moderators.includes(userId) // moderators works with name now
-      )
+      !thing.userId.equals(userId) &&
+      !thing.subredditId.moderators.includes(username)
     ) {
       throw new UnauthorizedException(
         `NonModerators can only delete their ${type}`,

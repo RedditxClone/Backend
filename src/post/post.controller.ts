@@ -36,15 +36,9 @@ import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   CreatePostDto,
-  DefaultSortPostDto,
-  FollowPostDto,
-  InsightsPostDto,
   ReturnPostDto,
-  SendRepliesPostDto,
-  SpamPostDto,
   UpdatePostDto,
   UploadMediaDto,
-  VotePostDto,
 } from './dto';
 import { DiscoverReturnDto } from './dto/discover-return-dto';
 import { PostService } from './post.service';
@@ -198,8 +192,9 @@ export class PostController {
   remove(
     @User('_id') userId: Types.ObjectId,
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @User('username') username: string,
   ) {
-    return this.postCommentService.remove(id, userId, 'Post');
+    return this.postCommentService.remove(id, userId, 'Post', username);
   }
 
   @ApiOperation({
@@ -226,21 +221,6 @@ export class PostController {
   @Get(':id')
   get(@Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req) {
     return this.postService.getPost(id, req._id);
-  }
-
-  @ApiOperation({
-    description: `Follow or unFollow a post.    
-       To follow, follow should be True.
-       To unFollow, follow should be False. 
-       The user must have access to the subreddit to be able to follow a post within it.`,
-  })
-  @ApiCreatedResponse({ description: 'The resource was updated successfully' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/follow')
-  //todo
-  follow(@Param('id') id: string, @Body() followPostDto: FollowPostDto) {
-    return followPostDto;
   }
 
   @ApiOperation({
@@ -282,156 +262,6 @@ export class PostController {
   @Patch(':id/lock')
   lock(@Param('id') id: string) {
     return id;
-  }
-
-  @ApiOperation({
-    description: `UnLock a post. Prevents a post from receiving new comments.`,
-  })
-  @ApiOkResponse({ description: `Successful post Unlock` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/unlock')
-  //todo
-  unlock(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({ description: `UnMark a post NSFW.` })
-  @ApiCreatedResponse({ description: `Successful post mark` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/mark-nsfw')
-  //todo
-  markNsfw(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({ description: `Mark a post NSFW.` })
-  @ApiCreatedResponse({ description: `Successful post mark` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/unmark-nsfw')
-  //todo
-  unMarkNsfw(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description: `Brings it to the attention of the subreddit's moderators and marks it as spam.`,
-  })
-  @ApiCreatedResponse({ description: `Successful post report spam` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/spam')
-  //todo
-  spam(@Param('id') id: string, @Body() spamPostDto: SpamPostDto) {
-    return spamPostDto;
-  }
-
-  @ApiOperation({ description: `Enable or disable inbox replies for a post.` })
-  @ApiCreatedResponse({ description: `Successful post replies set` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/send-replies')
-  //todo
-  sendReplies(@Param('id') id, @Body() sendRepliesPostDto: SendRepliesPostDto) {
-    return sendRepliesPostDto;
-  }
-
-  @ApiOperation({
-    description: `Flag the post as spoiler.`,
-  })
-  @ApiOkResponse({ description: `Successful post spoiler` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/spoiler')
-  //todo
-  spoiler(@Param('id') id) {
-    return id;
-  }
-
-  @ApiOperation({
-    description: `Flag the post as not spoiler.`,
-  })
-  @ApiOkResponse({ description: `Successful post unSpoiler` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/unspoiler')
-  //todo
-  unSpoiler(@Param('id') id) {
-    return id;
-  }
-
-  @ApiOperation({
-    description: `Cast a vote on a post.`,
-  })
-  @ApiCreatedResponse({
-    description: `Successful post vote, returns the new vote direction`,
-    type: VotePostDto,
-  })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/vote')
-  //todo
-  vote(@Param('id') id, @Body() votePostDto: VotePostDto) {
-    return votePostDto;
-  }
-
-  @ApiOperation({
-    description: `Save post, Saved things are kept in the user's saved listing for later perusal.`,
-  })
-  @ApiCreatedResponse({ description: `Successful post save` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/save')
-  //todo
-  save(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description: `UnSave post, Saved things are kept in the user's saved listing for later perusal.`,
-  })
-  @ApiCreatedResponse({ description: `Successful post unsave` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/unsave')
-  //todo
-  unSave(@Param('id') id: string) {
-    return id;
-  }
-
-  @ApiOperation({
-    description: `Set a suggested sort for a link.
-     Suggested sorts are useful to display comments in a certain preferred way for posts.`,
-  })
-  @ApiCreatedResponse({ description: `Successful post suggested sort set` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Post(':id/set-suggested-sort')
-  //todo
-  setSuggestedSort(@Body() defaultSortPostDto: DefaultSortPostDto) {
-    return defaultSortPostDto;
-  }
-
-  @ApiOperation({
-    description: `Get the total number of post views.`,
-  })
-  @ApiOkResponse({
-    description: 'The resource was returned successfully',
-    type: InsightsPostDto,
-  })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  //todo
-  @Get(':id/insights-counts')
-  viewInsights(@Param('id') _id: string) {
-    // TODO implement service
-
-    const insightsPostDto: InsightsPostDto = new InsightsPostDto();
-    insightsPostDto.insightsCount = 0;
-
-    return insightsPostDto;
   }
 
   @UseGuards(JWTUserGuard)
