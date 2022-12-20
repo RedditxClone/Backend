@@ -8,6 +8,7 @@ import { Model, Types } from 'mongoose';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { SubredditUser } from '../subreddit/subreddit-user.schema';
 import type { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
@@ -20,6 +21,8 @@ export class PostService {
   constructor(
     @InjectModel('Post') private readonly postModel: Model<Post>,
     @InjectModel('Hide') private readonly hideModel: Model<Hide>,
+    @InjectModel('UserSubreddit')
+    private readonly subredditUserModel: Model<SubredditUser>,
     private readonly postCommentService: PostCommentService,
   ) {}
 
@@ -52,10 +55,16 @@ export class PostService {
     userId: Types.ObjectId,
     createPostDto: CreatePostDto,
   ): Promise<Post & { _id: Types.ObjectId }> => {
-    //TODO:
-    // add this validation to dto and it will transfer it and add validation
-    // make sure that there exist a subreddit with this id
     const subredditId = new Types.ObjectId(createPostDto.subredditId);
+    const userJoined = await this.subredditUserModel.exists({
+      userId,
+      subredditId,
+    });
+
+    if (!userJoined) {
+      throw new NotFoundException("you haven't joined such a subreddit");
+    }
+
     const post: Post & { _id: Types.ObjectId } = await this.postModel.create({
       userId,
       ...createPostDto,
