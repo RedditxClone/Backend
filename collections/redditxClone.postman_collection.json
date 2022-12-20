@@ -125,17 +125,6 @@
 					"response": []
 				},
 				{
-					"name": "update comment",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": ""
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Create Post",
 					"request": {
 						"auth": {
@@ -311,14 +300,14 @@
 					"response": []
 				},
 				{
-					"name": "restore comment",
+					"name": "update comment",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -326,15 +315,14 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/comment/636f630ae0720cd0bd9fef8a/restore",
+							"raw": "{{host}}/api/comment/636f630ae0720cd0bd9fef8a",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"comment",
-								"636f630ae0720cd0bd9fef8a",
-								"restore"
+								"636f630ae0720cd0bd9fef8a"
 							]
 						}
 					},
@@ -399,14 +387,14 @@
 					"response": []
 				},
 				{
-					"name": "restore post",
+					"name": "update post",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -414,15 +402,14 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/636f5026d4033d5205e7e051/restore",
+							"raw": "{{host}}/api/post/636f5026d4033d5205e7e051",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"post",
-								"636f5026d4033d5205e7e051",
-								"restore"
+								"636f5026d4033d5205e7e051"
 							]
 						}
 					},
@@ -801,7 +788,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/popular",
+							"raw": "{{host}}/api/post/popular?limit=1",
 							"host": [
 								"{{host}}"
 							],
@@ -809,6 +796,12 @@
 								"api",
 								"post",
 								"popular"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -830,7 +823,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/discover",
+							"raw": "{{host}}/api/post/discover?limit=1",
 							"host": [
 								"{{host}}"
 							],
@@ -838,6 +831,12 @@
 								"api",
 								"post",
 								"discover"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -859,7 +858,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/timeline",
+							"raw": "{{host}}/api/post/timeline?limit=1",
 							"host": [
 								"{{host}}"
 							],
@@ -867,6 +866,12 @@
 								"api",
 								"post",
 								"timeline"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -888,7 +893,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/me",
+							"raw": "{{host}}/api/post/me?limit=1",
 							"host": [
 								"{{host}}"
 							],
@@ -896,6 +901,12 @@
 								"api",
 								"post",
 								"me"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -917,7 +928,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/thing/636f60cbfd43730c8223949b/with-children",
+							"raw": "{{host}}/api/thing/636f60cbfd43730c8223949b/with-children?limit=1",
 							"host": [
 								"{{host}}"
 							],
@@ -926,6 +937,12 @@
 								"thing",
 								"636f60cbfd43730c8223949b",
 								"with-children"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -933,11 +950,18 @@
 				},
 				{
 					"name": "get user's things",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
 						"url": {
-							"raw": "{{host}}/api/thing/user/1234",
+							"raw": "{{host}}/api/thing/user/1234?limit=1",
 							"host": [
 								"{{host}}"
 							],
@@ -946,6 +970,12 @@
 								"thing",
 								"user",
 								"1234"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
 							]
 						}
 					},
