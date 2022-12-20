@@ -791,7 +791,6 @@ export class PostCommentService {
       ...fetcher.SRInfo(),
       ...fetcher.postInfoOfComment(),
       ...fetcher.userInfo(),
-      ...fetcher.postInfoOfComment(),
       ...fetcher.getCommentProject(),
     ]);
   }

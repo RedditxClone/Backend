@@ -570,10 +570,10 @@ export class UserService {
     // ]);
   }
 
-  async deleteAccount(user: any) {
+  async deleteAccount(userId: Types.ObjectId) {
     await this.userModel
       .updateOne(
-        { _id: user._id },
+        { _id: userId },
         {
           accountClosed: true,
         },

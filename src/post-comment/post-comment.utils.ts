@@ -470,10 +470,7 @@ export class ThingFetch {
   commentInfo() {
     return {
       text: 1,
-      postInfo: {
-        title: this.mongoIndexAt('$post.title', 0),
-      },
-
+      postTitle: this.mongoIndexAt('$post.title', 0),
       replyNotification: 1,
       title: 1,
       postId: 1,
