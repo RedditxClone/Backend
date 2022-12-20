@@ -85,11 +85,11 @@ export class PostService {
    * @returns a list of uploaded images Ids for referencing.
    */
   async uploadPostMedia(
-    files: Express.Multer.File[],
+    files: Express.Multer.File[] | undefined,
     postId: Types.ObjectId,
     userId: Types.ObjectId,
   ) {
-    if (files.length === 0) {
+    if (!files || files.length === 0) {
       throw new BadRequestException('no media uploaded');
     }
 

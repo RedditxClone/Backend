@@ -307,6 +307,7 @@ export class PostCommentService {
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
@@ -334,6 +335,7 @@ export class PostCommentService {
           },
         },
       },
+      ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
@@ -632,7 +634,7 @@ export class PostCommentService {
       {
         $match: {
           $expr: {
-            $in: [modUsername, '$subreddit.moderators'],
+            $in: [modUsername, { $ifNull: ['$subreddit.moderators', []] }],
           },
         },
       },
@@ -799,7 +801,7 @@ export class PostCommentService {
   }
 
   private async getCommonThingsForSubreddit(
-    subredditId: Types.ObjectId,
+    srName: string,
     filter: any,
     pagination: PaginationParamsDto,
   ) {
@@ -808,7 +810,15 @@ export class PostCommentService {
 
     return this.postCommentModel.aggregate([
       ...fetcher.prepare(),
-      ...fetcher.matchForSpecificFilter({ ...filter, subredditId }),
+      ...fetcher.SRInfo(),
+      ...fetcher.matchForSpecificFilter({ ...filter }),
+      {
+        $match: {
+          $expr: {
+            $eq: [fetcher.mongoIndexAt('$subreddit.name', 0), srName],
+          },
+        },
+      },
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
@@ -832,6 +842,7 @@ export class PostCommentService {
       ...fetcher.matchForSpecificFilter({ subredditId }),
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
+      ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
@@ -845,7 +856,7 @@ export class PostCommentService {
   }
 
   async getUnModeratedThingsForSubreddit(
-    subredditId: Types.ObjectId,
+    srName: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
@@ -855,11 +866,11 @@ export class PostCommentService {
       filter.type = type;
     }
 
-    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
+    return this.getCommonThingsForSubreddit(srName, filter, pagination);
   }
 
   async getSpammedThingsForSubreddit(
-    subredditId: Types.ObjectId,
+    srName: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
@@ -873,11 +884,11 @@ export class PostCommentService {
       filter.type = type;
     }
 
-    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
+    return this.getCommonThingsForSubreddit(srName, filter, pagination);
   }
 
   async getEditedThingsForSubreddit(
-    subredditId: Types.ObjectId,
+    srName: string,
     pagination: PaginationParamsDto,
     type: string | undefined,
   ) {
@@ -892,6 +903,6 @@ export class PostCommentService {
       filter.type = type;
     }
 
-    return this.getCommonThingsForSubreddit(subredditId, filter, pagination);
+    return this.getCommonThingsForSubreddit(srName, filter, pagination);
   }
 }
