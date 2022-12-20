@@ -900,6 +900,56 @@ export class SubredditService {
     return res.map((v) => ({ ...v[fieldName], ...v.user[0] }));
   }
 
+  private listUserUpdating(list, updateDto, username) {
+    return list.map((v) => {
+      if (v.username === username) {
+        // eslint-disable-next-line unicorn/no-array-for-each
+        Object.keys(updateDto).forEach((key) => {
+          if (key === 'username') {
+            throw new BadRequestException();
+          }
+
+          v[key] = updateDto[key];
+        });
+      }
+
+      return v;
+    });
+  }
+
+  async updateListUserDate(
+    subredditId: Types.ObjectId,
+    moderatorUsername: string,
+    username: string,
+    fieldName: string,
+    updateDto,
+  ) {
+    this.checkUserNotNull(moderatorUsername);
+
+    const res = await this.subredditModel
+      .findById(subredditId)
+      .select(fieldName);
+
+    if (!res) {
+      throw new BadRequestException();
+    }
+
+    const list = this.listUserUpdating(res[fieldName], updateDto, username);
+
+    const updateObject = {};
+    updateObject[fieldName] = list;
+
+    const res2 = await this.subredditModel.updateOne(
+      {
+        _id: subredditId,
+        moderators: moderatorUsername,
+      },
+      updateObject,
+    );
+
+    return this.modifiedCountResponse(res2.modifiedCount);
+  }
+
   async removeUserFromListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
