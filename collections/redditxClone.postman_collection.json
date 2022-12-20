@@ -23,8 +23,28 @@
 				{
 					"name": "upload media",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "asd",
+									"type": "file",
+									"src": "/C:/Users/Mohamed Kamal/Desktop/task/ResrcID30443_Nokia_MSteams_virtual5.jpg"
+								}
+							]
+						},
 						"url": {
 							"raw": "{{host}}/api/post/upload-media",
 							"host": [
@@ -56,7 +76,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"text\": \"Hello world\",\r\n    \"postId\": \"6397751b5a7df508723bbafc\",\r\n    \"parentId\": \"63977b20e9e046cf59c7ab47\",\r\n    \"subredditId\": \"6363fba4ab2c2f94f3ac9f37\"\r\n}",
+							"raw": "{\r\n    \"text\": \"hello u/123 world\",\r\n    \"postId\": \"636e2aae06b0a9c11b80d667\",\r\n    \"parentId\": \"636f60cbfd43730c8223949b\",\r\n    \"subredditId\": \"6363fba4ab2c2f94f3ac9f37\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -96,7 +116,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -105,7 +125,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"subredditId\":\"6363fba4ab2c2f94f3ac9f37\",\r\n    \"title\":\"notify\",\r\n    \"text\":\"test\"\r\n}",
+							"raw": "{\r\n    \"subredditId\":\"6363fba4ab2c2f94f3ac9f37\",\r\n    \"title\":\"notify\",\r\n    \"text\":\"test\",\r\n    \"images\":[\"asd\"]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -134,7 +154,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -147,12 +167,7 @@
 								{
 									"key": "image1",
 									"type": "file",
-									"src": "/C:/Users/Mohamed Kamal/Desktop/1.png"
-								},
-								{
-									"key": "v",
-									"type": "file",
-									"src": "/D:/Pictures/Quara Kayn.webm"
+									"src": "/C:/Users/Mohamed Kamal/Desktop/task/ResrcID30443_Nokia_MSteams_virtual5.jpg"
 								}
 							]
 						},
@@ -354,7 +369,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -362,14 +377,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/thing/63982fa3a8e96ecd95856dcb/upvote",
+							"raw": "{{host}}/api/thing/639c5afaba734508f1cb4ebb/upvote",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"thing",
-								"63982fa3a8e96ecd95856dcb",
+								"639c5afaba734508f1cb4ebb",
 								"upvote"
 							]
 						}
@@ -388,7 +403,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"mk6594617asdasd@gmail.com\"\r\n}",
+							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -479,7 +494,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -487,15 +502,45 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/6364f9ea42c89ac27f472046/follow",
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/follow",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"6364f9ea42c89ac27f472046",
+								"63977b9668a9911559fdb843",
 								"follow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unfollow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unfollow",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"unfollow"
 							]
 						}
 					},
@@ -520,7 +565,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -550,7 +595,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -565,7 +610,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"123123\",\r\n    \"email\": \"123@gmail.com\",\r\n    \"hashPassword\": \"$2b$10$xjjAq6/ef7Txwx4F/2fdqeCLEJEZ/6QvjALm9NfdDcrtlzbCLUKpC\",\r\n    \"suggestedSort\": \"hot\",\r\n    \"authType\": \"user\",\r\n    \"socialLinks\": [],\r\n    \"nsfw\": true,\r\n    \"allowFollow\": true,\r\n    \"contentVisibility\": true,\r\n    \"activeInCommunitiesVisibility\": true,\r\n    \"badCommentAutoCollapse\": \"off\",\r\n    \"showInSearch\": true,\r\n    \"adultContent\": false,\r\n    \"autoPlayMedia\": true,\r\n    \"inboxMessages\": true,\r\n    \"mentions\": true,\r\n    \"commentsOnPost\": true,\r\n    \"upvoteComments\": true,\r\n    \"repliesComments\": true,\r\n    \"activityComments\": true,\r\n    \"activityOnThreads\": true,\r\n    \"newFollowers\": true,\r\n    \"newPostFlair\": true,\r\n    \"newUserFlair\": true,\r\n    \"pinnedPosts\": true,\r\n    \"postsYouFollow\": true,\r\n    \"commentsYouFollow\": true,\r\n    \"redditAnnouncements\": true,\r\n    \"cakeDay\": true,\r\n    \"acceptPms\": \"everyone\",\r\n    \"countryCode\": \"eg\",\r\n    \"safeBrowsingMode\": false,\r\n    \"chatRequest\": true,\r\n    \"newFollower\": false,\r\n    \"unSubscribe\": false\r\n}",
+							"raw": "{\r\n    \"username\": \"123123\",\r\n    \"email\": \"123@gmail.com\",\r\n    \"hashPassword\": \"$2b$10$xjjAq6/ef7Txwx4F/2fdqeCLEJEZ/6QvjALm9NfdDcrtlzbCLUKpC\",\r\n    \"suggestedSort\": \"hot\",\r\n    \"authType\": \"user\",\r\n    \"socialLinks\": [\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        }\r\n    ],\r\n    \"nsfw\": true,\r\n    \"allowFollow\": true,\r\n    \"contentVisibility\": true,\r\n    \"activeInCommunitiesVisibility\": true,\r\n    \"badCommentAutoCollapse\": \"off\",\r\n    \"showInSearch\": true,\r\n    \"adultContent\": false,\r\n    \"autoPlayMedia\": true,\r\n    \"inboxMessages\": true,\r\n    \"mentions\": true,\r\n    \"commentsOnPost\": true,\r\n    \"upvoteComments\": false,\r\n    \"upvotePosts\": true,\r\n    \"repliesComments\": true,\r\n    \"activityComments\": true,\r\n    \"activityOnThreads\": true,\r\n    \"newFollowers\": true,\r\n    \"newPostFlair\": true,\r\n    \"newUserFlair\": true,\r\n    \"pinnedPosts\": true,\r\n    \"postsYouFollow\": true,\r\n    \"commentsYouFollow\": true,\r\n    \"redditAnnouncements\": true,\r\n    \"cakeDay\": true,\r\n    \"acceptPms\": \"everyone\",\r\n    \"countryCode\": \"eg\",\r\n    \"safeBrowsingMode\": false,\r\n    \"chatRequest\": true,\r\n    \"newFollower\": false,\r\n    \"unSubscribe\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -634,10 +679,29 @@
 				{
 					"name": "block",
 					"request": {
-						"method": "GET",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/block",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"block"
+							]
 						}
 					},
 					"response": []
@@ -645,10 +709,57 @@
 				{
 					"name": "get me",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{host}}/api/user/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user by username",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/1234",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"1234"
+							]
 						}
 					},
 					"response": []
@@ -745,6 +856,46 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "upload profile photo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOWI0MGFkZTE0YmVkODBlZjk4ODc1NyIsImlhdCI6MTY3MTExOTAyMSwiZXhwIjoxNjcxOTgzMDIxfQ.Prh2GaC0rJUEcKKNpCA9uX-nlZfRFRclS1_zjdHGwoQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "photo",
+									"type": "file",
+									"src": "/C:/Users/Mohamed Kamal/Desktop/task/ResrcID30443_Nokia_MSteams_virtual5.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/user/me/profile",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -812,7 +963,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -820,7 +971,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/notification/",
+							"raw": "{{host}}/api/notification/?page=1&limit=75",
 							"host": [
 								"{{host}}"
 							],
@@ -828,6 +979,16 @@
 								"api",
 								"notification",
 								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "75"
+								}
 							]
 						}
 					},
@@ -841,7 +1002,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -857,6 +1018,224 @@
 								"api",
 								"notification",
 								"count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "hide notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/notification/63977baf68a9911559fdb850/hide",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"notification",
+								"63977baf68a9911559fdb850",
+								"hide"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mark as read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messages\": [\r\n        \"63977bd568a9911559fdb857\",\r\n        \"639787966248484fdbd28b12\",\r\n        \"6397886f54a6e8ad763709cb\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/notification/mark-as-read",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"notification",
+								"mark-as-read"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Message",
+			"item": [
+				{
+					"name": "Get Messages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/unread",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subject\": \"my message to u\",\r\n    \"body\": \"hi there\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/usere2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"usere2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reply",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"body\": \"well here is my reply bro\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/639e5773daf2e80bdfbf1500/reply",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"639e5773daf2e80bdfbf1500",
+								"reply"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messages\": [\"639e5a8ba3102628ad3c6c9b\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/mark_as_read",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"mark_as_read"
 							]
 						}
 					},
@@ -890,6 +1269,14 @@
 			"key": "host",
 			"value": "http://localhost:3000",
 			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOWUzNjY4ZmNlNTI3MTY3ZjIzZjAyYiIsInVzZXJuYW1lIjoidXNlcmUxIiwiaWF0IjoxNjcxMzEzMDA1LCJleHAiOjE2NzIxNzcwMDV9.K-n796R9dqUuHtp94nEVWolA_RUTYOUbXfl9_jtxpiY"
+		},
+		{
+			"key": "token2",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOWUzNzhhNTNkNzQ0ZWYyYWEwYTAwNSIsInVzZXJuYW1lIjoidXNlcmUyIiwiaWF0IjoxNjcxMzEzMzIzLCJleHAiOjE2NzIxNzczMjN9.BBhEBc-Ds-uPdsqsVM2YAXkW_0FwiD3HsP-FQxuKe_g"
 		}
 	]
 }
