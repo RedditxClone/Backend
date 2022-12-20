@@ -97,7 +97,7 @@ export class Subreddit {
   @Prop({ default: 0 })
   usersPermissions: number;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   acceptPostingRequests: boolean;
 
   @Prop({ default: true })
