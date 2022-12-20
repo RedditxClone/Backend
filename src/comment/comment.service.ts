@@ -30,6 +30,7 @@ export class CommentService {
     username: string,
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): Promise<Comment & { _id: Types.ObjectId }> => {
     const parentId = new Types.ObjectId(createCommentDto.parentId);
     const postId = new Types.ObjectId(createCommentDto.postId);
@@ -96,12 +97,12 @@ export class CommentService {
       !info.user[0]?.dontNotifyIds?.includes(postId)
     ) {
       await this.notificationService.notifyOnReplies(
-        info.userId,
+        info.user[0]._id,
         comment._id,
         replyType,
         info.subreddit[0].name,
         username,
-        info.user[0]._id,
+        userId,
       );
 
       await this.messageService.messageOnReplies(
@@ -132,8 +133,8 @@ export class CommentService {
       } while (m);
 
       for (const name of usernameMentions) {
-        // if got already a notification for a comment
-        if (name !== username) {
+        // if got already a notification for a comment or I am mentioning my self
+        if (name !== username && name !== info.user[0].username) {
           promises.push(
             this.notificationService.notifyOnUserMentions(
               name,
@@ -141,7 +142,7 @@ export class CommentService {
               replyType,
               info.subreddit[0].name,
               username,
-              info.user[0]._id,
+              userId,
             ),
           );
         }

@@ -72,7 +72,7 @@ export class Rule {
   @Prop()
   description?: string;
 
-  @Prop({ default: Date.now() })
+  @Prop({ default: Date.now })
   createdDate?: Date;
 
   @Prop({ required: true })
@@ -190,7 +190,7 @@ export class Subreddit {
   @Prop({ default: [] })
   categories: string[];
 
-  @Prop({ default: new Date(Date.now()) })
+  @Prop({ default: Date.now })
   createdDate: Date;
 
   @Prop({ default: [] })

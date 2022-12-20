@@ -22,7 +22,6 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
-  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -40,7 +39,6 @@ import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
-  GetFriendsDto,
   PrefsDto,
   UserAccountDto,
   UserPostsDto,

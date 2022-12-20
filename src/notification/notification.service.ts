@@ -126,6 +126,7 @@ export class NotificationService {
           type: 1,
           createdAt: 1,
           read: 1,
+          new: 1,
           userPhoto: '$user.profilePhoto',
           subredditPhoto: '$subreddit.icon',
         },
@@ -134,12 +135,14 @@ export class NotificationService {
         $sort: { createdAt: -1 },
       },
     ]);
+    const awaitedRes =
+      await this.apiFeaturesService.getPaginatedResponseFromAggregate(
+        res,
+        paginationParams,
+      );
     await this.notificationModel.updateMany({ userId }, { new: false });
 
-    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
-      res,
-      paginationParams,
-    );
+    return awaitedRes;
   };
 
   /**
