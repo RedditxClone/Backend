@@ -14,8 +14,7 @@ async function bootstrap() {
     logger.log('Seeding completed successfully!');
   } catch (error) {
     logger.error('Seeding failed!');
-
-    throw error;
+    logger.error(error);
   } finally {
     await appContext.close();
   }
