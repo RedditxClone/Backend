@@ -1,7 +1,6 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
-import { Types } from 'mongoose';
 
 import { MessageService } from '../message/message.service';
 import { NotificationModule } from '../notification/notification.module';
@@ -17,18 +16,17 @@ import {
 import { VoteSchema } from '../vote/vote.schema';
 import { CommentSchema } from './comment.schema';
 import { CommentService } from './comment.service';
-import type { CreateCommentDto } from './dto';
 
 jest.mock('../message/message.service.ts');
 describe('CommentService', () => {
   let service: CommentService;
   let module: TestingModule;
-  const commentDto: CreateCommentDto = {
-    subredditId: new Types.ObjectId(1),
-    postId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
-    parentId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
-    text: 'Hello World',
-  };
+  // const commentDto: CreateCommentDto = {
+  //   subredditId: new Types.ObjectId(1),
+  //   postId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
+  //   parentId: new Types.ObjectId('6363fba4ab2c2f94f3ac9f37'),
+  //   text: 'Hello World',
+  // };
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [

@@ -182,13 +182,15 @@ describe('NotificationService', () => {
     it('should pass', async () => {
       const res = await service.findAll(id2, new PaginationParamsDto());
       expect(res.data.length).toEqual(9);
-      expect(res.data[0].body).toEqual(
-        'u/folan2 replied to your post in r/folan1',
+      expect(res.data[2].body).toEqual(
+        'u/folan2 replied to your comment in r/folan1',
       );
       expect(res.data[1].body).toEqual(
-        'You got an upvote on your post in r/folan1',
+        'u/folan2 replied to your post in r/folan1',
       );
-      expect(res.data[2].body).toEqual('u/folan1 started following you.');
+      expect(res.data[0].body).toEqual(
+        'u/folan2 replied to your comment in r/folan1',
+      );
     });
   });
   describe('mark notifications hidden', () => {

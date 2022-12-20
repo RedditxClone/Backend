@@ -33,7 +33,6 @@ import { User } from '../auth/decorators/user.decorator';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ReturnPostDto } from '../post/dto';
-import { PostService } from '../post/post.service';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
