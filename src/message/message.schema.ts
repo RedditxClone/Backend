@@ -23,7 +23,7 @@ export class Message {
   @Prop({ required: true })
   body: string;
 
-  @Prop({ default: Date.now() })
+  @Prop({ default: Date.now })
   createdAt: Date;
 
   @Prop({ default: false })
