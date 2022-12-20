@@ -5,7 +5,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
 import { AuthModule } from './auth/auth.module';
 import { BlockModule } from './block/block.module';
-import { CategoryModule } from './category/category.module';
 import { FollowModule } from './follow/follow.module';
 import { HealthModule } from './health/health.module';
 import { MessageModule } from './message/message.module';
@@ -30,7 +29,6 @@ import { VoteModule } from './vote/vote.module';
     NotificationModule,
     SearchModule,
     AuthModule,
-    CategoryModule,
     MailerModule.forRoot({
       transport: {
         service: 'hotmail',

@@ -94,7 +94,6 @@ describe('AuthController', () => {
     it('should change password successfully', async () => {
       const req: any = createRequest();
       const dto: ChangeForgottenPasswordDto = { password: '12345678' };
-      // TODO:
       // there exist a type issue i can't use user._id if i used Request type as it uses Express.User type
       req.user = { _id: 1 };
       const res: any = await controller.changeForgottenPassword(dto, req);

@@ -88,30 +88,4 @@ export class NotificationController {
   ) {
     return this.notificationService.markAsRead(userId, messageIdList);
   }
-
-  // @ApiOperation({ description: 'get all mentions for current user' })
-  // @ApiOkResponse({
-  //   description: 'all mentions has been returned successfully',
-  //   type: [GetNotificationDto],
-  // })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @Get('/mention')
-  // findMentions() {
-  //   return {
-  //     mentions: [],
-  //   };
-  // }
-
-  // @ApiOperation({ description: 'get all unread mentions for current user' })
-  // @ApiOkResponse({
-  //   description: 'all unread mentions has been returned successfully',
-  //   type: [GetNotificationDto],
-  // })
-  // @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  // @Get('/mention/unread')
-  // findUnreadMentions() {
-  //   return {
-  //     mentions: [],
-  //   };
-  // }
 }

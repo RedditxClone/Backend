@@ -72,15 +72,7 @@ describe('CommentService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-  // TODO:
-  // describe('create comment spec', () => {
-  //   test('should create successfully', async () => {
-  //     const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
-  //     const comment = await service.create(userId, commentDto);
-  //     const expected = stubComment();
-  //     expect(comment).toEqual(expect.objectContaining(expected));
-  //   });
-  // });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
