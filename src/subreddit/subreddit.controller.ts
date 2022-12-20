@@ -34,7 +34,7 @@ import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { JWTUserGuard } from '../auth/guards/user.guard';
 import { ReturnPostDto } from '../post/dto';
 import { PostCommentService } from '../post-comment/post-comment.service';
-import { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
+import type { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import { ActiveTopicsDto } from './dto/activeTopic.dto';
@@ -686,13 +686,13 @@ export class SubredditController {
   @UseGuards(IsUserExistGuard)
   @Get('/:subreddit/posts')
   getSubredditPosts(
-    @User() userInfo: UserUniqueKeys,
+    @User() userInfo: UserUniqueKeys | undefined,
     @Param('subreddit') srName: string,
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postCommentService.getPostsOfSubreddit(
       srName,
-      userInfo._id,
+      userInfo?._id,
       pagination,
     );
   }
