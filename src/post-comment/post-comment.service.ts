@@ -532,6 +532,17 @@ export class PostCommentService {
         },
       },
       ...fetcher.getPaginated(page, limit),
+      {
+        $set: {
+          images: {
+            $map: {
+              input: '$images',
+              as: 'image',
+              in: { $concat: ['/assets/posts-media/', '$$image'] },
+            },
+          },
+        },
+      },
     ]);
   }
 
