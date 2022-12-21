@@ -14,7 +14,10 @@ import { PostCommentService } from '../post-comment/post-comment.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
-import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
+import {
+  SubredditUser,
+  SubredditUserSchema,
+} from '../subreddit/subreddit-user.schema';
 import { SubredditUserLeftSchema } from '../subreddit/subreddit-user-left.schema';
 import type { UserDocument } from '../user/user.schema';
 import { UserSchema } from '../user/user.schema';
@@ -47,6 +50,8 @@ describe('PostService', () => {
   };
   let subredditService: SubredditService;
   let userService: UserService;
+  let testingUser;
+  let testingSubreddit;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -100,6 +105,17 @@ describe('PostService', () => {
     service = module.get<PostService>(PostService);
     subredditService = module.get<SubredditService>(SubredditService);
     userService = module.get<UserService>(UserService);
+    testingUser = await userService.createUser({
+      email: 'email@example.com',
+      username: 'uname',
+      password: '12345678',
+    });
+    testingSubreddit = await subredditService.create(
+      { name: 'subreddit_name', over18: true, type: 'subreddit' },
+      testingUser.username,
+      testingUser._id,
+    );
+    postDto.subredditId = testingSubreddit._id;
   });
 
   let id: Types.ObjectId;
@@ -110,8 +126,7 @@ describe('PostService', () => {
   });
   describe('create post spec', () => {
     test('should create successfully', async () => {
-      const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
-      const post = await service.create(userId, postDto);
+      const post = await service.create(testingUser._id, postDto);
       id = post._id;
       const expected = stubPost();
       expect(post).toEqual(expect.objectContaining(expected));
