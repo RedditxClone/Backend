@@ -14,10 +14,7 @@ import { PostCommentService } from '../post-comment/post-comment.service';
 import type { SubredditDocument } from '../subreddit/subreddit.schema';
 import { SubredditSchema } from '../subreddit/subreddit.schema';
 import { SubredditService } from '../subreddit/subreddit.service';
-import {
-  SubredditUser,
-  SubredditUserSchema,
-} from '../subreddit/subreddit-user.schema';
+import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import { SubredditUserLeftSchema } from '../subreddit/subreddit-user-left.schema';
 import type { UserDocument } from '../user/user.schema';
 import { UserSchema } from '../user/user.schema';
