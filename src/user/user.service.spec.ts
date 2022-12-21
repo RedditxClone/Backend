@@ -437,6 +437,8 @@ describe('UserService', () => {
         user1._id,
       );
       subreddits.push(sr1, sr2);
+      await subredditService.joinSubreddit(user2._id, sr1._id);
+      await subredditService.joinSubreddit(user2._id, sr2._id);
       const post1 = await postService.create(user2._id, {
         title: 'post1 title',
         text: 'post1 text',
@@ -470,6 +472,8 @@ describe('UserService', () => {
             isModerator: true,
             isJoin: true,
             joinDate: res[1].subredditInfo.joinDate,
+            icon: null,
+            membersCount: 2,
           },
           user: {
             id: user2._id,
@@ -478,6 +482,7 @@ describe('UserService', () => {
             isFollowed: false,
             cakeDay: true,
             createdAt: res[0].user.createdAt,
+            name: '',
           },
         }),
       );
