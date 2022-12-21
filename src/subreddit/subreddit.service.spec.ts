@@ -902,7 +902,7 @@ describe('SubredditService', () => {
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getUnModeratedThings(
-        sr._id,
+        sr.name,
         username,
         pagination,
         type,
@@ -912,7 +912,7 @@ describe('SubredditService', () => {
     it('must throw an error because not a moderator', async () => {
       await expect(
         subredditService.getUnModeratedThings(
-          sr._id,
+          sr.name,
           'wrong_username',
           pagination,
           type,
@@ -931,7 +931,7 @@ describe('SubredditService', () => {
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getSpammedThings(
-        sr._id,
+        sr.name,
         username,
         pagination,
         type,
@@ -941,7 +941,7 @@ describe('SubredditService', () => {
     it('must throw an error because not a moderator', async () => {
       await expect(
         subredditService.getSpammedThings(
-          sr._id,
+          sr.name,
           'wrong_username',
           pagination,
           type,
@@ -955,7 +955,7 @@ describe('SubredditService', () => {
     });
     it('must get all posts successfully', async () => {
       const res = await subredditService.getEditedThings(
-        sr._id,
+        sr.name,
         username,
         pagination,
         type,
@@ -965,7 +965,7 @@ describe('SubredditService', () => {
     it('must throw an error because not a moderator', async () => {
       await expect(
         subredditService.getEditedThings(
-          sr._id,
+          sr.name,
           'wrong_username',
           pagination,
           type,
