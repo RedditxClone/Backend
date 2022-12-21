@@ -155,7 +155,9 @@ describe('PostCommentService', () => {
     let userId: Types.ObjectId;
     beforeAll(async () => {
       // post = await postService.create();
+
       userId = new Types.ObjectId(1);
+      await subredditService.joinSubreddit(userId, subreddit._id);
       post = await postService.create(userId, {
         subredditId: subreddit._id,
         text: 'this is a post',
@@ -217,6 +219,7 @@ describe('PostCommentService', () => {
     let userId: Types.ObjectId;
     beforeAll(async () => {
       userId = new Types.ObjectId(1);
+      await subredditService.joinSubreddit(userId, subreddit._id);
       post = await postService.create(userId, {
         subredditId: subreddit._id,
         text: 'this is a post',
@@ -257,6 +260,7 @@ describe('PostCommentService', () => {
     beforeAll(async () => {
       userName = 'username';
       userId = new Types.ObjectId(1);
+      await subredditService.joinSubreddit(userId, subreddit._id);
       post = await postService.create(userId, {
         subredditId: subreddit._id,
         text: 'this is a post',
@@ -308,6 +312,7 @@ describe('PostCommentService', () => {
       // post = await postService.create();
       userId = normalId;
       user2Id = new Types.ObjectId(2);
+      await subredditService.joinSubreddit(userId, subreddit._id);
       post = await postService.create(userId, {
         subredditId: subreddit._id,
         text: 'this is a post',
@@ -454,7 +459,7 @@ describe('PostCommentService', () => {
 
     it('must return both post and comment', async () => {
       const res = await service.getUnModeratedThingsForSubreddit(
-        curSR._id,
+        curSR.name,
         pagination,
         type,
       );
@@ -463,7 +468,7 @@ describe('PostCommentService', () => {
     it('must return only the post after spamming comment', async () => {
       await service.spam('usrname', comment._id);
       const res = await service.getUnModeratedThingsForSubreddit(
-        curSR._id,
+        curSR.name,
         pagination,
         type,
       );
@@ -472,7 +477,7 @@ describe('PostCommentService', () => {
     });
     it('must get the comment only', async () => {
       const res = await service.getSpammedThingsForSubreddit(
-        curSR._id,
+        curSR.name,
         pagination,
         type,
       );
@@ -488,7 +493,7 @@ describe('PostCommentService', () => {
         userSR,
       );
       const res = await service.getEditedThingsForSubreddit(
-        curSR._id,
+        curSR.name,
         pagination,
         type,
       );
@@ -498,7 +503,7 @@ describe('PostCommentService', () => {
     it('must return empty array', async () => {
       await service.spam('usrname', post._id);
       const res = await service.getUnModeratedThingsForSubreddit(
-        curSR._id,
+        curSR.name,
         pagination,
         type,
       );
@@ -539,6 +544,7 @@ describe('PostCommentService', () => {
         username: 'user1lkfsd',
         password: '1234556778',
       });
+      await subredditService.joinSubreddit(user1._id, subreddit._id);
       await postService.create(user1._id, {
         text: 'texst',
         title: 'title',
