@@ -16,15 +16,12 @@ export class Post extends PostComment {
   @Prop({ default: 0 })
   insightsCount: number;
 
-  @Prop({ required: false })
+  @Prop({ required: false, default: null })
   flair: Types.ObjectId;
 
   // for post schedule
   @Prop({ default: Date.now })
   publishedDate: Date;
-
-  @Prop({ ref: 'Subreddit', required: true })
-  subredditId: Types.ObjectId;
 
   @Prop({ required: true })
   title: string;
@@ -34,5 +31,23 @@ export class Post extends PostComment {
 
   @Prop({ default: false, required: false })
   spoiler: boolean;
+
+  @Prop({ default: false })
+  commentsLocked: boolean;
+
+  @Prop({ default: null })
+  approvedBy: string;
+
+  @Prop({ default: null })
+  approvedAt: Date;
+
+  @Prop({ enum: ['text', 'video', 'images', 'link'], default: 'text' })
+  postType: string;
 }
 export const PostSchema = SchemaFactory.createForClass(Post);
+
+// reply notification
+// isSpammed
+// user cake date
+// isSaved
+// lock comments

@@ -1,9 +1,26 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 import type { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 export type UserWithId = User & { _id: Types.ObjectId };
+
+export class SocialLink {
+  @Prop({ required: true })
+  @ApiProperty({ description: "like 'reddit'" })
+  platform: string;
+
+  @ApiProperty({ description: "user's name on the platform" })
+  @Prop({ required: true })
+  displayName: string;
+
+  @ApiProperty({ description: 'the platform url is optional' })
+  @Prop()
+  @IsOptional()
+  url?: string;
+}
 @Schema()
 export class User {
   @Prop({ required: true, unique: true })
@@ -12,8 +29,11 @@ export class User {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true, select: false })
+  @Prop({ select: false })
   hashPassword: string;
+
+  @Prop({ default: Date.now })
+  createdAt: Date;
 
   // moderator access is given to specific users
   @Prop({ enum: ['user', 'admin', 'moderator'], default: 'user' })
@@ -43,7 +63,7 @@ export class User {
   about: string;
 
   @Prop({ default: [] })
-  socialLinks: string[];
+  socialLinks: SocialLink[];
 
   @Prop({ default: false })
   nsfw: boolean;
@@ -142,12 +162,39 @@ export class User {
   @Prop({ default: true })
   cakeDay: boolean;
 
+  @Prop({ default: [] })
+  dontNotifyIds: Types.ObjectId[];
+
   //messages
   @Prop({ enum: [`everyone`, `whitelisted`], default: 'everyone' })
   acceptPms: string;
 
   @Prop({ default: [] })
   whitelisted: string[];
+
+  @Prop({ default: [] })
+  savedPosts: Types.ObjectId[];
+
+  //Miscellaneous
+  @Prop({ default: false })
+  safeBrowsingMode: boolean;
+
+  @Prop({ default: true })
+  chatRequest: boolean;
+
+  @Prop({ default: false })
+  newFollower: boolean;
+
+  @Prop({ default: false })
+  unSubscribe: boolean;
+
+  // google auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGoogleAccount?: string;
+
+  // github auth
+  @Prop({ unique: true, sparse: true })
+  continueWithGithubAccount?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

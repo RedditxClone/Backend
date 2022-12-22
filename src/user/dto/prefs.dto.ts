@@ -4,62 +4,65 @@ import {
   IsBoolean,
   IsDefined,
   IsIn,
+  IsObject,
+  IsOptional,
   IsString,
   IsUrl,
-  ValidateIf,
 } from 'class-validator';
+
+import type { SocialLink } from '../user.schema';
 
 @Exclude()
 export class PrefsDto {
   //Account
-  @ValidateIf((o) => o.coverPhoto !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({ description: "Users's Cover photo location" })
   @IsString()
   @IsUrl()
   coverPhoto?: string;
 
-  @ValidateIf((o) => o.profilePhoto !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({ description: "Users's profile photo location" })
   @IsString()
   @IsUrl()
   profilePhoto?: string;
 
-  @ValidateIf((o) => o.countryCode !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({ description: 'Country Code ex: eg for Egypt' })
   @IsString()
   countryCode?: string;
 
-  @ValidateIf((o) => o.gender !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({ description: 'gender male or female' })
   @IsString()
   @IsIn(['male', 'female'])
   gender?: string;
 
+  @IsOptional()
   @Expose()
   //profile
   @ApiProperty({ description: 'display name of user' })
   @IsString()
   @IsDefined()
-  @ValidateIf((o) => o.displayName !== undefined)
   displayName?: string;
 
-  @ValidateIf((o) => o.about !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({ description: "user's about" })
   @IsString()
   about?: string;
 
-  @ValidateIf((o) => o.socialLinks !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({ description: 'social links like twitter' })
-  @IsString({ each: true })
-  socialLinks?: string[];
+  @IsObject({ each: true })
+  socialLinks?: SocialLink[];
 
-  @ValidateIf((o) => o.nsfw !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description:
@@ -68,7 +71,7 @@ export class PrefsDto {
   @IsBoolean()
   nsfw?: boolean;
 
-  @ValidateIf((o) => o.allowFollow !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description:
@@ -77,7 +80,7 @@ export class PrefsDto {
   @IsBoolean()
   allowFollow?: boolean;
 
-  @ValidateIf((o) => o.contentVisibility !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `Posts to this profile can appear in r/all and your profile can be discovered in /users`,
@@ -85,7 +88,7 @@ export class PrefsDto {
   @IsBoolean()
   contentVisibility?: boolean;
 
-  @ValidateIf((o) => o.activeInCommunitiesVisibility !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: 'Show which communities I am active in on my profile.',
@@ -93,7 +96,7 @@ export class PrefsDto {
   @IsBoolean()
   activeInCommunitiesVisibility?: boolean;
 
-  @ValidateIf((o) => o.badCommentAutoCollapse !== undefined)
+  @IsOptional()
   @Expose()
   //safety
   @ApiProperty({
@@ -103,7 +106,7 @@ export class PrefsDto {
   @IsIn([`off`, `low`, `medium`, `high`])
   badCommentAutoCollapse?: string;
 
-  @ValidateIf((o) => o.showInSearch !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `Allow search engines like Google to link to your profile in their search results.`,
@@ -111,7 +114,7 @@ export class PrefsDto {
   @IsBoolean()
   showInSearch?: boolean;
 
-  @ValidateIf((o) => o.adultContent !== undefined)
+  @IsOptional()
   @Expose()
   //feed
   @ApiProperty({
@@ -120,7 +123,7 @@ export class PrefsDto {
   @IsBoolean()
   adultContent?: boolean;
 
-  @ValidateIf((o) => o.autoPlayMedia !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `Play videos and gifs automatically when in the viewport.`,
@@ -128,7 +131,7 @@ export class PrefsDto {
   @IsBoolean()
   autoPlayMedia?: boolean;
 
-  @ValidateIf((o) => o.suggestedSort !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `comment collapse value in: [\`hot\`, \`new\`, \`top\`, \`rising\`], default is \`hot\``,
@@ -137,7 +140,7 @@ export class PrefsDto {
   @IsString()
   suggestedSort?: string;
 
-  @ValidateIf((o) => o.personalizeAllOfReddit !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -148,7 +151,7 @@ export class PrefsDto {
   })
   personalizeAllOfReddit?: boolean;
 
-  @ValidateIf((o) => o.personalizeAdsInformation !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -156,7 +159,7 @@ export class PrefsDto {
   })
   personalizeAdsInformation?: boolean;
 
-  @ValidateIf((o) => o.personalizeAdsYourActivity !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -164,7 +167,7 @@ export class PrefsDto {
   })
   personalizeAdsYourActivity?: boolean;
 
-  @ValidateIf((o) => o.personalizeRecGeneralLocation !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -172,7 +175,7 @@ export class PrefsDto {
   })
   personalizeRecGeneralLocation?: boolean;
 
-  @ValidateIf((o) => o.personalizeRecOurPartners !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -180,7 +183,7 @@ export class PrefsDto {
   })
   personalizeRecOurPartners?: boolean;
 
-  @ValidateIf((o) => o.useTwoFactorAuthentication !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -189,7 +192,7 @@ export class PrefsDto {
   useTwoFactorAuthentication?: boolean;
 
   //notifications
-  @ValidateIf((o) => o.inboxMessages !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on inbox message`,
@@ -197,7 +200,7 @@ export class PrefsDto {
   @IsBoolean()
   inboxMessages?: boolean;
 
-  @ValidateIf((o) => o.mentions !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on mention`,
@@ -205,7 +208,7 @@ export class PrefsDto {
   @IsBoolean()
   mentions?: boolean;
 
-  @ValidateIf((o) => o.commentsOnPost !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on comment on post`,
@@ -213,7 +216,7 @@ export class PrefsDto {
   @IsBoolean()
   commentsOnPost?: boolean;
 
-  @ValidateIf((o) => o.upvotePosts !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on post upvote`,
@@ -221,7 +224,7 @@ export class PrefsDto {
   @IsBoolean()
   upvotePosts?: boolean;
 
-  @ValidateIf((o) => o.upvoteComments !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on comment upvote`,
@@ -229,7 +232,7 @@ export class PrefsDto {
   @IsBoolean()
   upvoteComments?: boolean;
 
-  @ValidateIf((o) => o.repliesComments !== undefined)
+  @IsOptional()
   @Expose()
   @IsBoolean()
   @ApiProperty({
@@ -237,7 +240,7 @@ export class PrefsDto {
   })
   repliesComments?: boolean;
 
-  @ValidateIf((o) => o.activityComments !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on activity on your comment`,
@@ -245,7 +248,7 @@ export class PrefsDto {
   @IsBoolean()
   activityComments?: boolean;
 
-  @ValidateIf((o) => o.activityOnThreads !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on activity on your thread`,
@@ -253,7 +256,7 @@ export class PrefsDto {
   @IsBoolean()
   activityOnThreads?: boolean;
 
-  @ValidateIf((o) => o.newFollowers !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on new followers`,
@@ -261,7 +264,7 @@ export class PrefsDto {
   @IsBoolean()
   newFollowers?: boolean;
 
-  @ValidateIf((o) => o.newPostFlair !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on new post flairs`,
@@ -269,7 +272,7 @@ export class PrefsDto {
   @IsBoolean()
   newPostFlair?: boolean;
 
-  @ValidateIf((o) => o.newUserFlair !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on new user flair`,
@@ -277,7 +280,7 @@ export class PrefsDto {
   @IsBoolean()
   newUserFlair?: boolean;
 
-  @ValidateIf((o) => o.pinnedPosts !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on pinned posts`,
@@ -285,7 +288,7 @@ export class PrefsDto {
   @IsBoolean()
   pinnedPosts?: boolean;
 
-  @ValidateIf((o) => o.postsYouFollow !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on posts you follow`,
@@ -293,7 +296,7 @@ export class PrefsDto {
   @IsBoolean()
   postsYouFollow?: boolean;
 
-  @ValidateIf((o) => o.commentsYouFollow !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on comments you follow`,
@@ -301,7 +304,7 @@ export class PrefsDto {
   @IsBoolean()
   commentsYouFollow?: boolean;
 
-  @ValidateIf((o) => o.redditAnnouncements !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on reddit announcement`,
@@ -309,7 +312,7 @@ export class PrefsDto {
   @IsBoolean()
   redditAnnouncements?: boolean;
 
-  @ValidateIf((o) => o.cakeDay !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: `notify on your cake day`,
@@ -317,7 +320,7 @@ export class PrefsDto {
   @IsBoolean()
   cakeDay?: boolean;
 
-  @ValidateIf((o) => o.acceptPms !== undefined)
+  @IsOptional()
   @Expose()
   //messages
   @ApiProperty({
@@ -327,7 +330,7 @@ export class PrefsDto {
   @IsIn(['everyone', 'whitelisted'])
   acceptPms?: string;
 
-  @ValidateIf((o) => o.whitelisted !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: 'List of users allowed to private message the user',
@@ -335,11 +338,40 @@ export class PrefsDto {
   @IsString({ each: true })
   whitelisted?: string[];
 
-  @ValidateIf((o) => o.accountClosed !== undefined)
+  @IsOptional()
   @Expose()
   @ApiProperty({
     description: 'Is the account deleted',
   })
   @IsBoolean()
   accountClosed?: boolean;
+
+  // Miscellaneous
+  @IsOptional()
+  @Expose()
+  @ApiProperty({
+    description: 'Enable safe browsing mode',
+  })
+  @IsBoolean()
+  safeBrowsingMode?: boolean;
+
+  @IsOptional()
+  @Expose()
+  @ApiProperty({
+    description: 'Enable chat requests',
+  })
+  @IsBoolean()
+  chatRequest?: boolean;
+
+  @IsOptional()
+  @Expose()
+  @ApiProperty({})
+  @IsBoolean()
+  newFollower?: boolean;
+
+  @IsOptional()
+  @Expose()
+  @ApiProperty({})
+  @IsBoolean()
+  unSubscribe?: boolean;
 }

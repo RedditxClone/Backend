@@ -52,12 +52,21 @@ export const stubUser = (): User => ({
   commentsYouFollow: true,
   redditAnnouncements: true,
   cakeDay: true,
+  dontNotifyIds: [],
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
+  //Miscellaneous
+  safeBrowsingMode: false,
+  chatRequest: true,
+  newFollower: false,
+  unSubscribe: false,
+  savedPosts: [],
+  createdAt: new Date(),
 });
 
 export const stubUserFresh = (): User => ({
+  createdAt: new Date(),
   username: 'username',
   email: 'email@example.com',
   hashPassword: 'thisIsHashedPassword',
@@ -105,7 +114,14 @@ export const stubUserFresh = (): User => ({
   commentsYouFollow: true,
   redditAnnouncements: true,
   cakeDay: true,
+  dontNotifyIds: [],
   //messages
   acceptPms: 'everyone',
   whitelisted: [],
+  //Miscellaneous
+  safeBrowsingMode: false,
+  chatRequest: true,
+  newFollower: false,
+  unSubscribe: false,
+  savedPosts: [],
 });

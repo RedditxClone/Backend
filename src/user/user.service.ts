@@ -17,7 +17,11 @@ import { Model } from 'mongoose';
 
 import { BlockService } from '../block/block.service';
 import { FollowService } from '../follow/follow.service';
+import { PostCommentService } from '../post-comment/post-comment.service';
+import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ImagesHandlerService } from '../utils/imagesHandler/images-handler.service';
+import { userSelectedFields } from '../utils/project-selected-fields';
 import type {
   AvailableUsernameDto,
   CreateUserDto,
@@ -26,7 +30,6 @@ import type {
 } from './dto';
 import { PrefsDto } from './dto';
 import type { User, UserDocument, UserWithId } from './user.schema';
-
 @Global()
 @Injectable()
 export class UserService {
@@ -34,6 +37,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly followService: FollowService,
     private readonly blockService: BlockService,
+    private readonly postCommentService: PostCommentService,
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
@@ -55,6 +59,60 @@ export class UserService {
 
   unFriend() {
     return 'delete a friend';
+  }
+
+  async searchPeopleAggregate(
+    searchPhrase,
+    userId,
+    page = 1,
+    numberOfData = 50,
+  ) {
+    const fetcher = new ThingFetch(userId);
+
+    const res = await this.userModel.aggregate([
+      {
+        $match: {
+          $and: [
+            { username: new RegExp(`^${searchPhrase}`, 'i') },
+            { showInSearch: { $ne: 0 } },
+          ],
+        },
+      },
+      {
+        $project: {
+          userId: '$_id',
+          ...userSelectedFields,
+        },
+      },
+      ...fetcher.filterBlocked(),
+      {
+        $unset: 'block',
+      },
+      {
+        $lookup: {
+          from: 'follows',
+          as: 'followed',
+          let: {
+            userId: '$userId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$follower', userId] },
+                    { $eq: ['$followed', '$$userId'] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      ...fetcher.getPaginated(page, numberOfData),
+    ]);
+
+    return res.map((v) => ({ ...v, followed: v.followed.length > 0 }));
   }
 
   /**
@@ -133,10 +191,128 @@ export class UserService {
     }
   }
 
-  getUserInfo(user: UserWithId): UserAccountDto {
-    const { _id, profilePhoto, username } = user;
+  /**
+   * returns a data of the user's about page
+   * @param user1Id the user with token
+   * @param user2Id the user to be requested
+   * @returns UserAccountDto
+   */
+  async getUserInfo(
+    user1Id: Types.ObjectId,
+    user2Id: string,
+  ): Promise<UserAccountDto> {
+    // eslint-disable-next-line unicorn/no-await-expression-member
+    const userId = (await this.getUserByUsername(user2Id))._id;
+    const [isCurrentUserBlocked] = await this.userModel.aggregate([
+      { $match: { username: user2Id } },
+      {
+        $lookup: {
+          from: 'blocks',
+          as: 'blocks',
+          let: { id: '$_id' },
 
-    return { _id, profilePhoto, username };
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$blocks.blocked', user1Id] },
+                    { $eq: ['$blocks.blocker', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    if (
+      isCurrentUserBlocked.blocks !== undefined &&
+      isCurrentUserBlocked.blocks.length > 0
+    ) {
+      throw new UnauthorizedException('User has blocked you');
+    }
+
+    const [user]: any = await this.userModel.aggregate([
+      { $match: { username: user2Id } },
+      {
+        $lookup: {
+          from: 'blocks',
+          as: 'blocks',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: ['$blocker', user1Id],
+                    },
+                    { $eq: ['$blocked', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'follows',
+          as: 'follows',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$follower', user1Id] },
+                    { $eq: ['$followed', userId] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+    const {
+      _id,
+      profilePhoto,
+      coverPhoto,
+      createdAt,
+      username,
+      about,
+      displayName,
+      socialLinks,
+      nsfw,
+    } = user;
+    let isBlocked = false;
+
+    // eslint-disable-next-line unicorn/consistent-destructuring
+    if (user.blocks !== undefined && user.blocks.length > 0) {
+      isBlocked = true;
+    }
+
+    let isFollowed = false;
+
+    // eslint-disable-next-line unicorn/consistent-destructuring
+    if (user.follows !== undefined && user.follows.length > 0) {
+      isFollowed = true;
+    }
+
+    return {
+      _id,
+      profilePhoto,
+      coverPhoto,
+      username,
+      createdAt,
+      isBlocked,
+      isFollowed,
+      about,
+      displayName,
+      socialLinks,
+      nsfw,
+    };
   }
 
   async validPassword(
@@ -241,7 +417,13 @@ export class UserService {
       );
     }
 
-    return this.followService.follow({ follower, followed });
+    const followerDoc = await this.getUserById(follower);
+
+    return this.followService.follow({
+      follower,
+      followed,
+      followerUsername: followerDoc.username,
+    });
   }
 
   /**
@@ -275,6 +457,12 @@ export class UserService {
    * @returns succuss status if Ok
    */
   updateUserPrefs = async (_id: Types.ObjectId, prefsDto: PrefsDto) => {
+    if (prefsDto.socialLinks !== undefined && prefsDto.socialLinks.length > 5) {
+      throw new BadRequestException(
+        "Social links array can't be larger than 5 elements",
+      );
+    }
+
     await this.userModel.findByIdAndUpdate({ _id }, { ...prefsDto });
 
     return { status: 'success' };
@@ -364,10 +552,28 @@ export class UserService {
     return { status: 'success' };
   }
 
-  async deleteAccount(user: any) {
+  async getUserIfExist(
+    id: Types.ObjectId,
+  ): Promise<UserWithId | null | undefined> {
+    return this.userModel.findById(id);
+  }
+
+  async getUserTimeLine() {
+    // await this.userModel.aggregate([
+    //   {
+    //     $lookup: {
+    //       from: 'user-subreddit',
+    //       localField: '_id',
+    //       foreignField: 'user_id',
+    //     },
+    //   },
+    // ]);
+  }
+
+  async deleteAccount(userId: Types.ObjectId) {
     await this.userModel
       .updateOne(
-        { _id: user._id },
+        { _id: userId },
         {
           accountClosed: true,
         },
@@ -375,6 +581,42 @@ export class UserService {
       .select('');
 
     return { status: 'success' };
+  }
+
+  async savePost(user_id: Types.ObjectId, post_id: Types.ObjectId) {
+    const data = await this.userModel
+      .updateOne(
+        { _id: user_id },
+        {
+          $addToSet: { savedPosts: post_id },
+        },
+      )
+      .select('');
+
+    if (data.modifiedCount === 0) {
+      throw new BadRequestException('the post already saved');
+    }
+
+    return { status: 'success' };
+  }
+
+  async unsavePost(userId: Types.ObjectId, postId: Types.ObjectId) {
+    const data = await this.userModel.updateOne(
+      { _id: userId },
+      {
+        $pull: { savedPosts: postId },
+      },
+    );
+
+    if (data.modifiedCount === 0) {
+      throw new BadRequestException("you haven't saved the post");
+    }
+
+    return { status: 'success' };
+  }
+
+  getSavedPosts(userId: Types.ObjectId, paginationParams: PaginationParamsDto) {
+    return this.postCommentService.getSavedPosts(userId, paginationParams);
   }
 
   uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {
@@ -386,5 +628,65 @@ export class UserService {
       id,
       `${fieldName}`,
     );
+  }
+
+  async canRecieveMessages(
+    userId: Types.ObjectId,
+    senderName?: string,
+  ): Promise<boolean> {
+    return (
+      (await this.userModel.count({
+        _id: userId,
+        $or: [{ acceptPms: 'everyone' }, { whitelisted: [senderName] }],
+      })) > 0
+    );
+  }
+
+  notifyPostComment = async (
+    userId: Types.ObjectId,
+    thingId: any,
+    option: any,
+  ) => {
+    if (option === 1) {
+      await this.userModel.updateOne(
+        { _id: userId },
+        { $addToSet: { dontNotifyIds: thingId } },
+      );
+    } else if (option === -1) {
+      await this.userModel.updateOne(
+        { _id: userId },
+        { $pull: { dontNotifyIds: thingId } },
+      );
+    }
+
+    return { status: 'success' };
+  };
+
+  async getUserPosts(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getPostsOfOwner(ownerId, userId, pagination);
+  }
+
+  async getUserComments(
+    ownerId: Types.ObjectId,
+    userId: Types.ObjectId,
+    pagination: PaginationParamsDto,
+  ) {
+    return this.postCommentService.getCommentsOfOwner(
+      ownerId,
+      userId,
+      pagination,
+    );
+  }
+
+  getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    return this.postCommentService.getOverviewThings(userId, pagination);
+  }
+
+  getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
+    return this.postCommentService.getHistoryThings(userId, pagination);
   }
 }
