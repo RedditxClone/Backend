@@ -149,6 +149,30 @@ describe('PostCommentService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+  describe('check functions', () => {
+    it('must be the owner', () => {
+      const _userId = new Types.ObjectId(1);
+      const _user2Id = _userId;
+      const res = service.checkIfTheOwner(_userId, _user2Id);
+      expect(res).toBeUndefined();
+    });
+    it('must be valid flair id', () => {
+      const res = service.checkIfValidFlairId(undefined, []);
+      expect(res).toBeUndefined();
+    });
+    it('must be valid flair id as well', () => {
+      const fId = new Types.ObjectId(1);
+      const res = service.checkIfValidFlairId(fId, [
+        {
+          _id: fId,
+          text: 'text',
+          backgroundColor: 'color',
+          textColor: 'color',
+        },
+      ]);
+      expect(res).toBeUndefined();
+    });
+  });
   describe('updateTing', () => {
     let post: Post & { _id: Types.ObjectId };
     let comment: Comment & { _id: Types.ObjectId };
@@ -582,6 +606,193 @@ describe('PostCommentService', () => {
       expect(res.length).toEqual(0);
     });
   });
+
+  describe('get comments of thing', () => {
+    let post;
+    let comment;
+    beforeAll(async () => {
+      const user1 = await userService.createUser({
+        email: 'wkljwk@emkdms.com',
+        username: 'user100lkfs',
+        password: '1234556778',
+      });
+      await subredditService.joinSubreddit(user1._id, subreddit._id);
+      post = await postService.create(user1._id, {
+        text: 'texst',
+        title: 'title',
+        subredditId: subreddit._id,
+      });
+      comment = await commentService.create(user1.username, user1._id, {
+        parentId: post._id,
+        postId: post._id,
+        subredditId: subreddit._id,
+        text: 'comment text',
+      });
+    });
+    it('must get comment', async () => {
+      const res = await service.getThings(
+        { _id: post._id },
+        {
+          limit: 4,
+          page: 1,
+          sort: 'top',
+        },
+        userSR._id,
+      );
+      expect(res.length).toEqual(1);
+      expect(res[0]._id.toString()).toEqual(comment._id.toString());
+    });
+    it('must get empty array', async () => {
+      const res = await service.getThings(
+        { _id: comment._id },
+        {
+          limit: 4,
+          page: 1,
+          sort: 'top',
+        },
+        userSR._id,
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+
+  describe('get specific types of posts of user', () => {
+    let post1, post2;
+    beforeAll(async () => {
+      post1 = await postService.create(userSR._id, {
+        subredditId: subreddit._id,
+        title: 'title',
+        text: 'text',
+      });
+      post2 = await postService.create(userSR._id, {
+        subredditId: subreddit._id,
+        title: 'title',
+        text: 'text',
+      });
+      await userService.savePost(userSR._id, post1._id);
+      await userService.savePost(userSR._id, post2._id);
+    });
+    describe('get saved posts', () => {
+      it('must get saved posts successfully', async () => {
+        const savedPosts = await service.getSavedPosts(userSR._id, {
+          limit: 10,
+          page: 1,
+          sort: 'top',
+        });
+        expect(savedPosts.length).toEqual(2);
+      });
+      it('must get empty array', async () => {
+        const savedPosts = await service.getSavedPosts(new Types.ObjectId(1), {
+          limit: 1,
+          page: 1,
+          sort: 'top',
+        });
+        expect(savedPosts.length).toEqual(0);
+      });
+    });
+    describe('get overview things', () => {
+      it('must get posts and comments of user', async () => {
+        const overviewThings = await service.getOverviewThings(userSR._id, {
+          limit: 10,
+          page: 1,
+          sort: 'top',
+        });
+        expect(overviewThings.length).toBeLessThanOrEqual(10);
+
+        const post1Found = overviewThings.find(
+          (val) => val._id.toString() === post1._id.toString(),
+        );
+        expect(post1Found._id).toEqual(post1._id);
+        const post2Found = overviewThings.find(
+          (val) => val._id.toString() === post2._id.toString(),
+        );
+        expect(post2Found._id).toEqual(post2._id);
+      });
+    });
+    describe('get history', () => {
+      it('must get posts and comments of user', async () => {
+        const history = await service.getOverviewThings(userSR._id, {
+          limit: 10,
+          page: 1,
+          sort: 'top',
+        });
+        expect(history.length).toBeLessThanOrEqual(10);
+
+        const post1Found = history.find(
+          (val) => val._id.toString() === post1._id.toString(),
+        );
+        expect(post1Found._id).toEqual(post1._id);
+        const post2Found = history.find(
+          (val) => val._id.toString() === post2._id.toString(),
+        );
+        expect(post2Found._id).toEqual(post2._id);
+      });
+    });
+  });
+  describe('search post', () => {
+    it('must get number of posts', async () => {
+      const res = await service.searchPostAggregate('text', userSR._id, 1, 10);
+      expect(res.length).toBeLessThanOrEqual(10);
+
+      for (const { text, title } of res) {
+        expect(text.includes('text') || title.includes('text')).toEqual(true);
+      }
+    });
+    it('must return no post', async () => {
+      const res = await service.searchPostAggregate(
+        'ksjfkjfshsngjswh',
+        userSR._id,
+      );
+      expect(res.length).toEqual(0);
+    });
+  });
+  describe('search community', () => {
+    it('must get number of subreddits', async () => {
+      const res = await service.searchCommentQuery(
+        'subreddit',
+        userSR._id,
+        1,
+        10,
+      );
+      expect(res.length).toBeLessThanOrEqual(10);
+
+      for (const { name } of res) {
+        expect(name.includes('subreddit')).toEqual(true);
+      }
+    });
+  });
+  describe('get thing i moderate', () => {
+    let user, post;
+    beforeAll(async () => {
+      user = await userService.createUser({
+        email: 'fsljgkj@jkgd.ceoj',
+        password: '13o4jkkrjwrwr',
+        username: 'wjwtkjtj',
+      });
+      const sr = await subredditService.create(
+        {
+          name: 'gskjgek',
+          over18: true,
+          type: 'fsjkgs',
+        },
+        user.username,
+        user._id,
+      );
+      post = await postService.create(
+        { _id: user._id, username: user.username },
+        {
+          subredditId: sr._id,
+          title: 'title',
+          text: 'text',
+        },
+      );
+    });
+    it('must get post successfully', async () => {
+      const res = await service.getThingIModerate(user.username , post._id);
+      expect(res.length).toEqual(1)
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();
