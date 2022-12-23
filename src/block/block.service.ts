@@ -5,9 +5,15 @@ import { Model } from 'mongoose';
 
 import type { Block } from './block.schema';
 import type { BlockDto } from './dto/block.dto';
-
+/**
+ * A service for block module
+ */
 @Injectable()
 export class BlockService {
+  /**
+   * class constructor
+   * @param blockModel block model
+   */
   constructor(
     @InjectModel('Block') private readonly blockModel: Model<Block>,
   ) {}
