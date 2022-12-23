@@ -15,12 +15,19 @@ import {
 } from './data/seeder-data';
 
 /**
- * Provide seeding functionality
- *
- * @service
+ * Provide database seeding functionality
  */
 @Injectable()
 export class SeederService {
+  /**
+   * class constructor
+   * @param userService user service
+   * @param subredditService subreddit service
+   * @param postService post service
+   * @param commentService comment service
+   * @param followService follow service
+   * @param logger logger factory
+   */
   constructor(
     private readonly userService: UserService,
     private readonly subredditService: SubredditService,
@@ -232,6 +239,13 @@ export class SeederService {
     }
   }
 
+  /**
+   * Helper function to recursively create comments
+   * @param commentData Data of comment
+   * @param post Ancestor post of comment
+   * @param parent Direct parent post or comment of comment
+   * @param subredditId MongoId of subreddit containing comment
+   */
   private async recCreateComment(commentData, post, parent, subredditId) {
     const user = await this.userService.getUserByUsername(commentData.username);
     const commentRes = await this.commentService

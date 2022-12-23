@@ -30,9 +30,21 @@ import type {
 } from './dto';
 import { PrefsDto } from './dto';
 import type { User, UserDocument, UserWithId } from './user.schema';
+
+/**
+ * Service to handle all user interactions
+ */
 @Global()
 @Injectable()
 export class UserService {
+  /**
+   * Class constructor
+   * @param userModel mongoose model
+   * @param followService follow service
+   * @param blockService block service
+   * @param postCommentService post comment service
+   * @param imagesHandlerService image handler service
+   */
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly followService: FollowService,
@@ -41,6 +53,14 @@ export class UserService {
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
+  /**
+   * search people
+   * @param searchPhrase search query
+   * @param userId MongoId of searching user
+   * @param page pagination page number
+   * @param numberOfData number of items per page
+   * @returns search result
+   */
   async searchPeopleAggregate(
     searchPhrase,
     userId,
@@ -117,6 +137,12 @@ export class UserService {
     }
   };
 
+  /**
+   * Get a specific user
+   * @param filter see FilterUserDto
+   * @param selectPassword Whether to return the user's hashed password with model
+   * @returns user document
+   */
   private async getOneUser(
     filter: FilterUserDto,
     selectPassword = false,
@@ -146,6 +172,12 @@ export class UserService {
     return this.getOneUser({ _id: id }, selectPassword);
   }
 
+  /**
+   * Get user document from username
+   * @param username Username of user
+   * @param selectPassword Whether to return the user's hashed password with model
+   * @returns user document
+   */
   async getUserByUsername(
     username: string,
     selectPassword = false,
@@ -153,10 +185,21 @@ export class UserService {
     return this.getOneUser({ username }, selectPassword);
   }
 
+  /**
+   * Hash a password string
+   * @param password Password to be hashed
+   * @returns Hashed Password
+   */
   private async createHashedPassword(password: string): Promise<string> {
     return bcrypt.hash(password, await bcrypt.genSalt(10));
   }
 
+  /**
+   * Change user password
+   * @param id MongoId of user
+   * @param password New password
+   * @throws NotFoundException if user does not exist
+   */
   async changePassword(id: Types.ObjectId, password: string): Promise<void> {
     const hashPassword = await this.createHashedPassword(password);
     const user: UserDocument | null = await this.userModel.findByIdAndUpdate(
@@ -295,6 +338,12 @@ export class UserService {
     };
   }
 
+  /**
+   * Compare password string with stored hashed password
+   * @param userPassword Password string
+   * @param hashedPassword Stored hashed password
+   * @returns Whether the password is valid
+   */
   async validPassword(
     userPassword: string,
     hashedPassword: string,
@@ -302,6 +351,9 @@ export class UserService {
     return bcrypt.compare(userPassword, hashedPassword);
   }
 
+  /**
+   * random prefix list
+   */
   private randomPrefixes = [
     'player',
     'good',
@@ -312,6 +364,11 @@ export class UserService {
     'successful',
   ];
 
+  /**
+   * Generate random username from seed
+   * @param num rng seed
+   * @returns random username
+   */
   private generateRandomUsername(num: number): string {
     const date = Date.now().toString(36);
     const rand = randomInt(281_474_976_710_655).toString(36);
@@ -344,6 +401,11 @@ export class UserService {
     );
   }
 
+  /**
+   * Check if a user exists
+   * @param filter see FilterUserDto
+   * @returns Whether the user exists
+   */
   async userExist(filter: FilterUserDto): Promise<boolean> {
     return (await this.userModel.count(filter)) > 0;
   }
@@ -468,6 +530,11 @@ export class UserService {
     return this.blockService.block({ blocker, blocked });
   }
 
+  /**
+   * Get a list of users blocked
+   * @param blocker MongoId of user
+   * @returns list of users
+   */
   getBlockedUsers(blocker: Types.ObjectId) {
     return this.blockService.getBlockedUsers(blocker);
   }
@@ -532,12 +599,22 @@ export class UserService {
     return { status: 'success' };
   }
 
+  /**
+   * Get a user if they exist otherwise return null
+   * @param id MongoId of user
+   * @returns user document or null
+   */
   async getUserIfExist(
     id: Types.ObjectId,
   ): Promise<UserWithId | null | undefined> {
     return this.userModel.findById(id);
   }
 
+  /**
+   * deletes a user's account
+   * @param userId user's id
+   * @returns `{ status: 'success' }`
+   */
   async deleteAccount(userId: Types.ObjectId) {
     await this.userModel
       .updateOne(
@@ -551,6 +628,12 @@ export class UserService {
     return { status: 'success' };
   }
 
+  /**
+   * Add post to saved posts
+   * @param user_id MongoId of user
+   * @param post_id MongoId of post
+   * @returns status: success
+   */
   async savePost(user_id: Types.ObjectId, post_id: Types.ObjectId) {
     const data = await this.userModel
       .updateOne(
@@ -568,6 +651,12 @@ export class UserService {
     return { status: 'success' };
   }
 
+  /**
+   * Remove post from saved posts
+   * @param userId MongoId of user
+   * @param postId MongoId of post
+   * @returns status: success
+   */
   async unsavePost(userId: Types.ObjectId, postId: Types.ObjectId) {
     const data = await this.userModel.updateOne(
       { _id: userId },
@@ -583,10 +672,23 @@ export class UserService {
     return { status: 'success' };
   }
 
+  /**
+   * Get list of user's saved posts
+   * @param userId MongoId of user
+   * @param paginationParams limit and offset of pagination
+   * @returns list of posts
+   */
   getSavedPosts(userId: Types.ObjectId, paginationParams: PaginationParamsDto) {
     return this.postCommentService.getSavedPosts(userId, paginationParams);
   }
 
+  /**
+   * Update a user's field with a photo
+   * @param id MongoId of user
+   * @param file photo
+   * @param fieldName name of field to update photo
+   * @returns uploaded photo
+   */
   uploadPhoto(id: Types.ObjectId, file: any, fieldName: string) {
     // return { id, file, fieldName };
     return this.imagesHandlerService.uploadPhoto(
@@ -598,6 +700,12 @@ export class UserService {
     );
   }
 
+  /**
+   * check whether the user can recieve messages from sender
+   * @param userId MongoId of user
+   * @param senderName username of sender
+   * @returns can recieve message
+   */
   async canRecieveMessages(
     userId: Types.ObjectId,
     senderName?: string,
@@ -610,6 +718,13 @@ export class UserService {
     );
   }
 
+  /**
+   * Allow or disallow notifcation on a thing
+   * @param userId MongoId of user
+   * @param thingId MongoId of postcomment
+   * @param option 1 to allow, -1 to disallow
+   * @returns status: success
+   */
   notifyPostComment = async (
     userId: Types.ObjectId,
     thingId: any,
@@ -630,6 +745,13 @@ export class UserService {
     return { status: 'success' };
   };
 
+  /**
+   * Get list of user's posts
+   * @param ownerId MongoId of owner
+   * @param userId MongoId of user
+   * @param pagination Limit and offset of pagination
+   * @returns list of user's posts
+   */
   async getUserPosts(
     ownerId: Types.ObjectId,
     userId: Types.ObjectId,
@@ -638,6 +760,13 @@ export class UserService {
     return this.postCommentService.getPostsOfOwner(ownerId, userId, pagination);
   }
 
+  /**
+   * Get list of user's comments
+   * @param ownerId MongoId of owner
+   * @param userId MongoId of user
+   * @param pagination Limit and offset of pagination
+   * @returns list of user's comments
+   */
   async getUserComments(
     ownerId: Types.ObjectId,
     userId: Types.ObjectId,
@@ -650,10 +779,22 @@ export class UserService {
     );
   }
 
+  /**
+   * Get list of overview things
+   * @param userId MongoId
+   * @param pagination Limit and offset of pagination
+   * @returns List of overview things
+   */
   getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     return this.postCommentService.getOverviewThings(userId, pagination);
   }
 
+  /**
+   * Get list of history things
+   * @param userId MongoId
+   * @param pagination Limit and offset of pagination
+   * @returns List of history things
+   */
   getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     return this.postCommentService.getHistoryThings(userId, pagination);
   }

@@ -28,8 +28,21 @@ import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { Subreddit, SubredditDocument } from './subreddit.schema';
 import type { SubredditUser } from './subreddit-user.schema';
 import type { SubredditUserLeft } from './subreddit-user-left.schema';
+
+/**
+ * service for subreddit module
+ */
 @Injectable()
 export class SubredditService {
+  /**
+   * class constructor
+   * @param subredditModel subreddit model
+   * @param userSubredditModel  user subreddit model
+   * @param userSubredditLeftModel user subreddit left
+   * @param userService user service
+   * @param imagesHandlerService image handler service
+   * @param postCommentService post comment service
+   */
   constructor(
     @InjectModel('Subreddit')
     private readonly subredditModel: Model<Subreddit>,
@@ -42,6 +55,13 @@ export class SubredditService {
     private readonly postCommentService: PostCommentService,
   ) {}
 
+  /**
+   * creates a subreddit
+   * @param createSubredditDto encapsulates the creation data
+   * @param username the user's suername
+   * @param userId the user's id
+   * @returns the created subreddit
+   */
   async create(
     createSubredditDto: CreateSubredditDto,
     username: string,
@@ -72,6 +92,11 @@ export class SubredditService {
     return subreddit;
   }
 
+  /**
+   * finds a subreddit
+   * @param subreddit the subreddit name
+   * @returns the subreddit if found
+   */
   async findSubreddit(subreddit: string): Promise<SubredditDocument> {
     const sr: SubredditDocument | null | undefined =
       await this.subredditModel.findById(subreddit);
@@ -83,6 +108,12 @@ export class SubredditService {
     return sr;
   }
 
+  /**
+   * find the subreddits related to the user
+   * @param subredditName the sr name
+   * @param user the user
+   * @returns the srs
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async findSubredditByName(subredditName: string, user?) {
     const sr = await this.subredditModel.aggregate([
@@ -106,6 +137,11 @@ export class SubredditService {
     return { ...sr[0], joined: sr[0].joined.length > 0 };
   }
 
+  /**
+   * checks if the sr name is available
+   * @param subredditName the sr name
+   * @returns `{ status: 'success' }` if available
+   */
   async checkSubredditAvailable(subredditName: string) {
     const filter: FilterSubredditDto = { name: subredditName };
     const isSubredditUnavailable = await this.subredditModel.exists(filter);
@@ -117,6 +153,13 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  /**
+   * updates subreddit
+   * @param subreddit sr name
+   * @param updateSubredditDto encapsolates the request data
+   * @param username the user's username
+   * @returns `{ status: 'success' }`
+   */
   async update(
     subreddit: string,
     updateSubredditDto: UpdateSubredditDto,
@@ -141,6 +184,13 @@ export class SubredditService {
     };
   }
 
+  /**
+   * creates a subreddit flair
+   * @param subreddit the sr name
+   * @param flairDto encapsulating flairs data
+   * @param username user's username
+   * @returns the sr after adding the flair
+   */
   async createFlair(
     subreddit: string,
     flairDto: FlairDto,
@@ -167,6 +217,13 @@ export class SubredditService {
     return sr;
   }
 
+  /**
+   * updates an element in list
+   * @param list the list to be update
+   * @param updateDto encapsulates the update data
+   * @param updateId update data id
+   * @returns updated element
+   */
   updateList(list, updateDto, updateId) {
     return list.map((v) => {
       if (v._id.toString() === updateId) {
@@ -180,6 +237,15 @@ export class SubredditService {
     });
   }
 
+  /**
+   * updates an array of objects
+   * @param subreddit the sr name
+   * @param updateId the list thing id
+   * @param updateDto encapsulates the update data
+   * @param username the user's username
+   * @param updatedField the updated field
+   * @returns the updated count
+   */
   async updateGeneralArrayOfObjects(
     subreddit,
     updateId,
@@ -212,6 +278,11 @@ export class SubredditService {
     return this.modifiedCountResponse(res2.modifiedCount);
   }
 
+  /**
+   * gets sr flairs
+   * @param subreddit sr name
+   * @returns the sr
+   */
   async getFlairs(subreddit: string): Promise<SubredditDocument> {
     const sr = await this.subredditModel
       .findById(subreddit)
@@ -224,6 +295,12 @@ export class SubredditService {
     return sr;
   }
 
+  /**
+   * uploads a sr icon
+   * @param subreddit sr name
+   * @param file the icon file
+   * @param username the user uploading th icon
+   */
   async uploadIcon(subreddit: string, file, username: string) {
     const sr = await this.subredditModel
       .findOne({ _id: subreddit, moderators: username })
@@ -242,12 +319,21 @@ export class SubredditService {
     );
   }
 
+  /**
+   * checks if user is null
+   * @param user check if user is not null
+   */
   private checkUserNotNull(user) {
     if (!user) {
       throw new UnauthorizedException();
     }
   }
 
+  /**
+   * removes sr icon
+   * @param subreddit sr name
+   * @param username the user' username
+   */
   async removeIcon(subreddit: string, username: string) {
     this.checkUserNotNull(username);
     const saveDir = `assets/subreddit_icons/${subreddit}.jpeg`;
@@ -267,6 +353,13 @@ export class SubredditService {
     return this.imagesHandlerService.removePhoto(saveDir);
   }
 
+  /**
+   * deletes a flair with id
+   * @param subreddit sr name
+   * @param flair_id flair id
+   * @param username user's username
+   * @returns `{ status: 'success' }`
+   */
   async deleteFlairById(subreddit: string, flair_id: string, username: string) {
     this.checkUserNotNull(username);
     const flair = await this.subredditModel.updateOne(
@@ -285,10 +378,21 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  /**
+   * checks if sr exist
+   * @param subredditId sr id
+   * @returns boolean
+   */
   private async subredditExist(subredditId): Promise<boolean> {
     return (await this.subredditModel.count({ _id: subredditId })) > 0;
   }
 
+  /**
+   * join sr
+   * @param userId user id
+   * @param subredditId sr id
+   * @returns `{ status: 'success' }`
+   */
   async joinSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
     const subredditExist = await this.subredditExist(subredditId);
 
@@ -316,6 +420,12 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  /**
+   * leave a sr
+   * @param userId user's id
+   * @param subredditId sr' id
+   * @returns `{ status: 'success' }`
+   */
   async leaveSubreddit(userId: Types.ObjectId, subredditId: Types.ObjectId) {
     const deleted = await this.userSubredditModel.findOneAndDelete({
       userId,
@@ -343,6 +453,13 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  /**
+   * gets common stages
+   * @param userId user's id
+   * @param page page number
+   * @param limit limit
+   * @returns query
+   */
   private getSrCommonStages(userId, page, limit) {
     return [
       {
@@ -357,6 +474,15 @@ export class SubredditService {
     ];
   }
 
+  /**
+   * search SRs
+   * @param searchPhrase search words
+   * @param username user's username
+   * @param userId user's id
+   * @param page page number
+   * @param numberOfData limit
+   * @returns all SRs relating to search
+   */
   async getSubredditStartsWithChar(
     searchPhrase: string,
     username,
@@ -380,6 +506,15 @@ export class SubredditService {
     return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
+  /**
+   * search SRs
+   * @param searchPhrase search words
+   * @param username user's username
+   * @param userId user's id
+   * @param page page number
+   * @param numberOfData limit
+   * @returns all SRs relating to search
+   */
   async getSearchSubredditAggregation(
     searchPhrase: string,
     username,
@@ -408,6 +543,14 @@ export class SubredditService {
     return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
+  /**
+   * search flairs
+   * @param searchPhrase search words
+   * @param subreddit sr name
+   * @param page page number
+   * @param limit limit
+   * @returns all flairs matching
+   */
   getSearchFlairsAggregate(
     searchPhrase: string,
     subreddit: Types.ObjectId,
@@ -443,6 +586,13 @@ export class SubredditService {
     ]);
   }
 
+  /**
+   * adds a sr to category
+   * @param subreddit sr id
+   * @param username user's username
+   * @param categories the category
+   * @returns `{ status: 'success' }`
+   */
   async addSubredditCategories(
     subreddit: Types.ObjectId,
     username: string,
@@ -468,6 +618,15 @@ export class SubredditService {
     };
   }
 
+  /**
+   * gets all sr in a category
+   * @param category the category
+   * @param page page number
+   * @param limit limit
+   * @param userId user's id
+   * @param username user's username
+   * @returns `{ status: 'success' }`
+   */
   async getSubredditsWithCategory(
     category: string,
     page = 1,
@@ -487,6 +646,12 @@ export class SubredditService {
     return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
+  /**
+   * create a response
+   * @param modifiedCount  modified count
+   * @param message the message
+   * @returns `{ status: 'success' }`
+   */
   private modifiedCountResponse(modifiedCount, message?) {
     if (modifiedCount === 0) {
       throw new BadRequestException(message);
@@ -497,6 +662,13 @@ export class SubredditService {
     };
   }
 
+  /**
+   * adds a new moderator to sr
+   * @param moderatorUsername moderator username
+   * @param newModuratorUsername the moderator to be added as moderated
+   * @param subreddit
+   * @returns `{ status: 'success' }`
+   */
   async addNewModerator(
     moderatorUsername: string,
     newModuratorUsername: string,
@@ -528,6 +700,13 @@ export class SubredditService {
     );
   }
 
+  /**
+   * gets subreddit match stage
+   * @param matchStage the stage
+   * @param page page
+   * @param limit limit
+   * @param userId user's id
+   */
   async getSubredditsWithMatch(matchStage, page = 1, limit = 50, userId?) {
     this.checkUserNotNull(userId);
     const res = await this.subredditModel.aggregate([
@@ -538,6 +717,11 @@ export class SubredditService {
     return res.map((v) => ({ ...v, joined: v.joined?.length > 0 }));
   }
 
+  /**
+   * checks if user is a moderator in a sr
+   * @param srName sr name
+   * @param username user's username
+   */
   async checkIfModerator(srName: string, username: string) {
     const moderator = await this.subredditModel.exists({
       moderators: username,
@@ -551,6 +735,14 @@ export class SubredditService {
     }
   }
 
+  /**
+   * get all unmoderated things
+   * @param srName sr name
+   * @param modUsername mod username
+   * @param pagination pagination params
+   * @param type thing type
+   * @returns all things
+   */
   async getUnModeratedThings(
     srName: string,
     modUsername: string,
@@ -566,6 +758,13 @@ export class SubredditService {
     );
   }
 
+  /**
+   * get spammed things
+   * @param srName sr name
+   * @param modUsername moderate username
+   * @param pagination pagination params
+   * @param type thing type
+   */
   async getSpammedThings(
     srName: string,
     modUsername: string,
@@ -581,6 +780,13 @@ export class SubredditService {
     );
   }
 
+  /**
+   * gets edited things
+   * @param srName sr name
+   * @param modUsername moderate username
+   * @param pagination pagination params
+   * @param type thing type
+   */
   async getEditedThings(
     srName: string,
     modUsername: string,
@@ -596,6 +802,10 @@ export class SubredditService {
     );
   }
 
+  /**
+   * all user's joined subreddit
+   * @param userId user's id
+   */
   async subredditsIJoined(userId: Types.ObjectId) {
     const subreddits = await this.userSubredditModel.aggregate([
       {
@@ -616,6 +826,10 @@ export class SubredditService {
     return subreddits.map((v) => v.subreddit[0]);
   }
 
+  /**
+   * gets subreddit moderator
+   * @param subreddit sr id
+   */
   async getSubredditModerators(subreddit: Types.ObjectId) {
     const subreddits = await this.subredditModel.aggregate([
       {
@@ -658,6 +872,12 @@ export class SubredditService {
     return subreddits.map((v) => v.user[0]);
   }
 
+  /**
+   * check if user is joined
+   * @param userId user's id
+   * @param subredditId subreddit id
+   * @returns boolean
+   */
   async isJoined(userId: Types.ObjectId, subredditId: Types.ObjectId) {
     const res = await this.userSubredditModel.findOne({
       userId,
@@ -667,6 +887,12 @@ export class SubredditService {
     return Boolean(res);
   }
 
+  /**
+   * check if user is moderator
+   * @param username user's username
+   * @param subreddit subreddit id
+   * @returns boolean
+   */
   async isModerator(username: string, subreddit: Types.ObjectId) {
     this.checkUserNotNull(username);
     const res = await this.subredditModel.findOne({
@@ -677,6 +903,12 @@ export class SubredditService {
     return Boolean(res);
   }
 
+  /**
+   * add a rule
+   * @param subreddit sr id
+   * @param username username
+   * @param ruleDto encapolates rules dto
+   */
   async addRule(subreddit: Types.ObjectId, username: string, ruleDto: RuleDto) {
     ruleDto._id = new Types.ObjectId();
     const res = await this.subredditModel.updateOne(
@@ -696,6 +928,12 @@ export class SubredditService {
     return ruleDto;
   }
 
+  /**
+   * deletes a rule
+   * @param subreddit sr id
+   * @param ruleId rule id
+   * @param username usr' username
+   */
   async deleteRule(
     subreddit: Types.ObjectId,
     ruleId: Types.ObjectId,
@@ -716,6 +954,13 @@ export class SubredditService {
     return this.modifiedCountResponse(res.modifiedCount);
   }
 
+  /**
+   * updates a rule
+   * @param subreddit sr id
+   * @param ruleId rule id
+   * @param username user' username
+   * @param ruleDto rule dto
+   */
   async updateRule(
     subreddit: Types.ObjectId,
     ruleId: Types.ObjectId,
@@ -749,6 +994,11 @@ export class SubredditService {
     return this.modifiedCountResponse(res.modifiedCount);
   }
 
+  /**
+   * joins a sr
+   * @param subreddit sr id
+   * @param userId user id
+   */
   async askToJoinSr(subreddit: Types.ObjectId, userId: Types.ObjectId) {
     const res = await this.subredditModel.updateOne(
       {
@@ -764,6 +1014,11 @@ export class SubredditService {
     return this.modifiedCountResponse(res.modifiedCount);
   }
 
+  /**
+   * get list of users asking to join sr
+   * @param subreddit sr id
+   * @param moderatorUsername moderator id
+   */
   async getUsersAskingToJoinSubreddit(
     subreddit: Types.ObjectId,
     moderatorUsername: string,
@@ -809,6 +1064,13 @@ export class SubredditService {
     return res.map((v) => v.user[0]);
   }
 
+  /**
+   * delete a user from waiting list
+   * @param subreddit sr id
+   * @param moderatorUsername mod username
+   * @param userId user id
+   * @returns `{ status: 'success' }`
+   */
   private async deleteUserFromAskingListIfSrExist(
     subreddit: Types.ObjectId,
     moderatorUsername: string,
@@ -837,6 +1099,13 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  /**
+   * accept sr join request
+   * @param subredditId sr id
+   * @param moderatorUsername moderator username
+   * @param userId user id
+   * @returns `{ status: 'success' }`
+   */
   async acceptToJoinSr(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
@@ -856,6 +1125,13 @@ export class SubredditService {
     return { status: 'success' };
   }
 
+  /**
+   * gets a user from a list of users
+   * @param subredditId sr id
+   * @param userId user id
+   * @param fieldName field name
+   * @returns
+   */
   async getUsersFromListUserDate(
     subredditId: Types.ObjectId,
     userId: string,
@@ -901,6 +1177,12 @@ export class SubredditService {
     return res.map((v) => ({ ...v[fieldName], ...v.user[0] }));
   }
 
+  /**
+   * list of updating user
+   * @param list the lost to be quered
+   * @param updateDto the data encapsolated
+   * @param username user's usernme
+   */
   private listUserUpdating(list, updateDto, username) {
     return list.map((v) => {
       if (v.username === username) {
@@ -918,6 +1200,15 @@ export class SubredditService {
     });
   }
 
+  /**
+   * updates a list
+   * @param subredditId  sr id
+   * @param moderatorUsername moderator username
+   * @param username user's username
+   * @param fieldName field name
+   * @param updateDto encapsulates the data
+   * @returns modified count
+   */
   async updateListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
@@ -951,6 +1242,14 @@ export class SubredditService {
     return this.modifiedCountResponse(res2.modifiedCount);
   }
 
+  /**
+   * remove a user from list
+   * @param subredditId sr id
+   * @param moderatorUsername  mo username
+   * @param username user name
+   * @param fieldName field name
+   * @returns modified count
+   */
   async removeUserFromListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
@@ -974,6 +1273,13 @@ export class SubredditService {
     return this.modifiedCountResponse(res.modifiedCount);
   }
 
+  /**
+   * checks if user is already processed
+   * @param username user name
+   * @param subredditId sr id
+   * @param fieldName field name
+   * @returns boolean
+   */
   private async checkIfUserAlreadyProccessed(
     username: string,
     subredditId: Types.ObjectId,
@@ -989,6 +1295,15 @@ export class SubredditService {
     return Boolean(res);
   }
 
+  /**
+   * adds a user to a date list
+   * @param subredditId sr id
+   * @param moderatorUsername mod username
+   * @param dataSent the data
+   * @param fieldName field name
+   * @param extraStage the extra stage if applicable
+   * @returns modified count
+   */
   async addUserToListUserDate(
     subredditId: Types.ObjectId,
     moderatorUsername: string,
@@ -1034,6 +1349,13 @@ export class SubredditService {
     return this.modifiedCountResponse(res.modifiedCount);
   }
 
+  /**
+   * adds a sub topic to a sr
+   * @param subredditId sr id
+   * @param subTopics the sub topic
+   * @param username the user' username
+   * @returns modified count
+   */
   async addSubTobics(
     subredditId: Types.ObjectId,
     subTopics: string[],
@@ -1059,6 +1381,13 @@ export class SubredditService {
     return this.modifiedCountResponse(res ?? 0);
   }
 
+  /**
+   * adds a n active topic
+   * @param subredditId sr id
+   * @param activeTopic the active topic
+   * @param username user's username
+   * @returns modified count
+   */
   async addActiveTobic(
     subredditId: Types.ObjectId,
     activeTopic: string,
@@ -1089,6 +1418,16 @@ export class SubredditService {
     return this.modifiedCountResponse(res ?? 0);
   }
 
+  /**
+   * gets a sr stats
+   * @param model the moongoose model
+   * @param srName the sr name
+   * @param fieldName field name
+   * @param format the format
+   * @param fromDate the from date
+   * @param toDate the end date
+   * @returns the stats
+   */
   private getSubredditStatsGeneral = async (
     model,
     srName,
@@ -1128,6 +1467,11 @@ export class SubredditService {
     ]);
   };
 
+  /**
+   * gets the stat for the week
+   * @param srName sr name
+   * @returns the stats
+   */
   async getSrStatitisticsWeek(srName: string) {
     const d = new Date();
     const fromDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 6);
@@ -1159,6 +1503,11 @@ export class SubredditService {
     }));
   }
 
+  /**
+   * gets sr stats for the year
+   * @param srName sr name
+   * @returns the stats
+   */
   async getSrStatitisticsYear(srName: string) {
     const d = new Date();
     const fromDate = new Date(d.getFullYear(), 0);

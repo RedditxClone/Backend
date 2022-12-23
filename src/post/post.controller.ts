@@ -253,17 +253,6 @@ export class PostController {
     return this.postService.unhide(postId, userId);
   }
 
-  @ApiOperation({
-    description: `Lock a post. Prevents a post from receiving new comments.`,
-  })
-  @ApiOkResponse({ description: `Successful post lock` })
-  @ApiNotFoundResponse({ description: 'Resource not found' })
-  @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  @Patch(':id/lock')
-  lock(@Param('id') id: string) {
-    return id;
-  }
-
   @UseGuards(JWTUserGuard)
   @Post('/:post/approve')
   approve(
