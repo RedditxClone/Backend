@@ -142,15 +142,48 @@ describe('PostService', () => {
       expect(res.status).toEqual('success');
     });
   });
-  // describe('upload media for post spec', () => {
-  //   it('must upload them successfully', async () => {
-  //     const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
-  //     const post = await service.create(userId, postDto);
-  //     const files: any = [{ filename: 'file1' }];
-  //     const res = await service.uploadPostMedia(files, post._id, userId);
-  //     expect(res.images).toEqual(['assets/post-media/file1']);
-  //   });
-  // });
+  describe('upload media for post spec', () => {
+    it('must upload them successfully', async () => {
+      const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
+      await subredditService.joinSubreddit(userId, postDto.subredditId);
+      const post = await service.create(userId, postDto);
+      const files: any = [{ filename: 'file1' }];
+      const res = await service.uploadPostMedia(files, post._id, userId);
+      expect(res.images).toEqual(['/assets/post-media/file1']);
+    });
+  });
+  describe('update post', () => {
+    it('must update successfully', async () => {
+      const res = await service.update(id, { nsfw: true }, testingUser._id);
+      const post = await service.getPost(id, testingUser._id);
+      expect(res.status).toEqual('success');
+      expect(post.nsfw).toEqual(true);
+    });
+    it('must throw an error due to unauthorized user', async () => {
+      await expect(
+        service.update(id, { nsfw: true }, new Types.ObjectId(1)),
+      ).rejects.toThrow('owner');
+    });
+    it('must throw not found', async () => {
+      await expect(
+        service.update(new Types.ObjectId(1), { nsfw: true }, testingUser._id),
+      ).rejects.toThrow('not found');
+    });
+  });
+  describe('add to comments', () => {
+    it('must return true', async () => {
+      const res = await service.addToComments(id, postDto.subredditId, 10);
+      expect(res).toEqual(true);
+    });
+    it('must return false', async () => {
+      const res = await service.addToComments(
+        new Types.ObjectId(1),
+        postDto.subredditId,
+        10,
+      );
+      expect(res).toEqual(false);
+    });
+  });
   describe('get discover page', () => {
     let sr, post, user, user2;
     beforeAll(async () => {
@@ -208,6 +241,30 @@ describe('PostService', () => {
     it('should unhide successfully', async () => {
       const res = await service.unhide(id, userId);
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('check if user joined SR', () => {
+    const uid = new Types.ObjectId(103);
+    it('must be joined successfully', async () => {
+      await subredditService.joinSubreddit(uid, postDto.subredditId);
+      await expect(
+        service.checkIfTheUserJoinedSR(
+          {
+            _id: uid,
+          },
+          postDto.subredditId,
+        ),
+      ).resolves.not.toThrowError();
+    });
+    it('must throw error', async () => {
+      await expect(
+        service.checkIfTheUserJoinedSR(
+          {
+            _id: new Types.ObjectId(1),
+          },
+          postDto.subredditId,
+        ),
+      ).rejects.toThrowError();
     });
   });
 
@@ -373,6 +430,11 @@ describe('PostService', () => {
     describe('get popular posts', () => {
       it('must return on post', async () => {
         const res = await service.getPopularPosts(user1._id, pagination);
+        expect(res.length).toBeLessThanOrEqual(10);
+      });
+      it('must return posts only', async () => {
+        const user: any = undefined;
+        const res = await service.getPopularPosts(user, pagination);
         expect(res.length).toBeLessThanOrEqual(10);
       });
     });
