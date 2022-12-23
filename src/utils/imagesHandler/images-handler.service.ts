@@ -2,9 +2,20 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { unlink } from 'fs/promises';
 import type { Model, Types } from 'mongoose';
 import sharp from 'sharp';
-
+/**
+ * service for image handler module
+ */
 @Injectable()
 export class ImagesHandlerService {
+  /**
+   * uploads a photo
+   * @param folderName the directory name
+   * @param file the file to be uploaded
+   * @param Model the model
+   * @param targetId the target object id
+   * @param fieldName the field name
+   * @returns access field
+   */
   async uploadPhoto(
     folderName: string,
     file: any,
@@ -23,10 +34,20 @@ export class ImagesHandlerService {
     return accessedField;
   }
 
+  /**
+   * uploads a photo on a server
+   * @param file the file to be uploaded
+   * @param saveDir the save directory
+   */
   async uploadPhotoToServer(file: any, saveDir: string) {
     return sharp(file.buffer).toFormat('jpeg').toFile(saveDir);
   }
 
+  /**
+   * deletes a photo
+   * @param saveDir the save directory
+   * @returns `{ status: 'success' }`
+   */
   async removePhoto(saveDir: string) {
     try {
       await unlink(saveDir);

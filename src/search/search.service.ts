@@ -4,9 +4,17 @@ import type { Types } from 'mongoose';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { UserService } from '../user/user.service';
-
+/**
+ * A service for search module
+ */
 @Injectable()
 export class SearchService {
+  /**
+   * Class constructor
+   * @param userService user service
+   * @param postCommentService post comment service
+   * @param subredditService  subreddit service
+   */
   constructor(
     private readonly userService: UserService,
     private readonly postCommentService: PostCommentService,

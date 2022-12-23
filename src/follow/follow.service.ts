@@ -12,9 +12,17 @@ import type {
 } from '../utils/apiFeatures/dto';
 import type { FollowDto } from './dto/follow.dto';
 import type { Follow } from './follow.schema';
-
+/**
+ * A service for follow module
+ */
 @Injectable()
 export class FollowService {
+  /**
+   * Class constructor
+   * @param followModel follow model
+   * @param apiFeaturesService api features service
+   * @param notificationService notification service
+   */
   constructor(
     @InjectModel('Follow') private readonly followModel: Model<Follow>,
     private readonly apiFeaturesService: ApiFeaturesService,
