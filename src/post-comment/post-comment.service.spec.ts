@@ -788,8 +788,54 @@ describe('PostCommentService', () => {
       );
     });
     it('must get post successfully', async () => {
-      const res = await service.getThingIModerate(user.username , post._id);
-      expect(res.length).toEqual(1)
+      const res = await service.getThingIModerate(user.username, post._id);
+      expect(res.length).toEqual(1);
+    });
+  });
+
+  describe('get posts and comments of owner', () => {
+    it('must get posts successfully', async () => {
+      const res = await service.getPostsOfOwner(userSR, new Types.ObjectId(1), {
+        limit: 10,
+        page: 1,
+        sort: 'top',
+      });
+      expect(res.length).toBeLessThanOrEqual(10);
+
+      for (const { userId, type } of res) {
+        expect(userId.toString()).toEqual(userSR.toString());
+        expect(type).toEqual('Post');
+      }
+    });
+    it('must get comments successfully', async () => {
+      const res = await service.getCommentsOfOwner(
+        userSR,
+        new Types.ObjectId(1),
+        {
+          limit: 10,
+          page: 1,
+          sort: 'top',
+        },
+      );
+      expect(res.length).toBeLessThanOrEqual(10);
+
+      for (const comment of res) {
+        expect(comment.user.id.toString()).toEqual(userSR.toString());
+      }
+    });
+  });
+  describe('get posts of subreddit', () => {
+    it('must get posts successfully', async () => {
+      const res = await service.getPostsOfSubreddit(subreddit.name, undefined, {
+        page: 1,
+        limit: 10,
+        sort: 'top',
+      });
+      expect(res.length).toBeLessThanOrEqual(10);
+
+      for (const { subredditInfo } of res) {
+        expect(subredditInfo.id.toString()).toEqual(subreddit._id.toString());
+      }
     });
   });
 
