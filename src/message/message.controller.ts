@@ -45,7 +45,7 @@ export class MessageController {
     type: ModifiedCountDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
-  @ApiOperation({ description: 'mark specific message as read' })
+  @ApiOperation({ description: 'mark list of messages as read' })
   @Post('/mark_as_read')
   @UseGuards(JWTUserGuard)
   markMessagesAsRead(
@@ -60,7 +60,7 @@ export class MessageController {
     type: ModifiedCountDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthenticated' })
-  @ApiOperation({ description: 'mark specific message as read' })
+  @ApiOperation({ description: 'mark list of messages as unread' })
   @Post('/mark_as_unread')
   @UseGuards(JWTUserGuard)
   markMessagesAsUnRead(
@@ -72,7 +72,7 @@ export class MessageController {
 
   @ApiPaginatedOkResponse(
     MessageAggregationDto,
-    'all messages have been returned successfully',
+    'Messages have been returned successfully',
   )
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
   @ApiOperation({
@@ -89,7 +89,7 @@ export class MessageController {
 
   @ApiPaginatedOkResponse(
     MessageAggregationDto,
-    'all messages have been returned successfully',
+    'Messages have been returned successfully',
   )
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
   @ApiOperation({
@@ -106,7 +106,7 @@ export class MessageController {
 
   @ApiPaginatedOkResponse(
     MessageAggregationDto,
-    'all messages have been returned successfully',
+    'Messages have been returned successfully',
   )
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
   @ApiOperation({
@@ -123,7 +123,7 @@ export class MessageController {
 
   @ApiPaginatedOkResponse(
     MessageAggregationDto,
-    'all messages have been returned successfully',
+    'Messages have been returned successfully',
   )
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
   @ApiOperation({
@@ -140,7 +140,7 @@ export class MessageController {
 
   @ApiPaginatedOkResponse(
     MessageAggregationDto,
-    'all messages have been returned successfully',
+    'Messages have been returned successfully',
   )
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
   @ApiOperation({
@@ -157,7 +157,7 @@ export class MessageController {
 
   @ApiPaginatedOkResponse(
     MessageAggregationDto,
-    'all messages have been returned successfully',
+    'Messages have been returned successfully',
   )
   @ApiUnauthorizedResponse({ description: 'Unauthenticated Request' })
   @ApiOperation({
@@ -226,7 +226,9 @@ export class MessageController {
     );
   }
 
-  @ApiOkResponse({ description: 'The message has been spam successfully' })
+  @ApiCreatedResponse({
+    description: 'The message has been marked as spam successfully',
+  })
   @ApiUnauthorizedResponse({ description: 'Unauthenticaed' })
   @ApiNotFoundResponse({ description: 'Message not found' })
   @ApiOperation({ description: 'Report specific message with message_id' })

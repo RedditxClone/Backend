@@ -52,6 +52,12 @@ export class BlockService {
     return { status: 'success' };
   }
 
+  /**
+   * Check if a user has blocked another or vise versa
+   * @param user1 MonogId of user1
+   * @param user2 MonogId of user2
+   * @returns if a block exists
+   */
   async existBlockBetween(
     user1: Types.ObjectId,
     user2: Types.ObjectId,
@@ -66,6 +72,11 @@ export class BlockService {
     );
   }
 
+  /**
+   * Get a list of users blocked
+   * @param user_id MonogId of user
+   * @returns List of users user1 has blocked
+   */
   async getBlockedUsers(user_id: Types.ObjectId) {
     return this.blockModel
       .find({ blocker: user_id })
@@ -73,6 +84,11 @@ export class BlockService {
       .select('blocked');
   }
 
+  /**
+   * Get a list of ids of users blocked
+   * @param user_id MonogId of user
+   * @returns List of MongoIds of users user_id has blocked
+   */
   async getBlockerUsersIds(user_id: Types.ObjectId) {
     return this.blockModel.find({ blocked: user_id }).select('-_id blocker');
   }

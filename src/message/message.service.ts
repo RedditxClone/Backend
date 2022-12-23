@@ -19,6 +19,9 @@ import type { CreateMessageDto } from './dto/create-message.dto';
 import type { MessageIdListDto } from './dto/message-id-list.dto';
 import type { Message, MessageDocument } from './message.schema';
 
+/**
+ * @service Service for messaging between users
+ */
 @Injectable()
 export class MessageService {
   constructor(
@@ -28,6 +31,15 @@ export class MessageService {
     private readonly apiFeaturesService: ApiFeaturesService,
   ) {}
 
+  /**
+   * Check if it is possible that a user can send a message to
+   * another user
+   * @param authorName Username of sending user
+   * @param authorId MongoId of sending user
+   * @param destName Username of receiving user
+   * @param destId MongoId of receiving user
+   * @throws ForbiddenException if cannot send message
+   */
   private async canSendMessage(
     authorName: string,
     authorId: Types.ObjectId,
@@ -47,6 +59,16 @@ export class MessageService {
     }
   }
 
+  /**
+   * Send private message to another user
+   * @param createMessageDto Message information
+   * @param authorName Username of sending user
+   * @param authorId MongoId of sending user
+   * @param destName Username of receiving user
+   * @throws NotFoundException if no user exists
+   * @throws ForbiddenException if cannot send message
+   * @returns sent message
+   */
   async sendPrivateMessage(
     createMessageDto: CreateMessageDto,
     authorName: string,
@@ -70,6 +92,16 @@ export class MessageService {
     return plainToInstance(MessageReturnDto, returnedMessage);
   }
 
+  /**
+   * Reply to an existing private message
+   * @param messageReplyDto Message information
+   * @param authorName Username of sending user
+   * @param authorId MongoId of sending user
+   * @param parentId MongoId of parent message
+   * @throws NotFoundException if no user or no message exists
+   * @throws ForbiddenException if cannot send message
+   * @returns sent message
+   */
   async replyToPrivateMessage(
     messageReplyDto: MessageReplyDto,
     authorName: string,
@@ -121,12 +153,19 @@ export class MessageService {
     return plainToInstance(MessageReturnDto, returnedMessage);
   }
 
+  /**
+   * Delete a received message
+   * @param authorName Username of sending user
+   * @param messageId MongoId of message
+   * @throws NotFoundException: no message exists
+   * @returns status: success
+   */
   async delete(authorName: string, messageId: Types.ObjectId) {
     const findFilter = {
       _id: messageId,
       destName: authorName,
       softDeleted: false,
-    }; // only delete recieved messages
+    }; // only delete received messages
     const updateFilter = { softDeleted: true };
     const message = await this.messageModel.findOneAndUpdate(
       findFilter,
@@ -142,6 +181,12 @@ export class MessageService {
     return { status: 'success' };
   }
 
+  /**
+   * Mark a list of messages as read
+   * @param username Username of user
+   * @param messageIdList List of message MongoIds
+   * @returns count of messages marked as read
+   */
   async markAsRead(
     username: string,
     messageIdList: MessageIdListDto,
@@ -155,6 +200,12 @@ export class MessageService {
     return { modifiedCount: res.modifiedCount };
   }
 
+  /**
+   * Mark a list of messages as unread
+   * @param username Username of user
+   * @param messageIdList List of message MongoIds
+   * @returns count of messages marked as unread
+   */
   async markAsUnRead(
     username: string,
     messageIdList: MessageIdListDto,
@@ -168,6 +219,17 @@ export class MessageService {
     return { modifiedCount: res.modifiedCount };
   }
 
+  /**
+   * Generate a message based on a post or comment reply
+   * @param authorName Username of sending user
+   * @param destName Username of receiveing user
+   * @param title Title of message
+   * @param body Body of message
+   * @param postCommentId MongoId of comment
+   * @param type Reply typle: 'post' | 'comment'
+   * @param subreddit Name of subreddit containing comment
+   * @returns Generated message
+   */
   async messageOnReplies(
     authorName: string,
     destName: string,
@@ -191,6 +253,13 @@ export class MessageService {
     });
   }
 
+  /**
+   * Get all messages of a specific user with an optional filter
+   * @param username Username of user
+   * @param paginationParams Limit and Offset of pagination
+   * @param type Filtering type
+   * @returns List of messages based on pagination and filtering
+   */
   async findAll(
     username: string,
     paginationParams: PaginationParamsDto,
@@ -342,6 +411,12 @@ export class MessageService {
     );
   }
 
+  /**
+   * Find a specific message
+   * @param username Username of user
+   * @param messageId MongoId of message
+   * @returns Message
+   */
   async findOne(
     username: string,
     messageId: Types.ObjectId,
@@ -364,12 +439,18 @@ export class MessageService {
     return plainToInstance(MessageReturnDto, message);
   }
 
+  /**
+   * Mark a message as spam
+   * @param username Username of user
+   * @param messageId MongoId of message
+   * @returns status: success
+   */
   async spam(username: string, messageId: Types.ObjectId) {
     const findFilter = {
       _id: messageId,
       destName: username,
       softDeleted: false,
-    }; // only spam recieved messages
+    }; // only spam received messages
     const updateFilter = { spammed: true };
     const message = await this.messageModel.findOneAndUpdate(
       findFilter,
