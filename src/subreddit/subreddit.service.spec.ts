@@ -32,7 +32,7 @@ import type { MuteUserDto } from './dto/mute-user.dto';
 import type { RuleDto } from './dto/rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
-import { SubredditSchema } from './subreddit.schema';
+import { Flair, SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 import { SubredditUserSchema } from './subreddit-user.schema';
 import { SubredditUserLeftSchema } from './subreddit-user-left.schema';
@@ -1122,6 +1122,106 @@ describe('SubredditService', () => {
         new Types.ObjectId(id),
       );
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('get flairs', () => {
+    it('must get flairs', async () => {
+      const res = await subredditService.getFlairs(id);
+      expect(res.flairList).toBeDefined();
+    });
+    it('must throw error', async () => {
+      await expect(
+        subredditService.getFlairs(new Types.ObjectId(1).toString()),
+      ).rejects.toThrow('No subreddit');
+    });
+  });
+  describe('update general array of objects', () => {
+    it('must throw an error', async () => {
+      await expect(
+        subredditService.updateGeneralArrayOfObjects(
+          new Types.ObjectId(1).toString(),
+          'wrong_id',
+          {},
+          'username',
+          'field',
+        ),
+      ).rejects.toThrowError();
+    });
+  });
+  describe('update list', () => {
+    it('must be updated successfully', async () => {
+      const updateId = new Types.ObjectId(1);
+      const res = subredditService.updateList(
+        [
+          { _id: updateId, name: 'omar' },
+          { _id: new Types.ObjectId(100), name: 'omar' },
+        ],
+        { name: 'fred' },
+        updateId.toString(),
+      );
+      expect(res.length).toEqual(2);
+
+      for (const { _id, name } of res) {
+        if (_id === updateId) {
+          expect(name).toEqual('fred');
+        }
+      }
+    });
+  });
+  describe('get subreddits starts with char', () => {
+    it('must get subreddits', async () => {
+      const res = await subredditService.getSubredditStartsWithChar(
+        subreddit1.name[0],
+        undefined,
+        undefined,
+        1,
+        10,
+      );
+      expect(res.length).toBeLessThanOrEqual(10);
+      expect(res[0].name[0]).toEqual('s');
+    });
+  });
+  describe('get search subreddit aggregation', () => {
+    it('must return subreddits successfully', async () => {
+      const res = await subredditService.getSearchSubredditAggregation(
+        'sr',
+        undefined,
+        undefined,
+        1,
+        10,
+      );
+      expect(res.length).toBeGreaterThan(0);
+      expect(res.length).toBeLessThanOrEqual(10);
+
+      for (const { name, description } of res) {
+        expect(name.includes('sr') || description.includes('sr')).toEqual(true);
+      }
+    });
+  });
+  describe('get search flair aggregation', () => {
+    it('must get search successfully', async () => {
+      const res = await subredditService.getSearchFlairsAggregate(
+        'welcome',
+        subredditDocument._id,
+        1,
+        10,
+      );
+      expect(res.length).toBeLessThanOrEqual(10);
+      expect(res.length).toBeGreaterThan(0);
+
+      for (const { flair } of res) {
+        expect(flair.text.includes('welcome')).toEqual(true);
+      }
+    });
+  });
+
+  describe('check if moderator', () => {
+    it('must be moderator', async () => {
+      const res = await subredditService.checkIfModerator(
+        subredditDocument.name,
+        username,
+      );
+      expect(res).toBeUndefined();
     });
   });
 

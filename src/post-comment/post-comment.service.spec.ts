@@ -762,9 +762,9 @@ describe('PostCommentService', () => {
     });
   });
   describe('get thing i moderate', () => {
-    let user, post;
+    let newUser, post;
     beforeAll(async () => {
-      user = await userService.createUser({
+      newUser = await userService.createUser({
         email: 'fsljgkj@jkgd.ceoj',
         password: '13o4jkkrjwrwr',
         username: 'wjwtkjtj',
@@ -775,11 +775,11 @@ describe('PostCommentService', () => {
           over18: true,
           type: 'fsjkgs',
         },
-        user.username,
-        user._id,
+        newUser.username,
+        newUser._id,
       );
       post = await postService.create(
-        { _id: user._id, username: user.username },
+        { _id: newUser._id, username: newUser.username },
         {
           subredditId: sr._id,
           title: 'title',
@@ -788,7 +788,7 @@ describe('PostCommentService', () => {
       );
     });
     it('must get post successfully', async () => {
-      const res = await service.getThingIModerate(user.username, post._id);
+      const res = await service.getThingIModerate(newUser.username, post._id);
       expect(res.length).toEqual(1);
     });
   });
