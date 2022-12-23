@@ -21,8 +21,18 @@ import type { FilterPostCommentDto } from './dto/filter-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
 import { ThingFetch } from './post-comment.utils';
+
+/**
+ * class for PostComment module
+ */
 @Injectable()
 export class PostCommentService {
+  /**
+   * Class constructor
+   * @param postCommentModel mongoose model
+   * @param voteModel mongoose model
+   * @param notificationService notification service
+   */
   constructor(
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,

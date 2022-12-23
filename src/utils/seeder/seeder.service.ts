@@ -15,10 +15,19 @@ import {
 } from './data/seeder-data';
 
 /**
- * @service Provide database seeding functionality
+ * Provide database seeding functionality
  */
 @Injectable()
 export class SeederService {
+  /**
+   * class constructor
+   * @param userService user service
+   * @param subredditService subreddit service
+   * @param postService post service
+   * @param commentService comment service
+   * @param followService follow service
+   * @param logger logger factory
+   */
   constructor(
     private readonly userService: UserService,
     private readonly subredditService: SubredditService,

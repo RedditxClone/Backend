@@ -18,10 +18,18 @@ import type { Hide } from './hide.schema';
 import type { Post } from './post.schema';
 
 /**
- * @service service to handle subreddit posts
+ * service to handle subreddit posts
  */
 @Injectable()
 export class PostService {
+  /**
+   * class constructor
+   * @param postModel mongoose model
+   * @param hideModel hide model
+   * @param subredditUserModel subreddit user model
+   * @param subredditModel subreddit model
+   * @param postCommentService post comment model
+   */
   constructor(
     @InjectModel('Post') private readonly postModel: Model<Post>,
     @InjectModel('Hide') private readonly hideModel: Model<Hide>,

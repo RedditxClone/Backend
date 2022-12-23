@@ -32,11 +32,19 @@ import { PrefsDto } from './dto';
 import type { User, UserDocument, UserWithId } from './user.schema';
 
 /**
- * @service Service to handle all user interactions
+ * Service to handle all user interactions
  */
 @Global()
 @Injectable()
 export class UserService {
+  /**
+   * Class constructor
+   * @param userModel mongoose model
+   * @param followService follow service
+   * @param blockService block service
+   * @param postCommentService post comment service
+   * @param imagesHandlerService image handler service
+   */
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly followService: FollowService,
@@ -343,6 +351,9 @@ export class UserService {
     return bcrypt.compare(userPassword, hashedPassword);
   }
 
+  /**
+   * random prefix list
+   */
   private randomPrefixes = [
     'player',
     'good',
@@ -599,6 +610,11 @@ export class UserService {
     return this.userModel.findById(id);
   }
 
+  /**
+   * deletes a user's account
+   * @param userId user's id
+   * @returns `{ status: 'success' }`
+   */
   async deleteAccount(userId: Types.ObjectId) {
     await this.userModel
       .updateOne(

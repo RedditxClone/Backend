@@ -20,10 +20,17 @@ import type { MessageIdListDto } from './dto/message-id-list.dto';
 import type { Message, MessageDocument } from './message.schema';
 
 /**
- * @service Service for messaging between users
+ * Service for messaging between users
  */
 @Injectable()
 export class MessageService {
+  /**
+   * Class Constructor
+   * @param messageModel mongoose model
+   * @param blockService block service
+   * @param userService user service
+   * @param apiFeaturesService api feature service
+   */
   constructor(
     @InjectModel('Message') private readonly messageModel: Model<Message>,
     private readonly blockService: BlockService,
