@@ -6,7 +6,7 @@ import { MessageService } from '../message/message.service';
 import { NotificationService } from '../notification/notification.service';
 import { PostService } from '../post/post.service';
 import type { Comment } from './comment.schema';
-import type { CreateCommentDto, UpdateCommentDto } from './dto';
+import type { CreateCommentDto } from './dto';
 
 @Injectable()
 export class CommentService {
@@ -154,20 +154,4 @@ export class CommentService {
 
     return comment;
   };
-
-  findAll() {
-    return `This action returns all comment`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
-  }
-
-  update(id: number, _updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
-  }
 }

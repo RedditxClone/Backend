@@ -147,6 +147,22 @@ describe('UserService', () => {
       );
       expect(passwordValid).toBe(true);
     });
+
+    test('should get a user', async () => {
+      const user = await service.getUserIfExist(id);
+      expect(user).toBeDefined();
+      expect(user).not.toBe(null);
+
+      if (user) {
+        expect(user).toEqual(
+          expect.objectContaining({
+            username: userDto.username,
+            email: userDto.email,
+          }),
+        );
+      }
+    });
+
     test('should throw an error', async () => {
       await expect(async () => {
         await service.getUserById(new Types.ObjectId('wrong_id'));

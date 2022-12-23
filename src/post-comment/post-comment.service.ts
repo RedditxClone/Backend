@@ -17,7 +17,6 @@ import {
   userSelectedFields,
 } from '../utils/project-selected-fields';
 import type { Vote } from '../vote/vote.schema';
-import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { FilterPostCommentDto } from './dto/filter-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
@@ -30,18 +29,6 @@ export class PostCommentService {
     @InjectModel('Vote') private readonly voteModel: Model<Vote>,
     private readonly notificationService: NotificationService,
   ) {}
-
-  create(_createPostCommentDto: CreatePostCommentDto) {
-    return 'This action adds a new postComment';
-  }
-
-  findAll() {
-    return `This action returns all postComment`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} postComment`;
-  }
 
   checkIfTheOwner(
     userId: Types.ObjectId,

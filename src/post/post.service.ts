@@ -154,14 +154,6 @@ export class PostService {
     };
   }
 
-  findAll() {
-    return `This action returns all post`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
-  }
-
   async update(id: Types.ObjectId, dto: UpdatePostDto, userId: Types.ObjectId) {
     const thing: any = await this.postModel
       .findById(id)
@@ -189,10 +181,6 @@ export class PostService {
     }
 
     return { status: 'success' };
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} post`;
   }
 
   private getRandomTimeLine(pagination: PaginationParamsDto) {

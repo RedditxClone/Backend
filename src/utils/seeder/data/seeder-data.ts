@@ -113,6 +113,11 @@ export const joins = [
   },
 
   {
+    username: 'user5',
+    subreddit: 'srsecond',
+  },
+
+  {
     username: 'user4',
     subreddit: 'srfirst',
   },

@@ -41,26 +41,6 @@ export class UserService {
     private readonly imagesHandlerService: ImagesHandlerService,
   ) {}
 
-  getFriends() {
-    return 'get user list of friends';
-  }
-
-  acceptFriendRequest() {
-    return 'accept user friend request';
-  }
-
-  sendFriendRequest() {
-    return 'send a friend request';
-  }
-
-  deleteFriendRequest() {
-    return 'delete a friend request';
-  }
-
-  unFriend() {
-    return 'delete a friend';
-  }
-
   async searchPeopleAggregate(
     searchPhrase,
     userId,
@@ -556,18 +536,6 @@ export class UserService {
     id: Types.ObjectId,
   ): Promise<UserWithId | null | undefined> {
     return this.userModel.findById(id);
-  }
-
-  async getUserTimeLine() {
-    // await this.userModel.aggregate([
-    //   {
-    //     $lookup: {
-    //       from: 'user-subreddit',
-    //       localField: '_id',
-    //       foreignField: 'user_id',
-    //     },
-    //   },
-    // ]);
   }
 
   async deleteAccount(userId: Types.ObjectId) {
