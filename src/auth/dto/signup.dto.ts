@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-
+/**
+ * Data Transfer Object
+ */
 export class SignupDto {
   @ApiProperty({
     description: 'The new email of the user to be created',

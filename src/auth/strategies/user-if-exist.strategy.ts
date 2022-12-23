@@ -11,6 +11,10 @@ export class UserIfExistStrategy extends PassportStrategy(
   Strategy,
   'jwt-user-if-exist',
 ) {
+  /**
+   * Class Constructor
+   * @param userService UserService
+   */
   constructor(private readonly userService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

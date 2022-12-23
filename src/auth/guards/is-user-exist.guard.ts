@@ -3,9 +3,16 @@ import { Injectable } from '@nestjs/common';
 import JWT from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import type { Observable } from 'rxjs';
-
+/**
+ * guest user guard class
+ */
 @Injectable()
 export class IsUserExistGuard implements CanActivate {
+  /**
+   * checks if user is logged in or guest
+   * @param context the context
+   * @returns boolean
+   */
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {

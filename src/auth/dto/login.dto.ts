@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-
+/**
+ * Data Transfer Object
+ */
 export class LoginDto {
   @ApiProperty({ description: 'The email of the account', required: true })
   @IsString()
