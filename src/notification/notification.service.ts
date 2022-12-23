@@ -11,6 +11,9 @@ import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 
 //type notification type ['private_msg', 'comment_reply','post_reply','post_vote','comment_vote','follow','mention']
 
+/**
+ * @service Service for notifications recieved by user
+ */
 @Injectable()
 export class NotificationService {
   constructor(
