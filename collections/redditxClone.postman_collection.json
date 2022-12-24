@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "6728f95d-cafe-466d-9374-cb6b058eeb58",
+		"_postman_id": "b563254f-1df0-4730-a44e-f218ea8ca6f1",
 		"name": "redditxClone",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22032175"
+		"_exporter_id": "24753191"
 	},
 	"item": [
 		{
@@ -987,162 +987,78 @@
 			"name": "user",
 			"item": [
 				{
-					"name": "forget-username",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/auth/forget-username",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"forget-username"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "signup",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"123@gmail.com\",\r\n    \"username\": \"1234\",\r\n    \"password\": \"12345678\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/auth/signup",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"signup"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "login",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "authorization",
-								"value": "Bearer%20eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"123\",\r\n    \"password\": \"12345678\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/auth/login",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "follow",
+					"name": "get me",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
 						},
-						"method": "POST",
+						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/follow",
+							"raw": "{{host}}/api/user/me",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"63977b9668a9911559fdb843",
-								"follow"
+								"me"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "unfollow",
+					"name": "delete me",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
 						},
-						"method": "POST",
+						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unfollow",
+							"raw": "{{host}}/api/user/me",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"63977b9668a9911559fdb843",
-								"unfollow"
+								"me"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "change forgetten password",
+					"name": "random usernames",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{host}}/api/user/random-usernames",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"random-usernames"
+							]
 						}
 					},
 					"response": []
@@ -1155,7 +1071,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -1185,7 +1101,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -1200,7 +1116,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"123123\",\r\n    \"email\": \"123@gmail.com\",\r\n    \"hashPassword\": \"$2b$10$xjjAq6/ef7Txwx4F/2fdqeCLEJEZ/6QvjALm9NfdDcrtlzbCLUKpC\",\r\n    \"suggestedSort\": \"hot\",\r\n    \"authType\": \"user\",\r\n    \"socialLinks\": [\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        }\r\n    ],\r\n    \"nsfw\": true,\r\n    \"allowFollow\": true,\r\n    \"contentVisibility\": true,\r\n    \"activeInCommunitiesVisibility\": true,\r\n    \"badCommentAutoCollapse\": \"off\",\r\n    \"showInSearch\": true,\r\n    \"adultContent\": false,\r\n    \"autoPlayMedia\": true,\r\n    \"inboxMessages\": true,\r\n    \"mentions\": true,\r\n    \"commentsOnPost\": true,\r\n    \"upvoteComments\": false,\r\n    \"upvotePosts\": true,\r\n    \"repliesComments\": true,\r\n    \"activityComments\": true,\r\n    \"activityOnThreads\": true,\r\n    \"newFollowers\": true,\r\n    \"newPostFlair\": true,\r\n    \"newUserFlair\": true,\r\n    \"pinnedPosts\": true,\r\n    \"postsYouFollow\": true,\r\n    \"commentsYouFollow\": true,\r\n    \"redditAnnouncements\": true,\r\n    \"cakeDay\": true,\r\n    \"acceptPms\": \"everyone\",\r\n    \"countryCode\": \"eg\",\r\n    \"safeBrowsingMode\": false,\r\n    \"chatRequest\": true,\r\n    \"newFollower\": false,\r\n    \"unSubscribe\": false\r\n}",
+							"raw": "{\r\n    \"hashPassword\": \"$2b$10$xjjAq6/ef7Txwx4F/2fdqeCLEJEZ/6QvjALm9NfdDcrtlzbCLUKpC\",\r\n    \"suggestedSort\": \"hot\",\r\n    \"authType\": \"user\",\r\n    \"socialLinks\": [\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        }\r\n    ],\r\n    \"nsfw\": true,\r\n    \"allowFollow\": true,\r\n    \"contentVisibility\": true,\r\n    \"activeInCommunitiesVisibility\": true,\r\n    \"badCommentAutoCollapse\": \"off\",\r\n    \"showInSearch\": true,\r\n    \"adultContent\": false,\r\n    \"autoPlayMedia\": true,\r\n    \"inboxMessages\": true,\r\n    \"mentions\": true,\r\n    \"commentsOnPost\": true,\r\n    \"upvoteComments\": false,\r\n    \"upvotePosts\": true,\r\n    \"repliesComments\": true,\r\n    \"activityComments\": true,\r\n    \"activityOnThreads\": true,\r\n    \"newFollowers\": true,\r\n    \"newPostFlair\": true,\r\n    \"newUserFlair\": true,\r\n    \"pinnedPosts\": true,\r\n    \"postsYouFollow\": true,\r\n    \"commentsYouFollow\": true,\r\n    \"redditAnnouncements\": true,\r\n    \"cakeDay\": true,\r\n    \"acceptPms\": \"everyone\",\r\n    \"countryCode\": \"eg\",\r\n    \"safeBrowsingMode\": false,\r\n    \"chatRequest\": true,\r\n    \"newFollower\": false,\r\n    \"unSubscribe\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1223,29 +1139,13 @@
 					"response": []
 				},
 				{
-					"name": "change-password",
+					"name": "check available username",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "authorization",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
-								"type": "text"
-							}
-						],
+						"method": "POST",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"raw": "{\r\n    \"username\": \"123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1253,14 +1153,74 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/auth/change-password",
+							"raw": "{{host}}/api/user/check-available-username",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
-								"auth",
-								"change-password"
+								"user",
+								"check-available-username"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/follow",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"follow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unfollow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unfollow",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"unfollow"
 							]
 						}
 					},
@@ -1274,7 +1234,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -1297,14 +1257,44 @@
 					"response": []
 				},
 				{
-					"name": "get me",
+					"name": "unblock",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unblock",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"unblock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list of blocked",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -1312,14 +1302,43 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/me",
+							"raw": "{{host}}/api/user/block",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"me"
+								"block"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user as admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/639e3668fce527167f23f02b",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"639e3668fce527167f23f02b"
 							]
 						}
 					},
@@ -1333,7 +1352,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "",
 									"type": "string"
 								}
 							]
@@ -1341,107 +1360,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/1234",
+							"raw": "{{host}}/api/user/1234/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"1234"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "save post",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/user/post/638f2e4f0075908ba7aacf2c/save",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"post",
-								"638f2e4f0075908ba7aacf2c",
-								"save"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "save post",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/user/post/save",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"post",
-								"save"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "close or open post notification",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/user/thing/63982ffea8e96ecd95856dd4/notify/1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"thing",
-								"63982ffea8e96ecd95856dd4",
-								"notify",
-								"1"
+								"1234",
+								""
 							]
 						}
 					},
@@ -1482,6 +1409,170 @@
 								"user",
 								"me",
 								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "photo",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/user/me/cover",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"me",
+								"cover"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "close or open post notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/thing/63982ffea8e96ecd95856dd4/notify/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"thing",
+								"63982ffea8e96ecd95856dd4",
+								"notify",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "save post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/post/638f2e4f0075908ba7aacf2c/save",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"post",
+								"638f2e4f0075908ba7aacf2c",
+								"save"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unsave post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/post/638f2e4f0075908ba7aacf2c/unsave",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"post",
+								"638f2e4f0075908ba7aacf2c",
+								"unsave"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "save post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/post/save",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"post",
+								"save"
 							]
 						}
 					},
@@ -2121,9 +2212,6 @@
 				},
 				{
 					"name": "get muted Users",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2154,9 +2242,6 @@
 				},
 				{
 					"name": "get approved Users",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2187,9 +2272,6 @@
 				},
 				{
 					"name": "get paned Users",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2220,9 +2302,6 @@
 				},
 				{
 					"name": "get subreddits modurates by me",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2252,9 +2331,6 @@
 				},
 				{
 					"name": "get subreddit moderators",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2285,9 +2361,6 @@
 				},
 				{
 					"name": "get subreddits I joined",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2317,9 +2390,6 @@
 				},
 				{
 					"name": "am I in a subreddit",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2967,6 +3037,66 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+							"raw": "{{host}}/api/message/me/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/post",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages comment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
 							"raw": "{{host}}/api/message/me/unread",
 							"host": [
 								"{{host}}"
@@ -2976,6 +3106,66 @@
 								"message",
 								"me",
 								"unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages unread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/unread",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages sent",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/sent",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"sent"
 							]
 						}
 					},
@@ -3059,7 +3249,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "mark as read",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -3075,7 +3265,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"messages\": [\"639e5a8ba3102628ad3c6c9b\"]\r\n}",
+							"raw": "{\r\n    \"messages\": [\"63a3420d1ac89af4d9eaea48\", \"639e5846207b2676cb1b9de8\"]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3091,6 +3281,732 @@
 								"api",
 								"message",
 								"mark_as_read"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mark as unread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messages\": [\"63a3420d1ac89af4d9eaea48\", \"639e5846207b2676cb1b9de8\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/mark_as_unread",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"mark_as_unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "spam message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/63a1db75cfb5ac0f3b5a0bbc/spam",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"63a1db75cfb5ac0f3b5a0bbc",
+								"spam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/639e5773daf2e80bdfbf1500/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"639e5773daf2e80bdfbf1500",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/639e5773daf2e80bdfbf1500/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"639e5773daf2e80bdfbf1500",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "search",
+			"item": [
+				{
+					"name": "search people",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/peoples/?word=123&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"peoples",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "123"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search communities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/communities/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"communities",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search communities start",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/communities/start/?word=sr2&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"communities",
+								"start",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr2"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/posts/?word=hello&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"posts",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "hello"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search comments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/comments/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"comments",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search general",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/general/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"general",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search sr flair",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/subreddit/63a1a01a27424e91d8ba3e09/flairs/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"flairs",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "Bearer%20eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"123\",\r\n    \"password\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"123@gmail.com\",\r\n    \"username\": \"1234\",\r\n    \"password\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/signup",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forget-password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/forget-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forget-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forget-username",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/forget-username",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forget-username"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change forgetten password",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change-password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/change-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change email",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/change-email",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-email"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change email type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/change-email/type",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-email",
+								"type"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create-password-request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/create-password-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"create-password-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "google",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/auth/google",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"google"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "github",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/auth/github",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"github"
 							]
 						}
 					},
