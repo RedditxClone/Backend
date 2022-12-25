@@ -129,6 +129,7 @@ describe('SearchService', () => {
     const commentService: CommentService =
       module.get<CommentService>(CommentService);
     postData.subredditId = subredditId1;
+    await subredditService.joinSubreddit(id2, postData.subredditId);
     const p = await postService.create(id2, postData);
 
     await subredditService.joinSubreddit(id1, subredditId2);
@@ -243,7 +244,7 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 1,
+          users: 2,
           joined: true,
         }),
         expect.objectContaining({
@@ -279,7 +280,7 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 1,
+          users: 2,
           joined: true,
         }),
       ]);
@@ -309,7 +310,7 @@ describe('SearchService', () => {
         expect.objectContaining({
           _id: subredditId1,
           name: subreddit1.name,
-          users: 1,
+          users: 2,
           joined: true,
         }),
       );

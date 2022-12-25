@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { Subreddit } from 'subreddit/subreddit.schema';
 
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { ThingFetch } from '../post-comment/post-comment.utils';
+import type { SubredditUser } from '../subreddit/subreddit-user.schema';
 import type { UserUniqueKeys } from '../user/dto/user-unique-keys.dto';
 import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import type { CreatePostDto, UpdatePostDto } from './dto';
@@ -15,14 +17,34 @@ import { UploadMediaDto } from './dto';
 import type { Hide } from './hide.schema';
 import type { Post } from './post.schema';
 
+/**
+ * service to handle subreddit posts
+ */
 @Injectable()
 export class PostService {
+  /**
+   * class constructor
+   * @param postModel mongoose model
+   * @param hideModel hide model
+   * @param subredditUserModel subreddit user model
+   * @param subredditModel subreddit model
+   * @param postCommentService post comment model
+   */
   constructor(
     @InjectModel('Post') private readonly postModel: Model<Post>,
     @InjectModel('Hide') private readonly hideModel: Model<Hide>,
+    @InjectModel('UserSubreddit')
+    private readonly subredditUserModel: Model<SubredditUser>,
+    @InjectModel('Subreddit') private readonly subredditModel: Model<Subreddit>,
     private readonly postCommentService: PostCommentService,
   ) {}
 
+  /**
+   * Hide a post
+   * @param postId MongoId of post
+   * @param userId MongoId of user
+   * @returns status: success
+   */
   async hide(postId: Types.ObjectId, userId: Types.ObjectId) {
     await this.hideModel.create({
       postId,
@@ -32,6 +54,12 @@ export class PostService {
     return { status: 'success' };
   }
 
+  /**
+   * unhide a post
+   * @param postId MongoId of post
+   * @param userId MongoId of user
+   * @returns status: success
+   */
   async unhide(postId: Types.ObjectId, userId: Types.ObjectId) {
     await this.hideModel.deleteOne({
       postId,
@@ -42,6 +70,62 @@ export class PostService {
   }
 
   /**
+   * Check if the user already joined a subreddit
+   * @param userInfo MongoId or username of user
+   * @param subredditId MongoId of subreddit
+   * @throws NotFoundException if user hasn't joined the subreddit
+   */
+  async checkIfTheUserJoinedSR(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    const userJoined = await this.subredditUserModel.exists({
+      userId: userInfo._id,
+      subredditId,
+    });
+
+    if (!userJoined) {
+      throw new NotFoundException("you haven't joined such a subreddit");
+    }
+  }
+
+  /**
+   * Check user permissions in subreddit
+   * @param userInfo MongoId or username of user
+   * @param subredditId MongoId of subreddit
+   * @throws BadRequestException if user is banned or muted
+   */
+  async checkIfTheUserCanDoActionInsideSR(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    const username = userInfo.username || '';
+    const sr = await this.subredditModel.findById(subredditId);
+    const bannedUsers = sr?.bannedUsers.map((user) => user.username);
+    const mutedUsers = sr?.mutedUsers.map((user) => user.username);
+
+    if (bannedUsers?.includes(username) || mutedUsers?.includes(username)) {
+      throw new BadRequestException(
+        'banned and muted users cannot do this action',
+      );
+    }
+  }
+
+  /**
+   * Check if the user can create a post
+   * @param userInfo MongoId or username of user
+   * @param subredditId MongoId of subreddit
+   * @thows if the user cannot create post
+   */
+  async checkIfTheUserCanCreatePost(
+    userInfo: UserUniqueKeys,
+    subredditId: Types.ObjectId,
+  ) {
+    await this.checkIfTheUserJoinedSR(userInfo, subredditId);
+    await this.checkIfTheUserCanDoActionInsideSR(userInfo, subredditId);
+  }
+
+  /**
    * Create a post in a subreddit.
    * @param userId user's id whom is creating the post
    * @param createPostDto encapsulating the create post data
@@ -49,15 +133,13 @@ export class PostService {
    * @throws BadRequestException when falling to create a post
    */
   create = async (
-    userId: Types.ObjectId,
+    userInfo: UserUniqueKeys,
     createPostDto: CreatePostDto,
   ): Promise<Post & { _id: Types.ObjectId }> => {
-    //TODO:
-    // add this validation to dto and it will transfer it and add validation
-    // make sure that there exist a subreddit with this id
     const subredditId = new Types.ObjectId(createPostDto.subredditId);
+    await this.checkIfTheUserCanCreatePost(userInfo, subredditId);
     const post: Post & { _id: Types.ObjectId } = await this.postModel.create({
-      userId,
+      userId: userInfo._id,
       ...createPostDto,
       subredditId,
     });
@@ -113,14 +195,14 @@ export class PostService {
     };
   }
 
-  findAll() {
-    return `This action returns all post`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
-  }
-
+  /**
+   * Update an existing post
+   * @param id MongoId of post
+   * @param dto Update post data
+   * @param userId MongoId of user
+   * @throws BadRequestException if post is not found
+   * @returns status: success
+   */
   async update(id: Types.ObjectId, dto: UpdatePostDto, userId: Types.ObjectId) {
     const thing: any = await this.postModel
       .findById(id)
@@ -150,10 +232,11 @@ export class PostService {
     return { status: 'success' };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
-  }
-
+  /**
+   * Get a random timeline for user
+   * @param pagination pagination page number and offset
+   * @returns list of things
+   */
   private getRandomTimeLine(pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(undefined);
     const { limit } = pagination;
@@ -168,6 +251,12 @@ export class PostService {
     ]);
   }
 
+  /**
+   * Get a specific post
+   * @param postId MongoId of post
+   * @param userId MongoId of user
+   * @returns post document
+   */
   async getPost(postId: Types.ObjectId, userId: Types.ObjectId) {
     const fetcher = new ThingFetch(userId);
 
@@ -177,8 +266,9 @@ export class PostService {
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
       ...fetcher.getMe(),
-      ...fetcher.userInfo(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
+      ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
@@ -195,6 +285,12 @@ export class PostService {
     return post[0];
   }
 
+  /**
+   * Get a specific user's timeline
+   * @param userInfo MongoId or username of user
+   * @param pagination pagination page number and offset
+   * @returns list of things
+   */
   private async getUserTimeLine(
     userInfo: UserUniqueKeys,
     pagination: PaginationParamsDto,
@@ -202,24 +298,43 @@ export class PostService {
     const fetcher = new ThingFetch(userInfo._id);
     const { limit, page, sort } = pagination;
 
-    return this.postModel.aggregate([
+    const posts = await this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchAllRelatedPosts(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.getMe(),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
+
+    if (posts.length >= limit) {
+      return posts;
+    }
+
+    const otherRandomPosts = await this.getRandomTimeLine({
+      limit: limit - posts.length,
+      page,
+      sort,
+    });
+
+    return [...posts, ...otherRandomPosts];
   }
 
+  /**
+   * Get random or specific timeline of user
+   * @param userInfo MongoId or username of user
+   * @param pagination pagination page number and offset
+   * @returns list of things
+   */
   async getTimeLine(
     userInfo: UserUniqueKeys | undefined,
     pagination: PaginationParamsDto,
@@ -231,6 +346,12 @@ export class PostService {
     return this.getUserTimeLine(userInfo, pagination);
   }
 
+  /**
+   * Get user's posts
+   * @param userId MongoId
+   * @param pagination pagination page number and offset
+   * @returns list of posts
+   */
   async getPostsOfUser(
     userId: Types.ObjectId,
     pagination: PaginationParamsDto,
@@ -241,19 +362,27 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchForSpecificUser(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
+  /**
+   * Increment insight counts
+   * @param postId MongoId of post
+   * @param subredditId MongoId of subreddit
+   * @param num amount to increase
+   * @returns whether counts were updated
+   */
   async addToComments(
     postId: Types.ObjectId,
     subredditId: Types.ObjectId,
@@ -269,6 +398,12 @@ export class PostService {
     return dataUpdated.matchedCount > 0;
   }
 
+  /**
+   * Approve a post
+   * @param modUsername username of moderator
+   * @param thingId MongoId of thing
+   * @returns status: success
+   */
   async approve(modUsername: string, thingId: Types.ObjectId) {
     const [post] = await this.postCommentService.getThingIModerate(
       modUsername,
@@ -288,11 +423,21 @@ export class PostService {
     await this.postModel.findByIdAndUpdate(thingId, {
       approvedBy: modUsername,
       approvedAt: Date.now(),
+      spammedAt: null,
+      spammedBy: null,
+      removedBy: null,
+      removedAt: null,
     });
 
     return { status: 'success' };
   }
 
+  /**
+   * Get user's hidden posts
+   * @param userId MongoId of user
+   * @param pagination pagination page number and offset
+   * @returns list of posts
+   */
   async getHiddenPosts(
     userId: Types.ObjectId,
     pagination: PaginationParamsDto,
@@ -303,18 +448,26 @@ export class PostService {
     return this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.getHidden(),
+      ...fetcher.getMe(),
+      ...fetcher.SRInfo(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
+  /**
+   * Get popular posts related to a specific user
+   * @param userId MongoId of user
+   * @param pagination pagination page number and offset
+   * @returns list of posts
+   */
   async getPopularPosts(
     userId: Types.ObjectId,
     pagination: PaginationParamsDto,
@@ -326,19 +479,27 @@ export class PostService {
       ...fetcher.prepare(),
       ...fetcher.filterBlocked(),
       ...fetcher.filterHidden(),
+      ...fetcher.SRInfo(),
+      ...fetcher.getMe(),
+      ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {
         $sort: fetcher.getSortObject(sort),
       },
       ...fetcher.getPaginated(page, limit),
-      ...fetcher.SRInfo(),
-      ...fetcher.getMe(),
       ...fetcher.userInfo(),
       ...fetcher.voteInfo(),
       ...fetcher.getPostProject(),
     ]);
   }
 
+  /**
+   * Get things for discover page
+   * @param userId MongoId of user
+   * @param page pagination page number
+   * @param limit pagination items per page
+   * @returns list of things
+   */
   async discover(
     userId: Types.ObjectId,
     page: number | undefined,

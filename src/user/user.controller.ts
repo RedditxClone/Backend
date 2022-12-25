@@ -22,7 +22,6 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
-  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -40,7 +39,6 @@ import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
 import {
   AvailableUsernameDto,
-  GetFriendsDto,
   PrefsDto,
   UserAccountDto,
   UserPostsDto,
@@ -57,56 +55,6 @@ export class UserController {
     private readonly followService: FollowService,
   ) {}
 
-  // @ApiOperation({ description: 'Get user friends' })
-  // @ApiOkResponse({
-  //   description: 'The account friends is returned successfully',
-  //   type: GetFriendsDto,
-  // })
-  // @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  // @Get('friend')
-  // getFriends() {
-  //   return this.userService.getFriends();
-  // }
-
-  // @ApiOperation({ description: 'User Accept another user friend request' })
-  // @ApiOkResponse({ description: 'The friend request accepted successfully' })
-  // @ApiBadRequestResponse({ description: 'invalid user id' })
-  // @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  // @Post('/:user_id/friend/accept')
-  // acceptFriendRequest() {
-  //   return this.userService.acceptFriendRequest();
-  // }
-
-  // @ApiOperation({ description: 'User send a friend request to another user' })
-  // @ApiOkResponse({ description: 'The friend request sent successfully' })
-  // @ApiBadRequestResponse({ description: 'invalid user id' })
-  // @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  // @Post('/:user_id/friend/request')
-  // sendFriendRequest() {
-  //   return this.userService.sendFriendRequest();
-  // }
-
-  // @ApiOperation({
-  //   description: 'delete the friendship request sent from another user',
-  // })
-  // @ApiOkResponse({ description: 'The friend request is deleted successfully' })
-  // @ApiBadRequestResponse({ description: 'invalid user id' })
-  // @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  // @Delete('/:user_id/friend/request')
-  // deleteFriendRequest() {
-  //   return this.userService.deleteFriendRequest();
-  // }
-
-  // @ApiOperation({
-  //   description: 'remove a user from the friends of the account',
-  // })
-  // @ApiOkResponse({ description: 'The friend is deleted successfully' })
-  // @ApiBadRequestResponse({ description: 'invalid user id' })
-  // @ApiUnauthorizedResponse({ description: 'Unautherized' })
-  // @Delete('/:user_id/friend')
-  // unFriend() {
-  //   return this.userService.unFriend();
-  // }
   @ApiOperation({ description: 'Get user data if logged in' })
   @ApiOkResponse({
     description: 'The user is logged in and the data returned successfully',
@@ -153,49 +101,6 @@ export class UserController {
     return this.userService.updateUserPrefs(userId, prefsDto);
   }
 
-  // @ApiOperation({ description: 'Get information about the user' })
-  // @ApiOkResponse({
-  //   description: 'The user info returned successfully',
-  //   type: GetUserInfoDto,
-  // })
-  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  // @Get('/:user_id/about')
-  // getUserInfo(@Param('user_id') _userId: string) {
-  //   // TODO
-  // }
-
-  // @ApiOperation({ description: 'Get information about the user' })
-  // @ApiOkResponse({
-  //   description: 'The data returned successfully',
-  //   type: UserOverviewDto,
-  // })
-  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  // @Get('/:user_id/overview')
-  // getUserOverview(@Param('user_id') _userId: string) {
-  //   // TODO
-  // }
-  // @ApiOperation({ description: 'Get information about the user' })
-  // @ApiOkResponse({
-  //   description: 'The data returned successfully',
-  //   type: UserPostsDto,
-  // })
-  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  // @Get('/:user_id/upvoted')
-  // getUserUpvoted(@Param('user_id') _userId: string) {
-  //   // TODO
-  // }
-
-  // @ApiOperation({ description: 'Get information about the user' })
-  // @ApiOkResponse({
-  //   description: 'The data returned successfully',
-  //   type: UserPostsDto,
-  // })
-  // @ApiBadRequestResponse({ description: 'The user_id is not valid' })
-  // @Get('/:user_id/upvoted')
-  // getUserDownvoted(@Param('user_id') _userId: string) {
-  //   // TODO
-  // }
-
   @ApiOperation({ description: 'Check if username is available' })
   @ApiCreatedResponse({
     description: 'Username Available',
@@ -207,6 +112,18 @@ export class UserController {
     @Res() res,
   ) {
     return this.userService.checkAvailableUsername(availableUsernameDto, res);
+  }
+
+  @ApiOperation({ description: 'Get user by id' })
+  @ApiOkResponse({ description: 'User returned successfully' })
+  @ApiBadRequestResponse({
+    description: 'invalid user id',
+  })
+  @Get('/:user_id/id')
+  async getUser(
+    @Param('user_id', ParseObjectIdPipe) userId: Types.ObjectId,
+  ): Promise<any> {
+    return this.userService.getUserById(userId);
   }
 
   @ApiOperation({ description: 'follow specific user' })
@@ -345,6 +262,21 @@ export class UserController {
   }
 
   @ApiOperation({
+    description: 'Delete a user (must be done by admin)',
+  })
+  @ApiOkResponse({ description: 'User deleted successfully' })
+  @ApiUnauthorizedResponse({
+    description: 'you are not allowed to make this action',
+  })
+  @UseGuards(JWTAdminGuard)
+  @Delete('/:user_id')
+  async deleteUser(
+    @Param('user_id', ParseObjectIdPipe) user_id: Types.ObjectId,
+  ) {
+    return this.userService.deleteAccount(user_id);
+  }
+
+  @ApiOperation({
     description: 'Delete the user account by sitting the accountClosed to true',
   })
   @ApiOkResponse({ description: 'Account deleted successfully ' })
@@ -365,7 +297,6 @@ export class UserController {
   @ApiBadRequestResponse({ description: 'The user_id is not valid' })
   @Get('/:username')
   @UseGuards(IsUserExistGuard)
-  // TODO: kamal
   getUserByUsername(@Req() req, @Param('username') user2Id: string) {
     return this.userService.getUserInfo(req._id, user2Id);
   }

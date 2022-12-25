@@ -182,13 +182,15 @@ describe('NotificationService', () => {
     it('should pass', async () => {
       const res = await service.findAll(id2, new PaginationParamsDto());
       expect(res.data.length).toEqual(9);
-      expect(res.data[0].body).toEqual(
-        'u/folan2 replied to your post in r/folan1',
+      expect(res.data[2].body).toEqual(
+        'u/folan2 replied to your comment in r/folan1',
       );
       expect(res.data[1].body).toEqual(
-        'You got an upvote on your post in r/folan1',
+        'u/folan2 replied to your post in r/folan1',
       );
-      expect(res.data[2].body).toEqual('u/folan1 started following you.');
+      expect(res.data[0].body).toEqual(
+        'u/folan2 replied to your comment in r/folan1',
+      );
     });
   });
   describe('mark notifications hidden', () => {
@@ -260,6 +262,37 @@ describe('NotificationService', () => {
       expect(modifiedCount).toBe(0);
     });
   });
+
+  describe('notifyOnUserMentions', () => {
+    const id = new Types.ObjectId(1);
+    it('should pass', async () => {
+      const res: any = await service.notifyOnUserMentions(
+        username2,
+        id2,
+        'post',
+        'folan1',
+        'folan2',
+        id2,
+      );
+      expect(res.body).toEqual('u/folan2 mentioned you on a post in r/folan1');
+      expect(res.type).toEqual('mention');
+    });
+    it('should pass', async () => {
+      const res: any = await service.notifyOnUserMentions(
+        username2,
+        id,
+        'comment',
+        'folan1',
+        'folan2',
+        id,
+      );
+      expect(res.body).toEqual(
+        'u/folan2 mentioned you on a comment in r/folan1',
+      );
+      expect(res.type).toEqual('mention');
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

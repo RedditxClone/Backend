@@ -32,7 +32,7 @@ export class Notification {
   @Prop({ required: true })
   body: string;
 
-  @Prop({ default: Date.now() })
+  @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 
   @Prop({ default: true })

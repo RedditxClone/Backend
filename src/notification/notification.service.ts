@@ -11,8 +11,18 @@ import type { PaginationParamsDto } from '../utils/apiFeatures/dto';
 
 //type notification type ['private_msg', 'comment_reply','post_reply','post_vote','comment_vote','follow','mention']
 
+/**
+ * Service for notifications received by user
+ */
 @Injectable()
 export class NotificationService {
+  /**
+   * Class constructor
+   * @param notificationModel mongoose model
+   * @param userModel mongoose model
+   * @param messageModel mongoose model
+   * @param apiFeaturesService api features service
+   */
   constructor(
     @InjectModel('Notification')
     private readonly notificationModel: Model<Notification>,
@@ -126,6 +136,7 @@ export class NotificationService {
           type: 1,
           createdAt: 1,
           read: 1,
+          new: 1,
           userPhoto: '$user.profilePhoto',
           subredditPhoto: '$subreddit.icon',
         },
@@ -134,12 +145,14 @@ export class NotificationService {
         $sort: { createdAt: -1 },
       },
     ]);
+    const awaitedRes =
+      await this.apiFeaturesService.getPaginatedResponseFromAggregate(
+        res,
+        paginationParams,
+      );
     await this.notificationModel.updateMany({ userId }, { new: false });
 
-    return this.apiFeaturesService.getPaginatedResponseFromAggregate(
-      res,
-      paginationParams,
-    );
+    return awaitedRes;
   };
 
   /**

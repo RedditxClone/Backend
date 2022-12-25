@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { NotificationModule } from '../notification/notification.module';
 import { HideSchema } from '../post/hide.schema';
-import { PostService } from '../post/post.service';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { UserModule } from '../user/user.module';

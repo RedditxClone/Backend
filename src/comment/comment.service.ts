@@ -6,10 +6,20 @@ import { MessageService } from '../message/message.service';
 import { NotificationService } from '../notification/notification.service';
 import { PostService } from '../post/post.service';
 import type { Comment } from './comment.schema';
-import type { CreateCommentDto, UpdateCommentDto } from './dto';
-
+import type { CreateCommentDto } from './dto';
+/**
+ * comment module service
+ */
 @Injectable()
 export class CommentService {
+  /**
+   * class constructor
+   * @param commentModel comment model
+   * @param postCommentModel postComment model
+   * @param notificationService NotificationService
+   * @param postService PostService
+   * @param messageService MessageService
+   */
   constructor(
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
     @InjectModel('PostComment')
@@ -30,6 +40,7 @@ export class CommentService {
     username: string,
     userId: Types.ObjectId,
     createCommentDto: CreateCommentDto,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): Promise<Comment & { _id: Types.ObjectId }> => {
     const parentId = new Types.ObjectId(createCommentDto.parentId);
     const postId = new Types.ObjectId(createCommentDto.postId);
@@ -96,12 +107,12 @@ export class CommentService {
       !info.user[0]?.dontNotifyIds?.includes(postId)
     ) {
       await this.notificationService.notifyOnReplies(
-        info.userId,
+        info.user[0]._id,
         comment._id,
         replyType,
         info.subreddit[0].name,
         username,
-        info.user[0]._id,
+        userId,
       );
 
       await this.messageService.messageOnReplies(
@@ -132,8 +143,8 @@ export class CommentService {
       } while (m);
 
       for (const name of usernameMentions) {
-        // if got already a notification for a comment
-        if (name !== username) {
+        // if got already a notification for a comment or I am mentioning my self
+        if (name !== username && name !== info.user[0].username) {
           promises.push(
             this.notificationService.notifyOnUserMentions(
               name,
@@ -141,7 +152,7 @@ export class CommentService {
               replyType,
               info.subreddit[0].name,
               username,
-              info.user[0]._id,
+              userId,
             ),
           );
         }
@@ -153,20 +164,4 @@ export class CommentService {
 
     return comment;
   };
-
-  findAll() {
-    return `This action returns all comment`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
-  }
-
-  update(id: number, _updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
-  }
 }

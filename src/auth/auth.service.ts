@@ -26,9 +26,19 @@ import type {
   LoginDto,
 } from './dto';
 import type { ChangeEmailDto } from './dto/change-email.dto';
-
+/**
+ * service for authentication module
+ */
 @Injectable()
 export class AuthService {
+  /**
+   * The service constructor
+   * @param userModel the mongoose model
+   * @param mailService EmailService
+   * @param userService UserService
+   * @param jwtService JwtService
+   * @param emailService EmailService
+   */
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly mailService: EmailService,
@@ -54,6 +64,12 @@ export class AuthService {
     return this.userService.validPassword(password, user.hashPassword);
   }
 
+  /**
+   * creates a JWT token for the user to login with
+   * @param id the user id to create the token
+   * @param username the user's username
+   * @returns the created token
+   */
   private async createAuthToken(id: string, username: string): Promise<string> {
     return this.jwtService.signAsync(
       { id, username },
@@ -61,6 +77,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * creates a special token to send to the user' mail
+   * @param username the user's username
+   * @returns the JWT token
+   */
   async createChangePasswordToken(username: string) {
     return this.jwtService.signAsync(
       { username },
@@ -113,6 +134,11 @@ export class AuthService {
     await this.sendAuthToken(user, res);
   };
 
+  /**
+   * creates a jwt token and send it to the user's email if existed to reset password
+   * @param dto the data encapsulated data
+   * @returns `{ status: 'success' }` if ok
+   */
   async forgetPassword(dto: ForgetPasswordDto) {
     const user: UserDocument | undefined =
       await this.userService.getUserByUsername(dto.username);
@@ -228,6 +254,11 @@ export class AuthService {
     });
   };
 
+  /**
+   * verify if the user's data is correct
+   * @param token the google token
+   * @returns the payload
+   */
   verfiyUserGmailData: any = async (token: string) => {
     try {
       const client = new OAuth2Client();
@@ -246,6 +277,11 @@ export class AuthService {
     }
   };
 
+  /**
+   * verify if the user's data is correct
+   * @param token the github token
+   * @returns the payload
+   */
   verfiyUserGithubData = async (token: string) => {
     try {
       const { data } = await axios.get('https://api.github.com/user', {
@@ -267,6 +303,13 @@ export class AuthService {
     }
   };
 
+  /**
+   * authenticate user's data
+   * @param token the user's token
+   * @param res the response to be continued
+   * @param accountTypeField the account type
+   * @param verfiyFunction the function to verify on
+   */
   continueAuth = async (
     token: string,
     res: Response,
@@ -290,6 +333,12 @@ export class AuthService {
     await this.sendAuthToken(user, res);
   };
 
+  /**
+   * check the type of the user's requests
+   * @param user encapsulating use's data
+   * @returns
+   * `{operationType: 'changeEmail'}` or `{operationType: 'createPassword'}`
+   */
   changeMailRequestType = async (user: any) => {
     const userWithHashPassword = await this.userModel
       .findById(user._id)
@@ -307,6 +356,11 @@ export class AuthService {
     };
   };
 
+  /**
+   *sends an email to the user to create the password
+   * @param user encapsulating use's data
+   * @returns `{ status:'success'}` if ok
+   */
   createPasswordRequest = async (user: any) => {
     const token: string = await this.createChangePasswordToken(user.username);
 
@@ -319,6 +373,12 @@ export class AuthService {
     return { status: 'success' };
   };
 
+  /**
+   * changes the user's email.
+   * @param userId the user's Id
+   * @param changeEmailDto the data encapsulated
+   * @returns `{ status:'success'}` if ok
+   */
   changeEmail = async (
     userId: Types.ObjectId,
     changeEmailDto: ChangeEmailDto,

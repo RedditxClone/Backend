@@ -383,7 +383,6 @@ export class ThingFetch {
     return {
       text: 1,
       title: 1,
-      // subreddit: 1,
       replyNotifications: {
         $ifNull: ['$replyNotifications', false],
       },
@@ -602,6 +601,23 @@ export class ThingFetch {
           ],
         },
       },
+      flair: {
+        $arrayElemAt: [
+          {
+            $filter: {
+              input: this.mongoIndexAt('$subreddit.flairList', 0),
+              as: 'flairItem',
+              cond: {
+                $eq: [
+                  { $toString: '$$flairItem._id' },
+                  { $toString: '$flair' },
+                ],
+              },
+            },
+          },
+          0,
+        ],
+      },
     };
   }
 
@@ -617,6 +633,30 @@ export class ThingFetch {
           _id: 0,
           postId: {
             $toObjectId: '$_id',
+          },
+        },
+      },
+    ];
+  }
+
+  filterBannedUsers() {
+    return [
+      {
+        $match: {
+          $expr: {
+            $not: [
+              {
+                $in: [
+                  this.mongoIndexAt('$me.username', 0),
+                  {
+                    $ifNull: [
+                      this.mongoIndexAt('$subreddit.bannedUsers.username', 0),
+                      [],
+                    ],
+                  },
+                ],
+              },
+            ],
           },
         },
       },

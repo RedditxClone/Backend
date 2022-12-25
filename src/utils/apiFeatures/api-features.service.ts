@@ -6,9 +6,19 @@ import { Query } from 'mongoose';
 import type { PaginatedResponseDto, PaginationParamsDto } from './dto';
 import { PaginationMetaDto } from './dto';
 import type { ApiFeaturesOptionsDto } from './dto/api-features.dto';
+/**
+ * A class to implement all api features like pagination
+ */
 @Global()
 @Injectable()
 export class ApiFeaturesService {
+  /**
+   * process a query and sorts it
+   * @param mongoQuery the query
+   * @param reqQuery the pagination params or sort
+   * @param queryOptions query options
+   * @returns the data
+   */
   processQuery(
     mongoQuery: Query<any, any>,
     reqQuery: any,
@@ -33,6 +43,13 @@ export class ApiFeaturesService {
     return mongoQuery;
   }
 
+  /**
+   * paginates a mongo query
+   * @param mongoQuery the query
+   * @param reqQuery the pagination params or sort
+   * @param queryOptions query options
+   * @returns the data
+   */
   async getPaginatedResponseFromQuery(
     mongoQuery: Query<any, any>,
     reqQuery: any,
@@ -54,6 +71,12 @@ export class ApiFeaturesService {
     return this.createPaginatedResponse(reqQuery, paginationData, itemCount);
   }
 
+  /**
+   * paginate mongo aggregate
+   * @param mongoAggregate the aggregate
+   * @param reqQuery the pagination params or sort
+   * @returns paginated data
+   */
   async getPaginatedResponseFromAggregate(
     mongoAggregate: Aggregate<any>,
     reqQuery: any,
@@ -76,6 +99,13 @@ export class ApiFeaturesService {
     );
   }
 
+  /**
+   * creates the paginated response
+   * @param reqQuery the pagination params or sort
+   * @param paginationData the listing of data
+   * @param itemCount the count
+   * @returns
+   */
   private createPaginatedResponse(
     reqQuery: PaginationParamsDto,
     paginationData,
@@ -94,12 +124,24 @@ export class ApiFeaturesService {
     return paginatedResponse;
   }
 
+  /**
+   * search's by filter
+   * @param mongoQuery the query
+   * @param query the filter
+   * @param apply true to apply this filter
+   */
   private searchBy(mongoQuery: Query<any, any>, query: any, apply: boolean) {
     if (apply) {
       mongoQuery = mongoQuery.where(query);
     }
   }
 
+  /**
+   * sort by filter
+   * @param mongoQuery the query
+   * @param query the filter
+   * @param apply true to apply this filter
+   */
   private sort(mongoQuery: Query<any, any>, query: any, apply: boolean) {
     if (apply && query.sort) {
       query.sort = query.sort.replace(',', ' ');
@@ -107,6 +149,12 @@ export class ApiFeaturesService {
     }
   }
 
+  /**
+   * paginate by filter
+   * @param mongoQuery the query
+   * @param query the filter
+   * @param apply true to apply this filter
+   */
   private pagination(mongoQuery: Query<any, any>, query: any, apply: boolean) {
     if (apply) {
       query.page = query.page || 1;
@@ -122,6 +170,12 @@ export class ApiFeaturesService {
     }
   }
 
+  /**
+   * get fields by filter
+   * @param mongoQuery the query
+   * @param query the filter
+   * @param apply true to apply this filter
+   */
   private fields(mongoQuery: Query<any, any>, query: any, apply: boolean) {
     if (apply && query.fields) {
       const fields = query.fields.split(',').join(' ');
