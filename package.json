@@ -16,7 +16,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "doc:serve": "npx @compodoc/compodoc -p tsconfig.json --serve",
+    "doc:serve": "npx @compodoc/compodoc -p tsconfig.compodoc.json --serve",
     "precommit": "lint-staged && npm run test:uncommitted",
     "husky": "husky install",
     "prepush": "npm run prettier:check && npm rum eslint:check && npm run test",
@@ -115,7 +115,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.service.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

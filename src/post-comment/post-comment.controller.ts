@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
@@ -23,7 +22,6 @@ import { JWTUserGuard } from '../auth/guards';
 import { IsUserExistGuard } from '../auth/guards/is-user-exist.guard';
 import { PaginationParamsDto } from '../utils/apiFeatures/dto';
 import { ParseObjectIdPipe } from '../utils/utils.service';
-import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { PostCommentService } from './post-comment.service';
 
 @Controller('thing')
@@ -50,21 +48,6 @@ export class PostCommentController {
     @Query() pagination: PaginationParamsDto,
   ) {
     return this.postCommentService.getDownvoted(userId, pagination);
-  }
-
-  @Post()
-  create(@Body() createPostCommentDto: CreatePostCommentDto) {
-    return this.postCommentService.create(createPostCommentDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.postCommentService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postCommentService.findOne(Number(id));
   }
 
   @UseGuards(IsUserExistGuard)
