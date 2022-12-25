@@ -17,13 +17,22 @@ import {
   userSelectedFields,
 } from '../utils/project-selected-fields';
 import type { Vote } from '../vote/vote.schema';
-import type { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import type { FilterPostCommentDto } from './dto/filter-post-comment.dto';
 import type { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import type { PostComment } from './post-comment.schema';
 import { ThingFetch } from './post-comment.utils';
+
+/**
+ * class for PostComment module
+ */
 @Injectable()
 export class PostCommentService {
+  /**
+   * Class constructor
+   * @param postCommentModel mongoose model
+   * @param voteModel mongoose model
+   * @param notificationService notification service
+   */
   constructor(
     @InjectModel('PostComment')
     private readonly postCommentModel: Model<PostComment>,
@@ -31,18 +40,12 @@ export class PostCommentService {
     private readonly notificationService: NotificationService,
   ) {}
 
-  create(_createPostCommentDto: CreatePostCommentDto) {
-    return 'This action adds a new postComment';
-  }
-
-  findAll() {
-    return `This action returns all postComment`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} postComment`;
-  }
-
+  /**
+   * Check whether the user is the owner of the post
+   * @param userId MongoId of user
+   * @param postUserId MongoId of post
+   * @trhows UnauthorizedException if the user is not the owner
+   */
   checkIfTheOwner(
     userId: Types.ObjectId,
     postUserId: Types.ObjectId | undefined,
@@ -54,6 +57,12 @@ export class PostCommentService {
     throw new UnauthorizedException('only the owner can do this operation');
   }
 
+  /**
+   * Check whether a flair id is valid
+   * @param flairId MongoId of flair
+   * @param flairs List of flairs
+   * @throws BadRequestException if flair is not included
+   */
   checkIfValidFlairId(
     flairId: Types.ObjectId | undefined,
     flairs: Flair[] | undefined | null,
@@ -206,6 +215,13 @@ export class PostCommentService {
     return thing;
   };
 
+  /**
+   * update a post or comment
+   * @param id MongoId of postcomment
+   * @param dto postcomment information
+   * @param userId MongoId user
+   * @returns status: success
+   */
   async update(
     id: Types.ObjectId,
     dto: UpdatePostCommentDto,
@@ -282,6 +298,12 @@ export class PostCommentService {
     return { status: 'success', timestamp: new Date() };
   };
 
+  /**
+   * Get user's saved posts
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of posts
+   */
   getSavedPosts(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
     const { limit, page, sort } = pagination;
@@ -304,6 +326,12 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get overview posts or comments
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of things
+   */
   getOverviewThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
     const { limit, page, sort } = pagination;
@@ -325,6 +353,12 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get history posts or comments
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of things
+   */
   getHistoryThings(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
     const { limit, page, sort } = pagination;
@@ -353,6 +387,13 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Update vote count on post or comment
+   * @param thingId MongoId of postcomment
+   * @param lastStatus previous vote count
+   * @param curStatus new vote count
+   * @returns votesCount: new vote count
+   */
   private async changeVotes(
     thingId: Types.ObjectId,
     lastStatus: number,
@@ -375,6 +416,11 @@ export class PostCommentService {
     return { votesCount: res.votesCount };
   }
 
+  /**
+   * Get vote enum
+   * @param isUpvote whether the vote enum is an upvote
+   * @returns numeric represenation of vote action
+   */
   private getVotesNum(isUpvote: boolean | undefined) {
     if (isUpvote === undefined) {
       return 0;
@@ -383,6 +429,13 @@ export class PostCommentService {
     return isUpvote ? 1 : -1;
   }
 
+  /**
+   * Upvote a post or comment
+   * @param thingId MongoId of post or comment
+   * @param userId MongoId user
+   * @param dontNotifyIds List of ids to not create notifcations for
+   * @returns new vote count
+   */
   async upvote(
     thingId: Types.ObjectId,
     userId: Types.ObjectId,
@@ -422,6 +475,12 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 1).then();
   }
 
+  /**
+   * Downvote a post or comment
+   * @param thingId MongoId of post or comment
+   * @param userId MongoId of user
+   * @returns new vote count
+   */
   async downvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
     const res = await this.voteModel.findOneAndUpdate(
       { thingId, userId },
@@ -432,6 +491,12 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), -1);
   }
 
+  /**
+   * Remove an existing vote
+   * @param thingId MongoId of post or comment
+   * @param userId MongoId of user
+   * @returns new vote count
+   */
   async unvote(thingId: Types.ObjectId, userId: Types.ObjectId) {
     const res = await this.voteModel.findOneAndDelete(
       { thingId, userId },
@@ -441,6 +506,12 @@ export class PostCommentService {
     return this.changeVotes(thingId, this.getVotesNum(res?.isUpvote), 0);
   }
 
+  /**
+   * Get posts or comments upvoted
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of things
+   */
   async getUpvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
     const { limit, page, sort } = pagination;
@@ -461,6 +532,12 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get posts or comments downvoted
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of things
+   */
   async getDownvoted(userId: Types.ObjectId, pagination: PaginationParamsDto) {
     const fetcher = new ThingFetch(userId);
     const { limit, page, sort } = pagination;
@@ -481,6 +558,16 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Search for posts
+   * @param searchPhrase searchy query
+   * @param userId MongoId of user
+   * @param page pagination page number
+   * @param limit pagination limit
+   * @param sort sort query
+   * @param time time query
+   * @returns list of posts
+   */
   searchPostAggregate(
     searchPhrase: string,
     userId: Types.ObjectId,
@@ -554,6 +641,16 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Search for comments
+   * @param searchPhrase searchy query
+   * @param userId MongoId of user
+   * @param page pagination page number
+   * @param limit pagination limit
+   * @param sort sort query
+   * @param time time query
+   * @returns list of comments
+   */
   searchCommentQuery = (
     searchPhrase: string,
     userId: Types.ObjectId,
@@ -630,6 +727,11 @@ export class PostCommentService {
     ]);
   };
 
+  /**
+   * Get post or comments I moderate
+   * @param modUsername username of moderator
+   * @param thingId MongoId of post or comment
+   */
   async getThingIModerate(modUsername: string, thingId: Types.ObjectId) {
     return this.postCommentModel.aggregate([
       {
@@ -660,6 +762,12 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Report a post or comment as spam
+   * @param moderatorUsername username of moderator
+   * @param thingId MonogId of post or comment
+   * @returns status: success
+   */
   async spam(moderatorUsername: string, thingId: Types.ObjectId) {
     const [thing] = await this.getThingIModerate(moderatorUsername, thingId);
 
@@ -685,6 +793,12 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
+  /**
+   * remove spam report from a post or comment
+   * @param moderatorUsername username of moderator
+   * @param thingId MonogId of post or comment
+   * @returns status: success
+   */
   async unspam(modUsername: string, thingId: Types.ObjectId) {
     const [thing] = await this.getThingIModerate(modUsername, thingId);
 
@@ -706,6 +820,12 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
+  /**
+   * Disapprove a post or comment
+   * @param modUsername username of moderator
+   * @param thingId MongoId of post or comment
+   * @returns status: success
+   */
   async disApprove(modUsername: string, thingId: Types.ObjectId) {
     const [post] = await this.getThingIModerate(modUsername, thingId);
 
@@ -731,6 +851,13 @@ export class PostCommentService {
     return { status: 'success' };
   }
 
+  /**
+   * Get posts and comments of a user
+   * @param username username of user
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of things
+   */
   async getThingsOfUser(
     username: string,
     userId: Types.ObjectId | undefined,
@@ -762,6 +889,13 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get posts of an owner
+   * @param ownerId MongoId of owner
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of posts
+   */
   async getPostsOfOwner(
     ownerId: Types.ObjectId,
     userId: Types.ObjectId,
@@ -793,6 +927,13 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get comments of an owner
+   * @param ownerId MongoId of owner
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of comments
+   */
   async getCommentsOfOwner(
     ownerId: Types.ObjectId,
     userId: Types.ObjectId,
@@ -829,6 +970,13 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get common posts and comments of a subreddit
+   * @param srName name of subreddit
+   * @param filter query params
+   * @param pagination  pagination page number and offset
+   * @returns list of things
+   */
   private async getCommonThingsForSubreddit(
     srName: string,
     filter: any,
@@ -858,6 +1006,13 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get posts of a subreddit
+   * @param srName name of subreddit
+   * @param userId MongoId of user
+   * @param pagination  pagination page number and offset
+   * @returns list of posts
+   */
   async getPostsOfSubreddit(
     srName: string,
     userId: Types.ObjectId | undefined,
@@ -892,6 +1047,13 @@ export class PostCommentService {
     ]);
   }
 
+  /**
+   * Get unmoderated posts and comments
+   * @param srName name of subreddit
+   * @param pagination
+   * @param type filtering type
+   * @returns list of things
+   */
   async getUnModeratedThingsForSubreddit(
     srName: string,
     pagination: PaginationParamsDto,
@@ -906,6 +1068,13 @@ export class PostCommentService {
     return this.getCommonThingsForSubreddit(srName, filter, pagination);
   }
 
+  /**
+   * Get spammed posts and comments
+   * @param srName name of subreddit
+   * @param pagination pagination page number and offset
+   * @param type filtering type
+   * @returns list of things
+   */
   async getSpammedThingsForSubreddit(
     srName: string,
     pagination: PaginationParamsDto,
@@ -924,6 +1093,13 @@ export class PostCommentService {
     return this.getCommonThingsForSubreddit(srName, filter, pagination);
   }
 
+  /**
+   * Get edited posts and comments
+   * @param srName name of subreddit
+   * @param pagination pagination page number and offset
+   * @param type filtering type
+   * @returns list of things
+   */
   async getEditedThingsForSubreddit(
     srName: string,
     pagination: PaginationParamsDto,

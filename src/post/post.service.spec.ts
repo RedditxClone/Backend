@@ -47,6 +47,8 @@ describe('PostService', () => {
   };
   let subredditService: SubredditService;
   let userService: UserService;
+  let testingUser;
+  let testingSubreddit;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -100,6 +102,17 @@ describe('PostService', () => {
     service = module.get<PostService>(PostService);
     subredditService = module.get<SubredditService>(SubredditService);
     userService = module.get<UserService>(UserService);
+    testingUser = await userService.createUser({
+      email: 'email@example.com',
+      username: 'uname',
+      password: '12345678',
+    });
+    testingSubreddit = await subredditService.create(
+      { name: 'subreddit_name', over18: true, type: 'subreddit' },
+      testingUser.username,
+      testingUser._id,
+    );
+    postDto.subredditId = testingSubreddit._id;
   });
 
   let id: Types.ObjectId;
@@ -110,11 +123,16 @@ describe('PostService', () => {
   });
   describe('create post spec', () => {
     test('should create successfully', async () => {
-      const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
-      const post = await service.create(userId, postDto);
+      const post = await service.create(testingUser._id, postDto);
       id = post._id;
       const expected = stubPost();
-      expect(post).toEqual(expect.objectContaining(expected));
+      expect(post).toEqual(
+        expect.objectContaining({
+          ...expected,
+          ...postDto,
+          userId: testingUser._id,
+        }),
+      );
     });
   });
   describe('upload media spec', () => {
@@ -124,15 +142,48 @@ describe('PostService', () => {
       expect(res.status).toEqual('success');
     });
   });
-  // describe('upload media for post spec', () => {
-  //   it('must upload them successfully', async () => {
-  //     const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
-  //     const post = await service.create(userId, postDto);
-  //     const files: any = [{ filename: 'file1' }];
-  //     const res = await service.uploadPostMedia(files, post._id, userId);
-  //     expect(res.images).toEqual(['assets/post-media/file1']);
-  //   });
-  // });
+  describe('upload media for post spec', () => {
+    it('must upload them successfully', async () => {
+      const userId = new Types.ObjectId('6363fba4ab2c2f94f3ac9f37');
+      await subredditService.joinSubreddit(userId, postDto.subredditId);
+      const post = await service.create(userId, postDto);
+      const files: any = [{ filename: 'file1' }];
+      const res = await service.uploadPostMedia(files, post._id, userId);
+      expect(res.images).toEqual(['/assets/post-media/file1']);
+    });
+  });
+  describe('update post', () => {
+    it('must update successfully', async () => {
+      const res = await service.update(id, { nsfw: true }, testingUser._id);
+      const post = await service.getPost(id, testingUser._id);
+      expect(res.status).toEqual('success');
+      expect(post.nsfw).toEqual(true);
+    });
+    it('must throw an error due to unauthorized user', async () => {
+      await expect(
+        service.update(id, { nsfw: true }, new Types.ObjectId(1)),
+      ).rejects.toThrow('owner');
+    });
+    it('must throw not found', async () => {
+      await expect(
+        service.update(new Types.ObjectId(1), { nsfw: true }, testingUser._id),
+      ).rejects.toThrow('not found');
+    });
+  });
+  describe('add to comments', () => {
+    it('must return true', async () => {
+      const res = await service.addToComments(id, postDto.subredditId, 10);
+      expect(res).toEqual(true);
+    });
+    it('must return false', async () => {
+      const res = await service.addToComments(
+        new Types.ObjectId(1),
+        postDto.subredditId,
+        10,
+      );
+      expect(res).toEqual(false);
+    });
+  });
   describe('get discover page', () => {
     let sr, post, user, user2;
     beforeAll(async () => {
@@ -190,6 +241,30 @@ describe('PostService', () => {
     it('should unhide successfully', async () => {
       const res = await service.unhide(id, userId);
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+  describe('check if user joined SR', () => {
+    const uid = new Types.ObjectId(103);
+    it('must be joined successfully', async () => {
+      await subredditService.joinSubreddit(uid, postDto.subredditId);
+      await expect(
+        service.checkIfTheUserJoinedSR(
+          {
+            _id: uid,
+          },
+          postDto.subredditId,
+        ),
+      ).resolves.not.toThrowError();
+    });
+    it('must throw error', async () => {
+      await expect(
+        service.checkIfTheUserJoinedSR(
+          {
+            _id: new Types.ObjectId(1),
+          },
+          postDto.subredditId,
+        ),
+      ).rejects.toThrowError();
     });
   });
 
@@ -255,17 +330,22 @@ describe('PostService', () => {
       subreddits.push(sr1, sr2);
 
       await subredditService.joinSubreddit(user1._id, sr2._id);
-
-      const post1 = await service.create(user2._id, {
-        title: 'post1 title',
-        text: 'post1 text',
-        subredditId: sr1._id,
-      });
-      const post2 = await service.create(user2._id, {
-        title: 'post2 title',
-        text: 'post2 text',
-        subredditId: sr2._id,
-      });
+      const post1 = await service.create(
+        { _id: user2._id },
+        {
+          title: 'post1 title',
+          text: 'post1 text',
+          subredditId: sr2._id,
+        },
+      );
+      const post2 = await service.create(
+        { _id: user2._id },
+        {
+          title: 'post2 title',
+          text: 'post2 text',
+          subredditId: sr2._id,
+        },
+      );
 
       posts.push(post1, post2);
     });
@@ -273,7 +353,7 @@ describe('PostService', () => {
     describe('timeline', () => {
       it('should return 2 posts successfully', async () => {
         const timeline = await service.getTimeLine(user1._id, pagination);
-        expect(timeline.length).toEqual(2);
+        expect(timeline.length).toBeLessThanOrEqual(10);
         expect(timeline[1]).toEqual(
           expect.objectContaining({
             _id: posts[0]._id,
@@ -281,10 +361,12 @@ describe('PostService', () => {
             title: posts[0].title,
             voteType: null,
             subredditInfo: {
-              id: subreddits[0]._id,
-              name: subreddits[0].name,
-              isModerator: true,
+              icon: null,
+              id: subreddits[1]._id,
+              name: subreddits[1].name,
+              isModerator: false,
               isJoin: true,
+              membersCount: 2,
               joinDate: timeline[1].subredditInfo.joinDate,
             },
             user: {
@@ -293,41 +375,8 @@ describe('PostService', () => {
               username: user2.username,
               isFollowed: false,
               cakeDay: true,
-              createdAt: timeline[0].user.createdAt,
-            },
-          }),
-        );
-      });
-      it("shouldn't get any post after blocking user", async () => {
-        await userService.block(user1._id, user2._id);
-        const timeline = await service.getTimeLine(user1._id, pagination);
-        expect(timeline).toEqual([]);
-        await userService.unblock(user1._id, user2._id);
-      });
-      it("it shouldn't get first post before of hiding it", async () => {
-        await service.hide(posts[1]._id, user1._id);
-        const timeline = await service.getTimeLine(user1._id, pagination);
-        expect(timeline.length).toEqual(1);
-        expect(timeline[0]).toEqual(
-          expect.objectContaining({
-            _id: posts[0]._id,
-            text: posts[0].text,
-            title: posts[0].title,
-            voteType: null,
-            subredditInfo: {
-              id: subreddits[0]._id,
-              name: subreddits[0].name,
-              isModerator: true,
-              isJoin: true,
-              joinDate: timeline[0].subredditInfo.joinDate,
-            },
-            user: {
-              id: user2._id,
-              photo: '',
-              username: user2.username,
-              isFollowed: false,
-              cakeDay: true,
-              createdAt: timeline[0].user.createdAt,
+              createdAt: timeline[1].user.createdAt,
+              name: '',
             },
           }),
         );
@@ -335,7 +384,7 @@ describe('PostService', () => {
       it('must get all posts randomly', async () => {
         const userId = undefined;
         const timeline = await service.getTimeLine(userId, pagination);
-        expect(timeline.length).toEqual(3);
+        expect(timeline.length).toBeLessThanOrEqual(10);
       });
       it('must limit return to only one post', async () => {
         const timeline = await service.getTimeLine(user1._id, {
@@ -344,13 +393,6 @@ describe('PostService', () => {
           sort: 'new',
         });
         expect(timeline.length).toEqual(1);
-      });
-      it("shouldn't get any post due to not joining any subreddit", async () => {
-        const timeline = await service.getTimeLine(
-          new Types.ObjectId(100),
-          pagination,
-        );
-        expect(timeline).toEqual([]);
       });
     });
     describe('get my posts', () => {
@@ -362,6 +404,7 @@ describe('PostService', () => {
           username: user2.username,
           photo: user2.profilePhoto,
           isFollowed: false,
+          name: '',
           cakeDay: true,
           createdAt: res[0].user.createdAt,
         });
@@ -372,8 +415,9 @@ describe('PostService', () => {
       });
     });
     describe('get hidden posts', () => {
-      it('must return on post', async () => {
+      it('must return one post', async () => {
         // hidden from the last test
+        await service.hide(posts[0]._id, user1._id);
         const res = await service.getHiddenPosts(user1._id, pagination);
         expect(res.length).toEqual(1);
         await service.unhide(res[0]._id, user1._id);
@@ -386,6 +430,11 @@ describe('PostService', () => {
     describe('get popular posts', () => {
       it('must return on post', async () => {
         const res = await service.getPopularPosts(user1._id, pagination);
+        expect(res.length).toBeLessThanOrEqual(10);
+      });
+      it('must return posts only', async () => {
+        const user: any = undefined;
+        const res = await service.getPopularPosts(user, pagination);
         expect(res.length).toBeLessThanOrEqual(10);
       });
     });

@@ -4,15 +4,31 @@ import type { Types } from 'mongoose';
 import { PostCommentService } from '../post-comment/post-comment.service';
 import { SubredditService } from '../subreddit/subreddit.service';
 import { UserService } from '../user/user.service';
-
+/**
+ * A service for search module
+ */
 @Injectable()
 export class SearchService {
+  /**
+   * Class constructor
+   * @param userService user service
+   * @param postCommentService post comment service
+   * @param subredditService  subreddit service
+   */
   constructor(
     private readonly userService: UserService,
     private readonly postCommentService: PostCommentService,
     private readonly subredditService: SubredditService,
   ) {}
 
+  /**
+   * Search for people
+   * @param data search query
+   * @param page pagination page
+   * @param numberOfData items per page
+   * @param blocker MongoId of searching user
+   * @returns List of people
+   */
   searchPeople(data: string, page, numberOfData, blocker: Types.ObjectId) {
     return this.userService.searchPeopleAggregate(
       data,
@@ -22,6 +38,14 @@ export class SearchService {
     );
   }
 
+  /**
+   * Search for communities
+   * @param data search query
+   * @param page pagination page
+   * @param numberOfData items per page
+   * @param user MongoId of searching user
+   * @returns List of communities
+   */
   searchCommunities = async (data: string, page, numberOfData, user?) =>
     this.subredditService.getSearchSubredditAggregation(
       data,
@@ -31,6 +55,14 @@ export class SearchService {
       numberOfData,
     );
 
+  /**
+   * Search for communities that start with the search query
+   * @param data search query
+   * @param page pagination page
+   * @param numberOfData items per page
+   * @param user MongoId of searching user
+   * @returns List of communities
+   */
   searchCommunitiesStartsWith = async (
     data: string,
     page,
@@ -45,6 +77,13 @@ export class SearchService {
       numberOfData,
     );
 
+  /**
+   * Search for posts
+   * @param data search query
+   * @param query search parameters
+   * @param blocker MongoId of searching user
+   * @returns List of posts
+   */
   searchPosts = (data: string, query, blocker: Types.ObjectId) =>
     this.postCommentService.searchPostAggregate(
       data,
@@ -55,6 +94,14 @@ export class SearchService {
       query.time,
     );
 
+  /**
+   * Search for comments
+   * @param data search query
+   * @param page pagination page
+   * @param numberOfData items per page
+   * @param blocker MongoId of searching user
+   * @returns List of comments
+   */
   searchComments = async (
     data: string,
     page,
@@ -68,6 +115,14 @@ export class SearchService {
       numberOfData,
     );
 
+  /**
+   * Search for flairs
+   * @param data search query
+   * @param subreddit MongoId of subreddit
+   * @param page pagination page
+   * @param limit items per page
+   * @returns List of flairs
+   */
   searchFlairs = async (
     data: string,
     subreddit: Types.ObjectId,

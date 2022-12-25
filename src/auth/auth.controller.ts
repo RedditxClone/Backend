@@ -22,7 +22,7 @@ import { Types } from 'mongoose';
 import { CreateUserDto, ReturnedUserDto } from '../user/dto';
 import { AuthService } from './auth.service';
 import { User } from './decorators/user.decorator';
-import { ForgetUsernameDto } from './dto';
+import { ForgetUsernameDto, TokenDto } from './dto';
 import { ChangeEmailDto } from './dto/change-email.dto';
 import { ChangeEmailTypeDto } from './dto/change-email-type.dto';
 import {
@@ -118,9 +118,9 @@ export class AuthController {
   })
   @ApiForbiddenResponse({ description: 'The token is not valid' })
   @Post('google')
-  async continueWithGoogle(@Body('token') token, @Res() res: Response) {
+  async continueWithGoogle(@Body() tokenDto: TokenDto, @Res() res: Response) {
     return this.authService.continueAuth(
-      token,
+      tokenDto.token,
       res,
       'continueWithGoogleAccount',
       this.authService.verfiyUserGmailData,
@@ -135,9 +135,9 @@ export class AuthController {
   })
   @ApiForbiddenResponse({ description: 'The token is not valid' })
   @Post('github')
-  async continueWithGithub(@Body('token') token, @Res() res) {
+  async continueWithGithub(@Body() tokenDto: TokenDto, @Res() res) {
     return this.authService.continueAuth(
-      token,
+      tokenDto.token,
       res,
       'continueWithGithubAccount',
       this.authService.verfiyUserGithubData,
@@ -146,6 +146,9 @@ export class AuthController {
 
   @ApiOperation({
     description: 'change the email of the password',
+  })
+  @ApiCreatedResponse({
+    description: 'changed successfully',
   })
   @UseGuards(JWTUserGuard)
   @Post('change-email')
@@ -168,6 +171,9 @@ export class AuthController {
 
   @ApiOperation({
     description: 'Create a request to create password',
+  })
+  @ApiCreatedResponse({
+    description: 'created successfully',
   })
   @UseGuards(JWTUserGuard)
   @Post('create-password-request')

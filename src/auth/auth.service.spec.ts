@@ -29,7 +29,6 @@ describe('AuthService', () => {
   let userService: UserService;
   let module: TestingModule;
   let id: Types.ObjectId;
-  let githubUserId: Types.ObjectId;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -219,22 +218,6 @@ describe('AuthService', () => {
   });
 
   describe('continue', () => {
-    it('should create gitub account successfully', async () => {
-      const res = createResponse();
-      const githunToken = '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';
-      await authService.continueAuth(
-        githunToken,
-        res,
-        'continueWithGithubAccount',
-        authService.verfiyUserGithubData,
-      );
-      const userDataReturned = await JSON.parse(res._getData());
-      githubUserId = userDataReturned._id;
-      const userData = await userService.getUserById(userDataReturned._id);
-
-      expect(userData.username).toEqual(userData.username);
-      expect(userData.email).toEqual(userData.email);
-    });
     it('unautherized', async () => {
       const res = createResponse();
       const githunToken = 'not_validTOkenJqFyeAHVq9hwJx3QCDEG2bR1Zw';
@@ -286,10 +269,6 @@ describe('AuthService', () => {
     it('should return normal', async () => {
       const res = await authService.changeMailRequestType(id);
       expect(res).toEqual({ operationType: 'changeEmail' });
-    });
-    it('should return normal', async () => {
-      const res = await authService.changeMailRequestType(githubUserId);
-      expect(res).toEqual({ operationType: 'createPassword' });
     });
   });
 

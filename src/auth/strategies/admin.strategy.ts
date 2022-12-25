@@ -7,6 +7,10 @@ import { UserService } from '../../user/user.service';
 
 @Injectable()
 export class AdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
+  /**
+   * class constructor
+   * @param userService UserService
+   */
   constructor(private readonly userService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

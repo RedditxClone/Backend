@@ -1,11 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-
-@Injectable()
 /**
  * A utility class to send emails.
  */
+@Injectable()
 export class EmailService {
+  /**
+   * class constructor
+   * @param mailService Mailer Service
+   */
   constructor(private mailService: MailerService) {}
 
   /**

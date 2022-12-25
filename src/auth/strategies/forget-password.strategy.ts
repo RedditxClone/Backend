@@ -10,6 +10,10 @@ export class ForgetPasswordStrategy extends PassportStrategy(
   Strategy,
   'jwt-forget-password',
 ) {
+  /**
+   * Class Constructor
+   * @param userService UserService
+   */
   constructor(private readonly userService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

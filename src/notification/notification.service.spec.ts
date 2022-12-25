@@ -262,6 +262,37 @@ describe('NotificationService', () => {
       expect(modifiedCount).toBe(0);
     });
   });
+
+  describe('notifyOnUserMentions', () => {
+    const id = new Types.ObjectId(1);
+    it('should pass', async () => {
+      const res: any = await service.notifyOnUserMentions(
+        username2,
+        id2,
+        'post',
+        'folan1',
+        'folan2',
+        id2,
+      );
+      expect(res.body).toEqual('u/folan2 mentioned you on a post in r/folan1');
+      expect(res.type).toEqual('mention');
+    });
+    it('should pass', async () => {
+      const res: any = await service.notifyOnUserMentions(
+        username2,
+        id,
+        'comment',
+        'folan1',
+        'folan2',
+        id,
+      );
+      expect(res.body).toEqual(
+        'u/folan2 mentioned you on a comment in r/folan1',
+      );
+      expect(res.type).toEqual('mention');
+    });
+  });
+
   afterAll(async () => {
     await closeInMongodConnection();
     await module.close();

@@ -9,6 +9,8 @@ import { PostSchema } from '../post/post.schema';
 import { PostService } from '../post/post.service';
 import { PostCommentSchema } from '../post-comment/post-comment.schema';
 import { PostCommentService } from '../post-comment/post-comment.service';
+import { SubredditSchema } from '../subreddit/subreddit.schema';
+import { SubredditUserSchema } from '../subreddit/subreddit-user.schema';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -54,6 +56,14 @@ describe('CommentService', () => {
           {
             name: 'Vote',
             schema: VoteSchema,
+          },
+          {
+            name: 'UserSubreddit',
+            schema: SubredditUserSchema,
+          },
+          {
+            name: 'Subreddit',
+            schema: SubredditSchema,
           },
         ]),
       ],

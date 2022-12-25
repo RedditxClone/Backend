@@ -147,6 +147,22 @@ describe('UserService', () => {
       );
       expect(passwordValid).toBe(true);
     });
+
+    test('should get a user', async () => {
+      const user = await service.getUserIfExist(id);
+      expect(user).toBeDefined();
+      expect(user).not.toBe(null);
+
+      if (user) {
+        expect(user).toEqual(
+          expect.objectContaining({
+            username: userDto.username,
+            email: userDto.email,
+          }),
+        );
+      }
+    });
+
     test('should throw an error', async () => {
       await expect(async () => {
         await service.getUserById(new Types.ObjectId('wrong_id'));
@@ -437,6 +453,8 @@ describe('UserService', () => {
         user1._id,
       );
       subreddits.push(sr1, sr2);
+      await subredditService.joinSubreddit(user2._id, sr1._id);
+      await subredditService.joinSubreddit(user2._id, sr2._id);
       const post1 = await postService.create(user2._id, {
         title: 'post1 title',
         text: 'post1 text',
@@ -470,6 +488,8 @@ describe('UserService', () => {
             isModerator: true,
             isJoin: true,
             joinDate: res[1].subredditInfo.joinDate,
+            icon: null,
+            membersCount: 2,
           },
           user: {
             id: user2._id,
@@ -478,6 +498,7 @@ describe('UserService', () => {
             isFollowed: false,
             cakeDay: true,
             createdAt: res[0].user.createdAt,
+            name: '',
           },
         }),
       );
