@@ -27,6 +27,39 @@ export class ThingFetch {
     ];
   }
 
+  filterUnApproved() {
+    return [
+      {
+        $match: {
+          $expr: {
+            $or: [
+              {
+                $ne: ['$approvedBy', null],
+              },
+              {
+                $eq: [
+                  true,
+                  this.mongoIndexAt('$subreddit.acceptPostingRequests', 0),
+                ],
+              },
+              {
+                $in: [
+                  this.mongoIndexAt('$me.username', 0),
+                  {
+                    $ifNull: [
+                      this.mongoIndexAt('$subreddit.approvedUsers.username', 0),
+                      [],
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
   onlyOnePost(postId: Types.ObjectId) {
     return [
       {

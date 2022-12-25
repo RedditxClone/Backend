@@ -1035,6 +1035,7 @@ export class PostCommentService {
       ...fetcher.filterHidden(),
       ...fetcher.getMe(),
       ...fetcher.SRInfo(),
+      ...fetcher.filterUnApproved(),
       ...fetcher.filterBannedUsers(),
       ...fetcher.prepareBeforeStoring(sort),
       {

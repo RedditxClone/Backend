@@ -301,6 +301,7 @@ export class PostService {
     const posts = await this.postModel.aggregate([
       ...fetcher.prepare(),
       ...fetcher.matchAllRelatedPosts(),
+      ...fetcher.filterUnApproved(),
       ...fetcher.filterHidden(),
       ...fetcher.filterBlocked(),
       ...fetcher.getMe(),
