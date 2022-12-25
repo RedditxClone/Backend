@@ -32,7 +32,7 @@ import type { MuteUserDto } from './dto/mute-user.dto';
 import type { RuleDto } from './dto/rule.dto';
 import type { UpdateSubredditDto } from './dto/update-subreddit.dto';
 import type { SubredditDocument } from './subreddit.schema';
-import { Flair, SubredditSchema } from './subreddit.schema';
+import { SubredditSchema } from './subreddit.schema';
 import { SubredditService } from './subreddit.service';
 import { SubredditUserSchema } from './subreddit-user.schema';
 import { SubredditUserLeftSchema } from './subreddit-user-left.schema';
@@ -1149,7 +1149,7 @@ describe('SubredditService', () => {
     });
   });
   describe('update list', () => {
-    it('must be updated successfully', async () => {
+    it('must be updated successfully', () => {
       const updateId = new Types.ObjectId(1);
       const res = subredditService.updateList(
         [
