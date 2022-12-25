@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "dcc29bca-8756-429f-8c41-05e5ead06a20",
+		"_postman_id": "b563254f-1df0-4730-a44e-f218ea8ca6f1",
 		"name": "redditxClone",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22032175"
+		"_exporter_id": "24753191"
 	},
 	"item": [
 		{
@@ -12,10 +12,37 @@
 				{
 					"name": "update post",
 					"request": {
-						"method": "POST",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"text\": \"updatetdddd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "{{host}}/api/post/63a1d7040f7c5cd62ba25967",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"63a1d7040f7c5cd62ba25967"
+							]
 						}
 					},
 					"response": []
@@ -98,17 +125,6 @@
 					"response": []
 				},
 				{
-					"name": "update comment",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": ""
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Create Post",
 					"request": {
 						"auth": {
@@ -167,7 +183,7 @@
 								{
 									"key": "image1",
 									"type": "file",
-									"src": "/C:/Users/Mohamed Kamal/Desktop/task/ResrcID30443_Nokia_MSteams_virtual5.jpg"
+									"src": "/C:/Users/Mohamed Kamal/Desktop/task/ResrcID30430_Nokia_MSteams_virtual6.jpg"
 								}
 							]
 						},
@@ -179,6 +195,46 @@
 							"path": [
 								"api",
 								"post",
+								"upload-media"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload media with post id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image1",
+									"type": "file",
+									"src": "/C:/Users/Mohamed Kamal/Desktop/task/ResrcID30442_Nokia_MSteams_virtual4 (1).jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/post/63a1d7040f7c5cd62ba25967/upload-media",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"63a1d7040f7c5cd62ba25967",
 								"upload-media"
 							]
 						}
@@ -244,14 +300,14 @@
 					"response": []
 				},
 				{
-					"name": "restore comment",
+					"name": "update comment",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -259,15 +315,14 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/comment/636f630ae0720cd0bd9fef8a/restore",
+							"raw": "{{host}}/api/comment/636f630ae0720cd0bd9fef8a",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"comment",
-								"636f630ae0720cd0bd9fef8a",
-								"restore"
+								"636f630ae0720cd0bd9fef8a"
 							]
 						}
 					},
@@ -281,7 +336,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -289,14 +344,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/636f5026d4033d5205e7e051",
+							"raw": "{{host}}/api/post/636e2aae06b0a9c11b80d667",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"post",
-								"636f5026d4033d5205e7e051"
+								"636e2aae06b0a9c11b80d667"
 							]
 						}
 					},
@@ -310,7 +365,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
 									"type": "string"
 								}
 							]
@@ -332,14 +387,14 @@
 					"response": []
 				},
 				{
-					"name": "restore post",
+					"name": "update post",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
 									"type": "string"
 								}
 							]
@@ -347,15 +402,14 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/post/636f5026d4033d5205e7e051/restore",
+							"raw": "{{host}}/api/post/636f5026d4033d5205e7e051",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"post",
-								"636f5026d4033d5205e7e051",
-								"restore"
+								"636f5026d4033d5205e7e051"
 							]
 						}
 					},
@@ -390,6 +444,542 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "get upvoted",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/upvoted",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"upvoted"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "downvote",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/639c5afaba734508f1cb4ebb/downvote",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"639c5afaba734508f1cb4ebb",
+								"downvote"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "spam thing",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/639c5afaba734508f1cb4ebb/spam",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"639c5afaba734508f1cb4ebb",
+								"spam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unspam a thing",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/639c5afaba734508f1cb4ebb/unspam",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"639c5afaba734508f1cb4ebb",
+								"unspam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove a thing",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/639c5afaba734508f1cb4ebb/remove",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"639c5afaba734508f1cb4ebb",
+								"remove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get downvoted",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/downvoted",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"downvoted"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unvote",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/639c5afaba734508f1cb4ebb/unvote",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"639c5afaba734508f1cb4ebb",
+								"unvote"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "approve post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/639c5afaba734508f1cb4ebb/approve",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"639c5afaba734508f1cb4ebb",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get hidden posts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/hidden",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"hidden"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "hide post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/636e2aae06b0a9c11b80d667/hide",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"636e2aae06b0a9c11b80d667",
+								"hide"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unhide post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/636e2aae06b0a9c11b80d667/unhide",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"636e2aae06b0a9c11b80d667",
+								"unhide"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get popular",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/popular?limit=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"popular"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get discover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/discover?limit=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"discover"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get timeline",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/timeline?limit=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"timeline"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get me post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/post/me?limit=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"post",
+								"me"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get thing with childern",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/thing/636f60cbfd43730c8223949b/with-children?limit=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"636f60cbfd43730c8223949b",
+								"with-children"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user's things",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{host}}/api/thing/user/1234?limit=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"thing",
+								"user",
+								"1234"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -397,162 +987,78 @@
 			"name": "user",
 			"item": [
 				{
-					"name": "forget-username",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/auth/forget-username",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"forget-username"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "signup",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"123@gmail.com\",\r\n    \"username\": \"1234\",\r\n    \"password\": \"12345678\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/auth/signup",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"signup"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "login",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "authorization",
-								"value": "Bearer%20eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"123\",\r\n    \"password\": \"12345678\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/auth/login",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "follow",
+					"name": "get me",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
 						},
-						"method": "POST",
+						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/follow",
+							"raw": "{{host}}/api/user/me",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"63977b9668a9911559fdb843",
-								"follow"
+								"me"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "unfollow",
+					"name": "delete me",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
 						},
-						"method": "POST",
+						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unfollow",
+							"raw": "{{host}}/api/user/me",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"63977b9668a9911559fdb843",
-								"unfollow"
+								"me"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "change forgetten password",
+					"name": "random usernames",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{host}}/api/user/random-usernames",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"random-usernames"
+							]
 						}
 					},
 					"response": []
@@ -565,7 +1071,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -595,7 +1101,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -610,7 +1116,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"123123\",\r\n    \"email\": \"123@gmail.com\",\r\n    \"hashPassword\": \"$2b$10$xjjAq6/ef7Txwx4F/2fdqeCLEJEZ/6QvjALm9NfdDcrtlzbCLUKpC\",\r\n    \"suggestedSort\": \"hot\",\r\n    \"authType\": \"user\",\r\n    \"socialLinks\": [\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        }\r\n    ],\r\n    \"nsfw\": true,\r\n    \"allowFollow\": true,\r\n    \"contentVisibility\": true,\r\n    \"activeInCommunitiesVisibility\": true,\r\n    \"badCommentAutoCollapse\": \"off\",\r\n    \"showInSearch\": true,\r\n    \"adultContent\": false,\r\n    \"autoPlayMedia\": true,\r\n    \"inboxMessages\": true,\r\n    \"mentions\": true,\r\n    \"commentsOnPost\": true,\r\n    \"upvoteComments\": false,\r\n    \"upvotePosts\": true,\r\n    \"repliesComments\": true,\r\n    \"activityComments\": true,\r\n    \"activityOnThreads\": true,\r\n    \"newFollowers\": true,\r\n    \"newPostFlair\": true,\r\n    \"newUserFlair\": true,\r\n    \"pinnedPosts\": true,\r\n    \"postsYouFollow\": true,\r\n    \"commentsYouFollow\": true,\r\n    \"redditAnnouncements\": true,\r\n    \"cakeDay\": true,\r\n    \"acceptPms\": \"everyone\",\r\n    \"countryCode\": \"eg\",\r\n    \"safeBrowsingMode\": false,\r\n    \"chatRequest\": true,\r\n    \"newFollower\": false,\r\n    \"unSubscribe\": false\r\n}",
+							"raw": "{\r\n    \"hashPassword\": \"$2b$10$xjjAq6/ef7Txwx4F/2fdqeCLEJEZ/6QvjALm9NfdDcrtlzbCLUKpC\",\r\n    \"suggestedSort\": \"hot\",\r\n    \"authType\": \"user\",\r\n    \"socialLinks\": [\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        },\r\n        {\r\n            \"platform\": \"reddit\",\r\n            \"displayName\": \"kamal\"\r\n        }\r\n    ],\r\n    \"nsfw\": true,\r\n    \"allowFollow\": true,\r\n    \"contentVisibility\": true,\r\n    \"activeInCommunitiesVisibility\": true,\r\n    \"badCommentAutoCollapse\": \"off\",\r\n    \"showInSearch\": true,\r\n    \"adultContent\": false,\r\n    \"autoPlayMedia\": true,\r\n    \"inboxMessages\": true,\r\n    \"mentions\": true,\r\n    \"commentsOnPost\": true,\r\n    \"upvoteComments\": false,\r\n    \"upvotePosts\": true,\r\n    \"repliesComments\": true,\r\n    \"activityComments\": true,\r\n    \"activityOnThreads\": true,\r\n    \"newFollowers\": true,\r\n    \"newPostFlair\": true,\r\n    \"newUserFlair\": true,\r\n    \"pinnedPosts\": true,\r\n    \"postsYouFollow\": true,\r\n    \"commentsYouFollow\": true,\r\n    \"redditAnnouncements\": true,\r\n    \"cakeDay\": true,\r\n    \"acceptPms\": \"everyone\",\r\n    \"countryCode\": \"eg\",\r\n    \"safeBrowsingMode\": false,\r\n    \"chatRequest\": true,\r\n    \"newFollower\": false,\r\n    \"unSubscribe\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -633,29 +1139,13 @@
 					"response": []
 				},
 				{
-					"name": "change-password",
+					"name": "check available username",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "authorization",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
-								"type": "text"
-							}
-						],
+						"method": "POST",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"raw": "{\r\n    \"username\": \"123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -663,14 +1153,74 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/auth/change-password",
+							"raw": "{{host}}/api/user/check-available-username",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
-								"auth",
-								"change-password"
+								"user",
+								"check-available-username"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/follow",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"follow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unfollow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unfollow",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"unfollow"
 							]
 						}
 					},
@@ -684,7 +1234,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -707,14 +1257,44 @@
 					"response": []
 				},
 				{
-					"name": "get me",
+					"name": "unblock",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/63977b9668a9911559fdb843/unblock",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"63977b9668a9911559fdb843",
+								"unblock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list of blocked",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -722,14 +1302,43 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/me",
+							"raw": "{{host}}/api/user/block",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"me"
+								"block"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user as admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/639e3668fce527167f23f02b",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"639e3668fce527167f23f02b"
 							]
 						}
 					},
@@ -743,7 +1352,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"value": "",
 									"type": "string"
 								}
 							]
@@ -751,107 +1360,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/user/1234",
+							"raw": "{{host}}/api/user/1234/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"1234"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "save post",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/user/post/638f2e4f0075908ba7aacf2c/save",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"post",
-								"638f2e4f0075908ba7aacf2c",
-								"save"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "save post",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/user/post/save",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"post",
-								"save"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "close or open post notification",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/user/thing/63982ffea8e96ecd95856dd4/notify/1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"thing",
-								"63982ffea8e96ecd95856dd4",
-								"notify",
-								"1"
+								"1234",
+								""
 							]
 						}
 					},
@@ -896,6 +1413,170 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "cover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "photo",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/user/me/cover",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"me",
+								"cover"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "close or open post notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/thing/63982ffea8e96ecd95856dd4/notify/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"thing",
+								"63982ffea8e96ecd95856dd4",
+								"notify",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "save post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/post/638f2e4f0075908ba7aacf2c/save",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"post",
+								"638f2e4f0075908ba7aacf2c",
+								"save"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unsave post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/post/638f2e4f0075908ba7aacf2c/unsave",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"post",
+								"638f2e4f0075908ba7aacf2c",
+								"unsave"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "save post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/user/post/save",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"post",
+								"save"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -910,7 +1591,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2OTk3MzI5MiwiZXhwIjoxNjcwODM3MjkyfQ.-29zyV1ZsVFNIrLPl8rbtIoAjp7zz4w4czd5q28JP54",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNDY3ODUzLCJleHAiOjE2NzIzMzE4NTN9.rfIjjkKmzg2q9UzWGBtY7FIX9NisfJ8roSmEIEZqgo0",
 									"type": "string"
 								}
 							]
@@ -919,7 +1600,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"kamal\",\r\n  \"type\": \"sport\",\r\n  \"over18\": false\r\n}",
+							"raw": "{\r\n    \"name\": \"sr-new\",\r\n    \"type\": \"public\",\r\n    \"over18\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -927,25 +1608,1269 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/subreddit",
+							"raw": "{{url_prefix}}/subreddit?a=5&b=20",
 							"host": [
-								"{{host}}"
+								"{{url_prefix}}"
 							],
 							"path": [
-								"api",
 								"subreddit"
+							],
+							"query": [
+								{
+									"key": "a",
+									"value": "5"
+								},
+								{
+									"key": "b",
+									"value": "20"
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "add flair",
+					"name": "join subreddit",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYTEwYjJiM2MxYjU1ZjMzNmRkNjhkYyIsInVzZXJuYW1lIjoiYXJlZjUiLCJpYXQiOjE2NzE1NDE5MzMsImV4cCI6MTY3MjQwNTkzM30.qVJNIkcniIQdYXYOwaSvyxJD3Je4jhGqSzCEN2x6-h4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"second subreddit\",\r\n    \"type\": \"public\",\r\n    \"over18\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/join",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "leave subreddit",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYTEwYjJiM2MxYjU1ZjMzNmRkNjhkYyIsInVzZXJuYW1lIjoiYXJlZjUiLCJpYXQiOjE2NzE1NDE5MzMsImV4cCI6MTY3MjQwNTkzM30.qVJNIkcniIQdYXYOwaSvyxJD3Je4jhGqSzCEN2x6-h4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"second subreddit\",\r\n    \"type\": \"public\",\r\n    \"over18\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/leave",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"leave"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ask to join",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTg3ZDUyNWU0N2U2NTFlMWJiNDc1OSIsImlhdCI6MTY3MDkzNzkzOCwiZXhwIjoxNjcxODAxOTM4fQ.8Q3MLL97uU8lAESJxZzPviRgKI17T5W9zA3CcrSl0LU",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"second subreddit\",\r\n    \"type\": \"public\",\r\n    \"over18\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63987b7b6af5f41f44478706/join/ask",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63987b7b6af5f41f44478706",
+								"join",
+								"ask"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "accept to join",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"second subreddit\",\r\n    \"type\": \"public\",\r\n    \"over18\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63987b7b6af5f41f44478706/user/638f1b44cd2853fdba326cb5/join/accept",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63987b7b6af5f41f44478706",
+								"user",
+								"638f1b44cd2853fdba326cb5",
+								"join",
+								"accept"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create subreddit post flair",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"text\": \"flair2\",\r\n  \"backgroundColor\": \"#000123\",\r\n  \"textColor\": 0,\r\n  \"modOnly\": 0,\r\n  \"allowUserEdits\": 1\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6366f73606cdac963ace51bd/flair",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6366f73606cdac963ace51bd",
+								"flair"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set subreddit icon",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "icon",
+									"type": "file",
+									"src": "/C:/Users/DreamOnline/Downloads/Screenshot (98).png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/icon",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"icon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove subreddit icon",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTg3ZDUyNWU0N2U2NTFlMWJiNDc1OSIsInVzZXJuYW1lIjoiYXJlZjMiLCJpYXQiOjE2NzE0NzQ5MzIsImV4cCI6MTY3MjMzODkzMn0.U5jyBlSCB1ME6JP_xxKFOTr3ZQnx8letfv1ZNsrd4e0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "icon",
+									"type": "file",
+									"src": "/C:/Users/DreamOnline/Downloads/Screenshot (98).png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/639cfc5bcb15f7f9ed51dfb6/icon",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"639cfc5bcb15f7f9ed51dfb6",
+								"icon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add categories to sr",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"categories\": [\"sport\", \"math\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/category",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add new moderator",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63987b7b6af5f41f44478706/moderation/aref2",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63987b7b6af5f41f44478706",
+								"moderation",
+								"aref2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mute a user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"aref3\",\r\n    \"reason\": \"no reason\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/mute",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"mute"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "approve a user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/aref3/approve",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"aref3",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pan a user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"aref5\",\r\n    \"reason\": \"no reason\",\r\n    \"modNote\": \"nothing\",\r\n    \"permanent\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/user/ban",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"user",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unmute user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/aref3/mute",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"aref3",
+								"mute"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unapprove user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/aref3/approve",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"aref3",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unpan user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/aref3/ban",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"aref3",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update panned user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/user/aref5/ban",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"user",
+								"aref5",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get muted Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/mute",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"mute"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get approved Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6398c5ad11e9d26ac69051c1/user/approve",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6398c5ad11e9d26ac69051c1",
+								"user",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get paned Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/user/ban",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"user",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get subreddits modurates by me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDkzNzM4OSwiZXhwIjoxNjcxODAxMzg5fQ.feJScplm3lMCpJFjqu10rcmE7yKmG-9F-tpF62tDUoc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/moderation/me",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"moderation",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get subreddit moderators",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTM4MWIyMTJjOGRhZGUxNzc5MzcyOSIsImlhdCI6MTY3MDcxNDg5NywiZXhwIjoxNjcxNTc4ODk3fQ.YLKbrt_7jbtr4OU888WwbRCUKGn01im9l7gCGZ1j_g8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/moderation/moderators",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"moderation",
+								"moderators"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get subreddits I joined",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTQ0NTQ5LCJleHAiOjE2NzI0MDg1NDl9.yLxAnOxGtqN7UErnympCIrEI0-FU7Ck_IQxrJjSjzwE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/join/me",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"join",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "am I in a subreddit",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDg0OTkzOSwiZXhwIjoxNjcxNzEzOTM5fQ.NugMptVPkzU0HCuKZLo03VTTNf8X7PaZ25QWEAo0FEc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6363fba4ab2c2f94f3ac9f37/join/me",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6363fba4ab2c2f94f3ac9f37",
+								"join",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get sr by category",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"categories\": [\"sport\", \"teaching\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/category/math",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"category",
+								"math"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check subreddit name available",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{url_prefix}}/subreddit/r/sr-new/available",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"r",
+								"sr-new",
+								"available"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get subreddit by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a093630f763c458d7099f5",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a093630f763c458d7099f5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get subreddit by name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/r/sr-new",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"r",
+								"sr-new"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get flairlist",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6366f73606cdac963ace51bd/flair",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6366f73606cdac963ace51bd",
+								"flair"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete flair by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/flair/004fb4c5e447ec21ac97d011",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"flair",
+								"004fb4c5e447ec21ac97d011"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add rule to subreddit",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"rule\": \"No video\",\r\n    \"to\": 1,\r\n    \"description\": \"No videos is allowed\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/rule",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"rule"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update sr rule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"to\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/rule/63a1e0154f1aee06e5f0f200",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"rule",
+								"63a1e0154f1aee06e5f0f200"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update sr flairlist",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTM3MTM3LCJleHAiOjE2NzI0MDExMzd9._r72hZpaCgLu1z5W3ECR4A2aa6lryJtCcv3lVfd-PS0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"textColor\": \"#kkk\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/63a1a01a27424e91d8ba3e09/flair/004fb7fae447ec21ac97d013",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"flair",
+								"004fb7fae447ec21ac97d013"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update sr",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGY0MmJjMDgwMzdjNGY0MDA0ZDI5MyIsInVzZXJuYW1lIjoiYWhtZWQyIiwiaWF0IjoxNjcxNTQ0NTQ5LCJleHAiOjE2NzI0MDg1NDl9.yLxAnOxGtqN7UErnympCIrEI0-FU7Ck_IQxrJjSjzwE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"sr\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/r/sr-new",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"r",
+								"sr-new"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add subtopics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTg3ZDUyNWU0N2U2NTFlMWJiNDc1OSIsImlhdCI6MTY3MTEyNTY0MCwiZXhwIjoxNjcxOTg5NjQwfQ.hFH9bWuEp1iBp0aL2I1Rbcc5UZNo7YTVcYWGBcbYfmM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subTopics\": [\"a\",\"b\",\"c\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/639b5aa8d61b51e3f6127cd8/subtopics",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"639b5aa8d61b51e3f6127cd8",
+								"subtopics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add activeTopic",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTg3ZDUyNWU0N2U2NTFlMWJiNDc1OSIsImlhdCI6MTY3MTEyNTY0MCwiZXhwIjoxNjcxOTg5NjQwfQ.hFH9bWuEp1iBp0aL2I1Rbcc5UZNo7YTVcYWGBcbYfmM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"activeTopic\": \"b\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/639b5aa8d61b51e3f6127cd8/activetopic",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"639b5aa8d61b51e3f6127cd8",
+								"activetopic"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete rule by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOGYxYjQ0Y2QyODUzZmRiYTMyNmNiNSIsImlhdCI6MTY3MDg0OTkzOSwiZXhwIjoxNjcxNzEzOTM5fQ.NugMptVPkzU0HCuKZLo03VTTNf8X7PaZ25QWEAo0FEc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/6397252110e5805e630ae162/rule/6397a52dd12297c70c95d38a",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"6397252110e5805e630ae162",
+								"rule",
+								"6397a52dd12297c70c95d38a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sr statistics per week",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/sr-join-test/statistics/week",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"sr-join-test",
+								"statistics",
+								"week"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sr statistics per year",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url_prefix}}/subreddit/sr-join-test/statistics/year",
+							"host": [
+								"{{url_prefix}}"
+							],
+							"path": [
+								"subreddit",
+								"sr-join-test",
+								"statistics",
+								"year"
+							]
 						}
 					},
 					"response": []
@@ -1092,6 +3017,1070 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Message",
+			"item": [
+				{
+					"name": "Get Messages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/post",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages comment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/unread",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages unread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/unread",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages sent",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/me/sent",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"me",
+								"sent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subject\": \"my message to u\",\r\n    \"body\": \"hi there\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/usere2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"usere2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reply",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"body\": \"well here is my reply bro\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/639e5773daf2e80bdfbf1500/reply",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"639e5773daf2e80bdfbf1500",
+								"reply"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mark as read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messages\": [\"63a3420d1ac89af4d9eaea48\", \"639e5846207b2676cb1b9de8\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/mark_as_read",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"mark_as_read"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mark as unread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messages\": [\"63a3420d1ac89af4d9eaea48\", \"639e5846207b2676cb1b9de8\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/message/mark_as_unread",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"mark_as_unread"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "spam message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/63a1db75cfb5ac0f3b5a0bbc/spam",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"63a1db75cfb5ac0f3b5a0bbc",
+								"spam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/639e5773daf2e80bdfbf1500/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"639e5773daf2e80bdfbf1500",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/message/639e5773daf2e80bdfbf1500/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"message",
+								"639e5773daf2e80bdfbf1500",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "search",
+			"item": [
+				{
+					"name": "search people",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/peoples/?word=123&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"peoples",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "123"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search communities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/communities/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"communities",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search communities start",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/communities/start/?word=sr2&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"communities",
+								"start",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr2"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/posts/?word=hello&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"posts",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "hello"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search comments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/comments/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"comments",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search general",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/general/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"general",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search sr flair",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/search/subreddit/63a1a01a27424e91d8ba3e09/flairs/?word=sr&page=1&limit=15",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"subreddit",
+								"63a1a01a27424e91d8ba3e09",
+								"flairs",
+								""
+							],
+							"query": [
+								{
+									"key": "word",
+									"value": "sr"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "15"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "Bearer%20eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"123\",\r\n    \"password\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"123@gmail.com\",\r\n    \"username\": \"1234\",\r\n    \"password\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/signup",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forget-password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/forget-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forget-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forget-username",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"medoking91@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/forget-username",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forget-username"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change forgetten password",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change-password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/change-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change email",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY2NzU2MjAxNywiZXhwIjoxNjY4ODU4MDE3fQ.YCSP4r5lUOwu9tL9YUY_6Zftqmg3iX5vafco86aMyTs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/change-email",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-email"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change email type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/change-email/type",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-email",
+								"type"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create-password-request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjNlYmZjYzBhNTVkMTkwNDA5MmEzOCIsImlhdCI6MTY2NzQ5MjkxOSwiZXhwIjoxNjY4Nzg4OTE5fQ.1myrfz9HcCWXpa7-v4-lnKg_PfaU9CAnRQJIVFEnoug",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"12345678\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/create-password-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"create-password-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "google",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/auth/google",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"google"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "github",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/auth/github",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"github"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "hide notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOTc3Yjk2NjhhOTkxMTU1OWZkYjg0MyIsImlhdCI6MTY3MDg3MTk1OCwiZXhwIjoxNjcxNzM1OTU4fQ.V9TSRQ9VLD1B_VOlxm_ck7ZtdMAizV-5I37iMRN9c_s",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/notification/63977baf68a9911559fdb850/hide",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"notification",
+								"63977baf68a9911559fdb850",
+								"hide"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mark as read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjRmOWVhNDJjODlhYzI3ZjQ3MjA0NiIsImlhdCI6MTY3MDg2NjM3NiwiZXhwIjoxNjcxNzMwMzc2fQ.dyziZpYpErQs6NqbOmMMJsAH-KrULLVtdLgyScmyEnA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messages\": [\r\n        \"63977bd568a9911559fdb857\",\r\n        \"639787966248484fdbd28b12\",\r\n        \"6397886f54a6e8ad763709cb\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/notification/mark-as-read",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"notification",
+								"mark-as-read"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -1119,6 +4108,18 @@
 			"key": "host",
 			"value": "http://localhost:3000",
 			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOWUzNjY4ZmNlNTI3MTY3ZjIzZjAyYiIsInVzZXJuYW1lIjoidXNlcmUxIiwiaWF0IjoxNjcxMzEzMDA1LCJleHAiOjE2NzIxNzcwMDV9.K-n796R9dqUuHtp94nEVWolA_RUTYOUbXfl9_jtxpiY"
+		},
+		{
+			"key": "token2",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzOWUzNzhhNTNkNzQ0ZWYyYWEwYTAwNSIsInVzZXJuYW1lIjoidXNlcmUyIiwiaWF0IjoxNjcxMzEzMzIzLCJleHAiOjE2NzIxNzczMjN9.BBhEBc-Ds-uPdsqsVM2YAXkW_0FwiD3HsP-FQxuKe_g"
+		},
+		{
+			"key": "url_prefix",
+			"value": "http://localhost:3000/api"
 		}
 	]
 }
